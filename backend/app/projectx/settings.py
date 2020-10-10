@@ -7,20 +7,22 @@ https://docs.djangoproject.com/
 """
 
 import os
+import daphne.server  # noqa
+import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
+env = environ.Env(DEBUG=(bool, False), )
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '^l)7d*%h&db4uft@dk%h-w&nup#pu%)a!d)c7jwgoixo5_hm0$'
+SECRET_KEY = env.str("SECRET_KEY")
+DEBUG = env("DEBUG")
+PUBLIC_IP = env.str("PUBLIC_IP")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [PUBLIC_IP]
 
 # Application definition
 INSTALLED_APPS = [
@@ -30,8 +32,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_js_reverse',
     'channels',
-    'users'
+    'users',
+    'common',
 ]
 
 MIDDLEWARE = [
@@ -67,34 +71,23 @@ WSGI_APPLICATION = 'projectx.wsgi.application'
 AUTH_USER_MODEL = "users.User"
 
 # Database
-# https://docs.djangoproject.com/en/2.1/ref/settings/#databases
+# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+DATABASES = {"default": env.db()}
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+# Cache
+CACHES = {
+    "default": env.cache()
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',},
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -117,11 +110,15 @@ STATIC_URL = '/static/'
 
 # Django Channels
 ASGI_APPLICATION = "projectx.routing.application"
+
+CHANNELS_REDIS_URL = env.url("CHANNELS_REDIS_URL")
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-        # Use a redis instance
-        # "BACKEND": "channels_redis.core.RedisChannelLayer",
-        # "CONFIG": {"hosts": [("127.0.0.1", 6379)],},
+        "BACKEND": "cv2.channel_layer.CV2RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(CHANNELS_REDIS_URL.hostname, CHANNELS_REDIS_URL.port)],
+            "capacity": 500,  # default 100
+            "expiry": 20
+        },
     },
 }

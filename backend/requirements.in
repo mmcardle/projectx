@@ -1,7 +1,0 @@
-Django>=3,<4
-channels
-channels_redis
-fastapi
-Twisted[tls,http2]
-uvicorn
-uwsgi

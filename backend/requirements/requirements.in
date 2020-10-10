@@ -1,0 +1,17 @@
+channels
+channels_redis
+Django>=3,<4
+daphne
+django-dbsettings
+django-environ
+django-js-reverse
+django-model-utils
+django-ratelimit
+django-redis
+django-su
+hiredis
+fastapi
+psycopg2-binary
+Twisted[tls,http2]
+uvicorn
+uwsgi

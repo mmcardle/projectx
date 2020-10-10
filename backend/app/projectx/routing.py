@@ -6,8 +6,6 @@ from channels.auth import AuthMiddlewareStack
 from projectx.consumers import projectx_WebSocketConsumer
 
 # Consumer Imports
-from users.consumers import usersConsumer
-
 
 application = ProtocolTypeRouter({
 
@@ -18,6 +16,6 @@ application = ProtocolTypeRouter({
         ])
     ),
     "channel": ChannelNameRouter({
-        "users": usersConsumer,
+        #"users": usersConsumer,
     })
 })

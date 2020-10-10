@@ -27,9 +27,7 @@ services:
       - redis
       - postgres
     volumes:
-      - ./backend/projectx/:/home/user/app/backend/projectx/
-      - ./backend/templates/:/home/user/app/backend/templates/
-      - ./backend/users/:/home/user/app/backend/users/
+      - ./backend/app/:/home/user/app/
 
   postgres:
     hostname: postgres

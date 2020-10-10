@@ -16,7 +16,7 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
 
 RUN groupadd user && useradd --create-home --home-dir /home/user -g user user
 
-WORKDIR /home/user/app/backend
+WORKDIR /home/user/app/
 
 ##### Installing pip wheel virtualenv circus
 RUN python3.8 -m pip install -U pip
@@ -25,39 +25,30 @@ RUN python3.8 -m pip install pip wheel virtualenv circus pip-tools
 ##### Creating virtualenv at /home/user/venv
 RUN virtualenv -p python3.8 /home/user/venv
 
-COPY backend/requirements.in ./
+COPY backend/requirements/requirements.in ./
 
 RUN pip-compile requirements.in > requirements.txt
 RUN /home/user/venv/bin/pip install -r requirements.txt
 
-COPY backend/manage.py /home/user/app/backend/manage.py
-COPY backend/projectx/ /home/user/app/backend/projectx/
-COPY backend/templates/ /home/user/app/backend/templates/
-COPY backend/users/ /home/user/app/backend/users/
-
-RUN chown -R user:user /home/user/app/backend/
+COPY backend/app/ /home/user/app/
+RUN chown -R user:user /home/user/app/
 
 ##### Adding configuration files ######
 RUN rm /etc/nginx/sites-enabled/default
-COPY backend/nginx.conf /etc/nginx/nginx.conf
-COPY backend/backend-nginx.conf /etc/nginx/sites-enabled/backend-nginx.conf
-COPY backend/general-security-headers.conf /etc/nginx/snippets/general-security-headers.conf
-COPY backend/uwsgi.ini /home/user/config/uwsgi.ini
-COPY backend/circus.ini /home/user/config/circus.ini
-COPY backend/start.sh /home/user/start.sh
+COPY backend/config/nginx.conf /etc/nginx/nginx.conf
+COPY backend/config/backend-nginx.conf /etc/nginx/sites-enabled/backend-nginx.conf
+COPY backend/config/general-security-headers.conf /etc/nginx/snippets/general-security-headers.conf
+COPY backend/config/uwsgi.ini /home/user/config/uwsgi.ini
+COPY backend/config/circus.ini /home/user/config/circus.ini
+COPY backend/config/start.sh /home/user/start.sh
 RUN chmod +x /home/user/start.sh
 
 RUN mkdir -p /var/www/
 RUN chown -R user:user /var/www/
-RUN usermod -a -G adm user
-RUN chmod g+w /var/log/nginx/error.log
 
 ## NGINX permissions
 RUN mkdir /var/cache/nginx
-RUN chown -R user:user /var/cache/nginx 
-RUN chown -R user:user /var/log/nginx
-RUN chown -R user:user /var/lib/nginx
-RUN chown -R user:user /etc/nginx/conf.d
+RUN chown -R user:user /var/cache/nginx /var/log/nginx /var/lib/nginx /etc/nginx/conf.d
 RUN touch /var/run/nginx.pid
 RUN chown -R user:user /var/run/nginx.pid
 
