@@ -27,6 +27,7 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class UserManager(BaseUserManager):
+
     def create_user(self, email, password=None, **kwargs):
         email = self.normalize_email(email)
         user = self.model(email=email, **kwargs)
@@ -57,9 +58,9 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     def get_short_name(self):
         return self.email
-
+    
     def __str__(self):
-        return self.email
+        return "%s" % self.display_name()
     
     @property
     def public_id(self):
@@ -206,6 +207,3 @@ class User(AbstractUser, IndexedTimeStampedModel):
                 return user, ""
         except BadSignature:
             return None, "Bad Signature"
-
-    def __str__(self):
-        return "%s" % self.display_name()

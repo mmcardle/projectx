@@ -1,5 +1,8 @@
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND noninteractive
+ENV PYTHONUNBUFFERED 1
+
 ##### We require some dev packages to install python requirements
 RUN apt-get -y update && apt-get install --no-install-recommends -y \
   python3.8 \
@@ -12,6 +15,7 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
   libssl-dev \
   gcc \
   nginx \
+  build-essential \
   && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd user && useradd --create-home --home-dir /home/user -g user user
