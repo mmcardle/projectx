@@ -4,7 +4,6 @@ Django>=3,<4
 daphne
 django-dbsettings
 django-environ
-django-js-reverse
 django-model-utils
 django-ratelimit
 django-redis

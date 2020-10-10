@@ -29,6 +29,19 @@ services:
     volumes:
       - ./backend/app/:/home/user/app/
 
+  frontend:
+    hostname: frontend
+    tty: true
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on: 
+      - projectx
+    volumes:
+      - ./frontend/:/app/
+
   postgres:
     hostname: postgres
     image: postgres:9.5

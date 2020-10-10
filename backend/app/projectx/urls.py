@@ -1,4 +1,4 @@
-"""XXX_PROJECT_NAME_XXX URL Configuration
+"""ProjectX URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/2.1/topics/http/urls/
@@ -17,10 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-import django_js_reverse.views
-
 urlpatterns = [
     path("admin/", admin.site.urls, name="admin"),
-    path("jsreverse/", django_js_reverse.views.urls_js, name="js_reverse"),
     path('users/', include('users.urls')),
 ]

@@ -3,3 +3,5 @@
 
 # Add required files only
 !/backend/
+!/frontend/
+/frontend/node_modules/

@@ -145,65 +145,6 @@ def reset_password_complete(request):
 
     return JsonResponse(user.to_json())
 
-
-@csrf_exempt
-def remote_check(request):
-    # This method checks the IP of the request is in the Sohonet IP space
-    # OR the remote ip of the user specified on a staff user object
-    # OR the session has been SUDO'd into and the user is trying to exit SU
-
-    original_uri = request.META.get("X-Original-URI")
-    is_sudo = _request_is_sudo(request)
-    if is_sudo and original_uri == reverse(admin_su_logout):
-        return HttpResponse(status=200)
-
-    remote_addr = request.META.get("REMOTE_ADDR")
-    if not remote_addr:
-        logger.warning("Could not fetch remote address 'REMOTE_ADDR' in request, access DENIED.")
-        return HttpResponse(status=403)
-
-    if not request.user.is_anonymous:
-        if request.user.is_staff and request.user.remote_allowed_cidrs:
-            for remote_allowed_cidr in request.user.remote_allowed_cidrs:
-                valid_network = ipaddress.ip_network(remote_allowed_cidr)
-                valid_by_user_remote_ip = ipaddress.ip_address(remote_addr) in valid_network
-                if valid_by_user_remote_ip:
-                    logger.debug(
-                        f"The user is staff and the IP {remote_addr} is in {valid_network}, "
-                        f"access granted. (Allowed by user.remote_allowed_cidrs)"
-                    )
-                    return HttpResponse(status=200)
-
-    ALLOWED_REMOTE_IP_RANGES = [
-        "67.224.101.0/26",    # US-DCN-UNTRUST
-        "67.224.101.64/29",   # US-OFFICE-UNTRUST
-        "193.203.71.176/29",  # POLST-DCN-UNTRUST
-        "193.203.71.224/29",  # GSW-DCN-UNTRUST
-        "193.203.87.176/28",  # LPC-DCN-UNTRUST
-        "193.203.88.16/28",   # LPC-DCN-DMZ
-        "46.248.224.132/32",  # Sohonet UK Internal Office Network
-        "193.203.89.154/32",  # UK Dev SSL VPN
-    ]
-
-    if settings.DEBUG:
-        ALLOWED_REMOTE_IP_RANGES.extend([
-            "192.168.0.0/16",    # Dev
-            "172.16.0.0/12",     # Dev
-            "10.0.0.0/8",        # Dev
-            "127.0.0.1",         # Local
-        ])
-
-    for ip_range in ALLOWED_REMOTE_IP_RANGES:
-        valid = ipaddress.ip_address(remote_addr) in ipaddress.ip_network(ip_range)
-        if valid:
-            logger.debug(f"The IP {remote_addr} is in {ip_range}, access granted.")
-            return HttpResponse(status=200)
-
-    logger.warning(f"The IP {remote_addr} is not in {ALLOWED_REMOTE_IP_RANGES}, access DENIED.")
-
-    return HttpResponse(status=403)
-
-
 def admin_su_logout(request):
 
     su_response = su_logout(request)
