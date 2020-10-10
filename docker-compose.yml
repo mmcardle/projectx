@@ -1,0 +1,47 @@
+version: '2.3'
+
+x-environment:
+  &environment
+  SECRET_KEY: "DEV_SECRET_KEY"
+  DEBUG: "True"
+  PYTHONASYNCIODEBUG: "True"
+  PUBLIC_IP: ${PUBLIC_IP-127.0.0.1}
+  DJANGO_SETTINGS_MODULE: "projectx.settings"
+
+  
+services:
+
+  projectx:
+    hostname: clearview
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      << : *environment
+      DATABASE_URL: 'psql://postgres:mysecretpassword@postgres:5432/postgres'
+      CHANNELS_REDIS_URL: redis://redis:6379/0
+      CACHE_URL: redis://redis:6379/1
+    depends_on: 
+      - redis
+      - postgres
+    volumes:
+      - ./backend/projectx/:/home/user/app/backend/projectx/
+      - ./backend/templates/:/home/user/app/backend/templates/
+      - ./backend/users/:/home/user/app/backend/users/
+
+  postgres:
+    hostname: postgres
+    image: postgres:9.5
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+
+  redis:
+    image: redis:5.0.5
+    ports:
+        - "6379:6379"
