@@ -43,7 +43,7 @@ def _get_logout_url(request):
 def user(request):
     if request.user.is_authenticated:
         return JsonResponse({
-            "user": request.user.to_json(include_connections=True),
+            "user": request.user.to_json(),
             "token": _get_token(request),
             "logout_url": _get_logout_url(request)
         })
@@ -55,14 +55,14 @@ def user(request):
 def login(request):
     if request.method == "POST":
         content = json.loads(request.body)
-        username = content.get("username")
+        email = content.get("email")
         password = content.get("password")
-        user = authenticate(request, username=username, password=password)
+        user = authenticate(request, username=email, password=password)
         if user is not None:
             django_login(request, user)
             return JsonResponse({
                 "success": True,
-                "user": user.to_json(include_connections=True),
+                "user": user.to_json(),
                 # new csrf token will have been created
                 "token": request.META["CSRF_COOKIE"],
                 "logout_url": _get_logout_url(request)
@@ -113,7 +113,7 @@ def reset_password_check(request):
     if user is None:
         return JsonResponse({"error": error}, status=401)
 
-    return JsonResponse({"email": user.email, "username": user.username})
+    return JsonResponse({"email": user.email})
 
 
 @require_http_methods(["POST"])

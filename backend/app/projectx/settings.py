@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [PUBLIC_IP]
 
 # Application definition
 INSTALLED_APPS = [
+    'django_su',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -123,4 +124,63 @@ CHANNEL_LAYERS = {
             "expiry": 20
         },
     },
+}
+
+# Email setup
+DEFAULT_FROM_EMAIL = "noreply@projectx.com"
+if DEBUG:  # pragma: no cover
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+else:
+    # TODO Choose a production email backend
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Logging setup
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "%(levelname)s %(name)s:%(lineno)s %(message)s"
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple"
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+        },
+        "asyncio": {
+            "handlers": ["console"],
+            "level": "WARNING",  # Reduce asyncio INFO spam
+        },
+        "projectx": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "common": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "users": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
+        "daphne": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        }
+    }
 }

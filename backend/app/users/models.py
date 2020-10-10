@@ -91,17 +91,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
         return data
 
-    def to_json_safe(self):
-        return {
-            "public_id": self.public_id,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "display_name": self.display_name(),
-            "email": self.email,
-            "last_login_timestamp": self._last_login_timestamp(),
-            "last_login_timestamp_iso": self._last_login_timestamp_iso(),
-        }
-
     def _last_login_timestamp(self):
         if self.last_login:
             return calendar.timegm(self.last_login.utctimetuple())
@@ -109,8 +98,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
     def _last_login_timestamp_iso(self):
         if self.last_login:
             return self.last_login.isoformat()
-
-
 
     def reset_password(self):
 
