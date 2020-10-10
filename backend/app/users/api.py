@@ -14,8 +14,7 @@ from django.views.decorators.http import require_http_methods
 from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
-from validation.base import load_data_from_schema
-from validation.exceptions import SchemaError
+from common.validation import SchemaError, load_data_from_schema
 
 from . import models, validation
 

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/
 import os
 import daphne.server  # noqa
 import environ
+from pathlib import Path
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -105,7 +106,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/site_media/static/"
+
+STATIC_ROOT = Path("/") / "var" / "www" / "site_media" / "static"
 
 # Django Channels
 ASGI_APPLICATION = "projectx.routing.application"

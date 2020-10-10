@@ -52,6 +52,15 @@ RUN chown -R user:user /var/cache/nginx /var/log/nginx /var/lib/nginx /etc/nginx
 RUN touch /var/run/nginx.pid
 RUN chown -R user:user /var/run/nginx.pid
 
+RUN \
+  SECRET_KEY="secret"\
+  DATABASE_URL='psql://postgres:dummy@postgres:5432/postgres'\
+  DEBUG="True"\
+  CHANNELS_REDIS_URL="redis://redis:6379/20"\
+  CACHE_URL="redis://redis:6379/1"\
+  PUBLIC_IP="127.0.0.1"\
+  /home/user/venv/bin/python /home/user/app/manage.py collectstatic
+
 USER user
 
 CMD /home/user/start.sh

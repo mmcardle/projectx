@@ -10,6 +10,7 @@ django-redis
 django-su
 hiredis
 fastapi
+marshmallow
 psycopg2-binary
 Twisted[tls,http2]
 uvicorn
