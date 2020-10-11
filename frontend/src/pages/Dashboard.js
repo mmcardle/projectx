@@ -17,8 +17,9 @@ function Dashboard(props) {
         </Nav>
       </div>
       <div className="dashboard-content text-center">
-        <div className="bg-dark w-50 m-auto rounded border border-secondary p-3 text-white">
-          <div className="display-1">
+        <div className="bg-dark w-50 mx-auto rounded border border-secondary p-4 text-white" style={{marginBottom: "400px"}}>
+          <img src="logo.svg" className="p-2 w-25 h-50 m-auto" />
+          <div className="display-3">
             Welcome {props.user.display_name}
           </div>
           <div className="display-4">

@@ -24,7 +24,7 @@ import { withNamedStores } from './store/state';
 import './App.css';
 
 const App = function (props) {
-  console.log('APP props', props)
+  console.debug('APP props', props)
 
   const [loadingUser, setLoadingUser] = useState(null);
 
@@ -33,7 +33,7 @@ const App = function (props) {
       setLoadingUser(true)
       getUserData(props.dispatch)
     }
-  });
+  }, [loadingUser, props.dispatch]);
 
   if (!props.loaded) {
     return (
