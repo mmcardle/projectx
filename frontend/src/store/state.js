@@ -43,12 +43,15 @@ const withUserStore = (Component) => (props) => <Component {...useUserStore()} {
 
 const withTokenStore = (Component) => (props) => <Component {...useKeyfromStore('token')} {...props} />;
 
+const withLoadingStore = (Component) => (props) => <Component {...useKeyfromStore('loading')} {...props} />;
+
 const withDispatch = (Component) => (props) => <Component {...useDispatchStore()} {...props} />;
 
 const storeNames = {
   user: withUserStore,
   token: withTokenStore,
   dispatch: withDispatch,
+  loading: withLoadingStore,
 };
 
 // Applies multiple stores to a Component

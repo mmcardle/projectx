@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
   BrowserRouter as Router,
@@ -6,6 +6,8 @@ import {
   Route,
   Link
 } from "react-router-dom";
+
+import { getUserData } from './api/requests';
 
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
@@ -22,7 +24,30 @@ import { withNamedStores } from './store/state';
 import './App.css';
 
 const App = function (props) {
-  console.debug('APP props', props)
+  console.log('APP props', props)
+
+  const [loadingUser, setLoadingUser] = useState(null);
+
+  useEffect(() => {
+    if (!loadingUser) {
+      setLoadingUser(true)
+      getUserData(props.dispatch)
+    }
+  });
+
+  if (!props.loaded) {
+    return (
+      <Router>
+        <div className="main-container">
+          <div className="main-item text-center" style={{height: "100%"}}>
+            <div style={{marginTop: "50vh"}} className="h1">
+              Loading...
+            </div>
+          </div>
+        </div>
+      </Router>
+    )
+  }
 
   if (props.user === undefined) {
     return (
@@ -48,7 +73,7 @@ const App = function (props) {
 
         <Navbar className="main-item" bg="dark" variant="dark">
           <Navbar.Brand>
-            <Nav.Link as={Link} to="/">Home</Nav.Link>
+            <Nav.Link as={Link} to="/" className="h4">ProjectX</Nav.Link>
           </Navbar.Brand>
           <Nav className="mr-auto">
             <Nav.Link to="/" as={Link}>Dashboard</Nav.Link>
@@ -71,4 +96,4 @@ const App = function (props) {
   );
 }
 
-export default withNamedStores(App, ['user']);
+export default withNamedStores(App, ['user', 'loading', 'dispatch']);
