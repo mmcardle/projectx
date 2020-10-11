@@ -1,7 +1,7 @@
 
 import axios from 'axios';
 
-import actions from './store/actions';
+import actions from '../store/actions';
 import { user_url, login_url } from './urls';
 
 async function getJSON(url, args = {}) {

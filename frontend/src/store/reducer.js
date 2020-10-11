@@ -11,12 +11,10 @@ const initialState = {
 };
 
 const Reducer = (state, action) => {
-  console.log(action.type, action);
+  console.debug(action.type, action);
   switch (action.type) {
     case actions.SET_USER: {
-      console.log('ACT ON', action)
       const { user, logout_url, token } = action;
-      console.log('ACT ON', user, logout_url, token)
       return {
         ...state,
         user,

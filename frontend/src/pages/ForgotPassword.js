@@ -2,44 +2,37 @@ import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { withNamedStores } from '../store/state';
 
-import { postJSON, fetchToken, loadUser } from '../api/requests';
-import { login_url } from '../api/urls';
+import { postJSON, fetchToken } from '../api/requests';
+import { forgot_password_url } from '../api/urls';
 
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 
-function Login(props) {
+function ForgotPassword(props) {
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState(undefined)
+  const [complete, setComplete] = useState(false)
   const [error, setError] = useState(undefined)
 
-  function login(email, password) {
+  function forgotPassword(email) {
     setError(undefined);
     fetchToken().then((token) => {
-      console.debug('Get user data', token);
       postJSON(
-        login_url,
-        { email, password },
-        { headers: { 'X-CSRFToken': token } },
-      ).then((data) => {
-        const { dispatch } = props;
-        loadUser(dispatch, data.user, data.logout_url, data.token)
+        forgot_password_url, { email }, { headers: { 'X-CSRFToken': token } },
+      ).then(() => {
+        setComplete(true)
       }).catch((error) => {
-        console.error('Could not log in', error);
-        setError("Sorry we couldn't log you in at this time, please check email and password.");
+        console.error('Could not reset password', error);
+        setError('Sorry we could not reset your password at this time. Please try again in a few minutes.');
       });
-    }).catch((error) => {
-      console.error('Could not log in', error);
-      setError("Sorry we couldn't log you in at this time.");
     });
   }
 
   function click(e) {
     e.preventDefault();
-    login(email, password)
+    forgotPassword(email)
   }
 
   return (
@@ -51,23 +44,25 @@ function Login(props) {
           <Card.Body>
             <Form onSubmit={click}>
               { error ? <Alert variant="danger">{error}</Alert> : <></> }
-              <Form.Group controlId="formBasicEmail">
+              <Form.Group controlId="formBasicEmail2">
                 <Form.Label>Email address</Form.Label>
                 <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
                 <Form.Text className="text-muted">
                   We'll never share your email with anyone else.
                 </Form.Text>
               </Form.Group>
-              <Form.Group controlId="formBasicPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-              </Form.Group>
-              <Button block variant="primary" type="submit">
-                Login
-              </Button>
+              {
+                complete ?
+                <p>
+                  A password reset email has been sent to the email address.
+                </p> :
+                <Button block variant="primary" type="submit">
+                  Submit Password Reset
+                </Button>
+              }
             </Form>
             <div className="text-center mt-2" >
-              <Link to="/forgot_password">Forgot Password</Link>
+              <Link to="/login">Login</Link>
             </div>
           </Card.Body>
         </Card.Body>
@@ -76,4 +71,4 @@ function Login(props) {
   );
 }
 
-export default withNamedStores(Login, ['dispatch']);
+export default withNamedStores(ForgotPassword, ['dispatch']);

@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 
 import Navbar from 'react-bootstrap/Navbar';
@@ -25,11 +26,19 @@ const App = function (props) {
 
   if (props.user === undefined) {
     return (
-      <div className="main-container">
-        <div className="main-item" style={{height: "100%"}}>
-          <Login />
+      <Router>
+        <div className="main-container">
+          <div className="main-item" style={{height: "100%"}}>
+            <Switch>
+              <Route exact path="/"><Login /></Route>
+              <Route path="/login"><Login /></Route>
+              <Route path="/forgot_password">
+                <ForgotPassword />
+              </Route>
+            </Switch>
+          </div>
         </div>
-      </div>
+      </Router>
     )
   }
 
@@ -46,15 +55,12 @@ const App = function (props) {
           </Nav>
           <Form inline>
             <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-            <Button variant="outline-info">Search</Button>
+            <Button variant="outline-primary">Search</Button>
           </Form>
         </Navbar>
 
         <div className="main-item" style={{height: "100%"}}>
           <Switch>
-            <Route path="/login">
-              <Login />
-            </Route>
             <Route path="/">
               <Dashboard />
             </Route>
