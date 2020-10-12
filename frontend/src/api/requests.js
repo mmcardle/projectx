@@ -46,11 +46,10 @@ async function getUserData(dispatch) {
     dispatch({
       type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token,
     });
-    dispatch({
-      type: actions.SET_LOADED
-    });
+    dispatch({type: actions.SET_LOADED});
     return Promise.resolve(data);
   } catch (error) {
+    dispatch({type: actions.SET_LOADED});
     return Promise.reject(error);
   }
 }

@@ -5,6 +5,8 @@ import { withNamedStores } from '../store/state';
 import { postJSON, fetchToken } from '../api/requests';
 import { forgot_password_url } from '../api/urls';
 
+import CentralContainer from '../containers/CentralContainer'
+
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
@@ -12,7 +14,7 @@ import Button from 'react-bootstrap/Button';
 
 function ForgotPassword(props) {
 
-  const [email, setEmail] = useState(undefined)
+  const [email, setEmail] = useState("")
   const [complete, setComplete] = useState(false)
   const [error, setError] = useState(undefined)
 
@@ -36,15 +38,15 @@ function ForgotPassword(props) {
   }
 
   return (
-    <div className="central-container mt-5">
-      <Card className="central-item" bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
+    <CentralContainer>
+      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
         <Card.Img variant="top" src="logo.svg" className="p-2 w-50 m-auto" />
         <Card.Body>
           <Card.Title className="text-center display-3">Project X</Card.Title>
           <Card.Body>
             <Form onSubmit={click}>
               { error ? <Alert variant="danger">{error}</Alert> : <></> }
-              <Form.Group controlId="formBasicEmail2">
+              <Form.Group controlId="forgotPasswordEmail">
                 <Form.Label>Email address</Form.Label>
                 <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
                 <Form.Text className="text-muted">
@@ -53,21 +55,21 @@ function ForgotPassword(props) {
               </Form.Group>
               {
                 complete ?
-                <p>
+                <Alert variant="info">
                   A password reset email has been sent to the email address.
-                </p> :
+                </Alert> :
                 <Button block variant="primary" type="submit">
                   Submit Password Reset
                 </Button>
               }
             </Form>
             <div className="text-center mt-2" >
-              <Link to="/login">Login</Link>
+              <Link to="/login" className="text-muted">Back to Login</Link>
             </div>
           </Card.Body>
         </Card.Body>
       </Card>
-    </div>
+    </CentralContainer>
   );
 }
 

@@ -7,19 +7,22 @@ import {
   Link
 } from "react-router-dom";
 
-import { getUserData } from './api/requests';
 
 import Login from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 
+import actions from './store/actions';
+import { getUserData } from './api/requests';
+import { postJSON, fetchToken } from './api/requests';
+import { withNamedStores } from './store/state';
+
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Form from 'react-bootstrap/Form'       
 import Button from 'react-bootstrap/Button'     
-import FormControl from 'react-bootstrap/FormControl'
-
-import { withNamedStores } from './store/state';
+import NotFound from './pages/NotFound';
+import PasswordReset from './pages/PasswordReset';
 
 import './App.css';
 
@@ -57,15 +60,31 @@ const App = function (props) {
             <Switch>
               <Route exact path="/"><Login /></Route>
               <Route path="/login"><Login /></Route>
-              <Route path="/forgot_password">
-                <ForgotPassword />
-              </Route>
+              <Route path="/forgot_password"><ForgotPassword /></Route>
+              <Route path="/password_reset/:reset_key"><PasswordReset /></Route>
+              <Route path="*"><NotFound /></Route>
             </Switch>
           </div>
         </div>
       </Router>
     )
   }
+
+  function logout(e) {
+    e.preventDefault();
+    fetchToken().then((token) => {
+      postJSON(
+        props.logout_url, {}, { headers: { 'X-CSRFToken': token } },
+      ).then(() => {
+        props.dispatch({ type: actions.SET_LOGGED_OUT });
+        setLoadingUser(true)
+        getUserData(props.dispatch)
+      }).catch((error) => {
+        console.log('Could not log out', error);
+      });
+    });
+  }
+
 
   return (
     <Router>
@@ -78,9 +97,8 @@ const App = function (props) {
           <Nav className="mr-auto">
             <Nav.Link to="/" as={Link}>Dashboard</Nav.Link>
           </Nav>
-          <Form inline>
-            <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-            <Button variant="outline-primary">Search</Button>
+          <Form inline onSubmit={logout}>
+            <Button variant="outline-secondary" type="submit">Logout</Button>
           </Form>
         </Navbar>
 
@@ -89,6 +107,7 @@ const App = function (props) {
             <Route path="/">
               <Dashboard />
             </Route>
+            <Route path="*"><NotFound /></Route>
           </Switch>
         </div>
       </div>
@@ -96,4 +115,4 @@ const App = function (props) {
   );
 }
 
-export default withNamedStores(App, ['user', 'loading', 'dispatch']);
+export default withNamedStores(App, ['user', 'loading', 'dispatch', 'logout_url']);

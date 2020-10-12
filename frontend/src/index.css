@@ -103,4 +103,5 @@ a:hover {
   -webkit-align-self: auto;
   -ms-flex-item-align: auto;
   align-self: auto;
+  min-width: 25%;
 }

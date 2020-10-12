@@ -5,6 +5,8 @@ import { withNamedStores } from '../store/state';
 import { postJSON, fetchToken, loadUser } from '../api/requests';
 import { login_url } from '../api/urls';
 
+import CentralContainer from '../containers/CentralContainer'
+
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
@@ -43,22 +45,22 @@ function Login(props) {
   }
 
   return (
-    <div className="central-container mt-5">
-      <Card className="central-item" bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
+    <CentralContainer>
+      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
         <Card.Img variant="top" src="logo.svg" className="p-2 w-50 m-auto" />
         <Card.Body>
           <Card.Title className="text-center display-3">Project X</Card.Title>
           <Card.Body>
             <Form onSubmit={click}>
               { error ? <Alert variant="danger">{error}</Alert> : <></> }
-              <Form.Group controlId="formBasicEmail">
+              <Form.Group controlId="loginEmail">
                 <Form.Label>Email address</Form.Label>
                 <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
                 <Form.Text className="text-muted">
                   We'll never share your email with anyone else.
                 </Form.Text>
               </Form.Group>
-              <Form.Group controlId="formBasicPassword">
+              <Form.Group controlId="loginPassword">
                 <Form.Label>Password</Form.Label>
                 <Form.Control required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
               </Form.Group>
@@ -72,7 +74,7 @@ function Login(props) {
           </Card.Body>
         </Card.Body>
       </Card>
-    </div>
+    </CentralContainer>
   );
 }
 

@@ -33,8 +33,8 @@ const Reducer = (state, action) => {
       };
     }
     case actions.SET_LOGGED_OUT: {
-      const { websocket } = state;
-      websocket.close();
+      //const { websocket } = state;
+      //websocket.close();
       return {
         ...initialState,
       };
