@@ -63,11 +63,7 @@ function PasswordReset(props) {
     }
     
     setUpdatingPassword(true)
-    const params = {
-      reset_key,
-      password1,
-      password2,
-    };
+    const params = { reset_key, password1, password2 };
 
     fetchToken().then((token) => {
       postJSON(
@@ -82,105 +78,70 @@ function PasswordReset(props) {
     });
   }
 
-  if (error) {
+
+  const toCentral = (component) => {
     return (
       <CentralContainer>
-        <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
+        <Card bg="dark" text="white" border="secondary" >
           <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
           <Card.Body>
             <Card.Title className="text-center display-3">Project X</Card.Title>
-            <Card.Body className="text-center">
-              <Alert variant="danger">{error}</Alert>
-              <div className="text-center mt-2" >
-                <Link to="/forgot_password">Forgot Password</Link>
-              </div>
+            <Card.Body>
+              {component}
             </Card.Body>
           </Card.Body>
         </Card>
       </CentralContainer>
+    )
+  }
+
+  if (error) {
+    return toCentral(
+      <>
+        <Alert variant="danger">{error}</Alert>
+        <div className="text-center mt-2" >
+          <Link to="/forgot_password">Forgot Password</Link>
+        </div>
+      </>
     )
   }
 
   if (loadingResetKey && !email) {
-    return (
-      <CentralContainer>
-      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
-        <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
-        <Card.Body>
-          <Card.Title className="text-center display-3">Project X</Card.Title>
-          <Card.Body className="text-center">
-            Loading...
-          </Card.Body>
-        </Card.Body>
-      </Card>
-    </CentralContainer>
-    )
+    return toCentral(<div className="text-center">Loading...</div>)
   }
 
-  if (updatingPassword) {
-    return (
-      <CentralContainer>
-      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
-        <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
-        <Card.Body>
-          <Card.Title className="text-center display-3">Project X</Card.Title>
-          <Card.Body className="text-center">
-            Updating Password...
-          </Card.Body>
-        </Card.Body>
-      </Card>
-    </CentralContainer>
-    )
+  if (updatingPassword && !email) {
+    return toCentral( <div className="text-center">Updating Password....</div>)
   }
 
   if (complete) {
-    return (
-      <CentralContainer>
-        <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
-          <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
-          <Card.Body>
-            <Card.Title className="text-center display-3">Project X</Card.Title>
-            <Card.Body className="text-center">
-              <Alert variant="info">
-                Your password has been rest. You may now <Link className="text-muted" to="/login">Login</Link>
-              </Alert> 
-            </Card.Body>
-          </Card.Body>
-        </Card>
-      </CentralContainer>
+    return toCentral(
+      <Alert variant="info">
+        Your password has been reset. You may now <Link className="text-muted" to="/">Login</Link>.
+      </Alert> 
     )
   }
-
-  return (
-    <CentralContainer>
-      <Card bg="dark" text="white" border="secondary" >
-        <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
-        <Card.Body>
-          <Card.Title className="text-center display-3">Project X</Card.Title>
-          <Card.Body>
-            <Form onSubmit={click}>
-              { passwordError ? <Alert variant="danger">{passwordError}</Alert> : <></> }
-              <Form.Group controlId="passwordResetEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control autoComplete="email" readOnly type="email" placeholder="Enter email" value={email ||""} onChange={e => setEmail(e.target.value)} />
-              </Form.Group>
-              <Form.Group controlId="passwordResetPassword1">
-                <Form.Label>Password</Form.Label>
-                <Form.Control autoComplete="new-password" required type="password" placeholder="Password" value={password1} onChange={e => setPassword1(e.target.value)} />
-              </Form.Group>
-              <Form.Group controlId="passwordResetPassword2">
-                <Form.Label>Password Again</Form.Label>
-                <Form.Control autoComplete="new-password" required type="password" placeholder="Password Again" value={password2} onChange={e => setPassword2(e.target.value)} />
-              </Form.Group>
-              <Button block variant="primary" type="submit">
-                Update Password
-              </Button>
-            </Form>
-          </Card.Body>
-        </Card.Body>
-      </Card>
-    </CentralContainer>
-  );
+  
+  return toCentral(
+    <Form onSubmit={click}>
+      { passwordError ? <Alert variant="danger">{passwordError}</Alert> : <></> }
+      <Form.Group controlId="passwordResetEmail">
+        <Form.Label>Email address</Form.Label>
+        <Form.Control autoComplete="email" readOnly type="email" placeholder="Loading Email..." value={email ||""} onChange={e => setEmail(e.target.value)} />
+      </Form.Group>
+      <Form.Group controlId="passwordResetPassword1">
+        <Form.Label>Password</Form.Label>
+        <Form.Control autoComplete="new-password" required type="password" placeholder="Password" value={password1} onChange={e => setPassword1(e.target.value)} />
+      </Form.Group>
+      <Form.Group controlId="passwordResetPassword2">
+        <Form.Label>Password Again</Form.Label>
+        <Form.Control autoComplete="new-password" required type="password" placeholder="Password Again" value={password2} onChange={e => setPassword2(e.target.value)} />
+      </Form.Group>
+      <Button block variant="primary" type="submit">
+        Update Password
+      </Button>
+    </Form>
+  )
 }
 
 export default withNamedStores(PasswordReset, ['dispatch']);

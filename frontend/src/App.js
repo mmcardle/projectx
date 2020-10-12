@@ -104,9 +104,7 @@ const App = function (props) {
 
         <div className="main-item" style={{height: "100%"}}>
           <Switch>
-            <Route path="/">
-              <Dashboard />
-            </Route>
+            <Route exact path="/"><Dashboard /></Route>
             <Route path="*"><NotFound /></Route>
           </Switch>
         </div>
