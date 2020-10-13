@@ -117,7 +117,7 @@ ASGI_APPLICATION = "projectx.routing.application"
 CHANNELS_REDIS_URL = env.url("CHANNELS_REDIS_URL")
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "cv2.channel_layer.CV2RedisChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [(CHANNELS_REDIS_URL.hostname, CHANNELS_REDIS_URL.port)],
             "capacity": 500,  # default 100

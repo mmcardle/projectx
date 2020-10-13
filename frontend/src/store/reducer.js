@@ -15,26 +15,27 @@ const Reducer = (state, action) => {
   switch (action.type) {
     case actions.SET_USER: {
       const { user, logout_url, token } = action;
+      const websocket = create_websocket();
       return {
         ...state,
         user,
         logout_url,
         token,
+        loaded: true,
+        websocket,
       };
     }
     case actions.SET_LOADED: {
-      // TODO websocket
-      console.log('TODO Need to call', create_websocket)
-      //const websocket = create_websocket();
+      const websocket = create_websocket();
       return {
         ...state,
         loaded: true,
-        //websocket,
+        websocket,
       };
     }
     case actions.SET_LOGGED_OUT: {
-      //const { websocket } = state;
-      //websocket.close();
+      const { websocket } = state;
+      if (websocket) websocket.close();
       return {
         ...initialState,
       };

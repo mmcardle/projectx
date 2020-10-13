@@ -3,6 +3,8 @@ import calendar
 import json
 import logging
 
+from asgiref.sync import AsyncToSync
+from channels.layers import get_channel_layer
 from django.core import signing
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.db import models
@@ -135,6 +137,12 @@ class User(AbstractUser, IndexedTimeStampedModel):
             message,
             settings.DEFAULT_FROM_EMAIL,
             [self.email]
+        )
+
+    def send_data_to_user(self, data):
+        payload = json.dumps(data)
+        AsyncToSync(get_channel_layer().group_send)(
+            self.unique_name(), {"type": "user.message", "data": payload}
         )
 
     @classmethod
