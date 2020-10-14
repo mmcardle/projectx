@@ -122,7 +122,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         port = ":8000" if settings.DEBUG else ""
 
         message = emails.reset_password.format(
-            title="Clearview2 Password Reset",
+            title="ProjectX Password Reset",
             expiration="%s hours" % MAX_PASSWORD_RESET_HOURS,
             schema=schema,
             site=settings.PUBLIC_IP,

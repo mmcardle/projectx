@@ -12,7 +12,7 @@ x-environment:
 services:
 
   projectx:
-    hostname: clearview
+    hostname: projectx
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -39,8 +39,10 @@ services:
       - "3000:3000"
     depends_on: 
       - projectx
+    environment:
+      PROJECTX_HOST: "projectx:8000"
     volumes:
-      - ./frontend/:/app/
+      - ./frontend/src/:/frontend/src/
 
   postgres:
     hostname: postgres

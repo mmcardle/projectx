@@ -25,6 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = [PUBLIC_IP]
 
+if DEBUG:
+    ALLOWED_HOSTS.append("projectx")  # Allows connections from internal docker services
+
 # Application definition
 INSTALLED_APPS = [
     'django_su',
