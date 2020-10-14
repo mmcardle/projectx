@@ -89,6 +89,9 @@ deployments:
       service:
         ports:
         - port: 6379
+commands:
+  - name: manage
+    command: "devspace enter -c projectx --image app /home/user/venv/bin/python /home/user/backend/app/manage.py"
 dev:
   ports:
   - imageName: app
@@ -101,14 +104,10 @@ dev:
   - url: http://127.0.0.1:8000
   sync:
   - imageName: app
+    containerPath: /home/user/backend/app/
+    localSubPath: ./backend/app/
     excludePaths:
-    - .git/
-    uploadExcludePaths:
-    - '**'
-    - '!/backend/'
-    - '!/frontend/'
-    - /frontend/node_modules/
-    - devspace.yaml
+      - .git/
     onUpload:
       restartContainer: true
 profiles:

@@ -20,32 +20,31 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
 
 RUN groupadd user && useradd --create-home --home-dir /home/user -g user user
 
-WORKDIR /home/user/app/
+WORKDIR /home/user/
 
 ##### Installing pip wheel virtualenv circus
 RUN python3.8 -m pip install -U pip
 RUN python3.8 -m pip install pip wheel virtualenv circus pip-tools
 
 ##### Creating virtualenv at /home/user/venv
-RUN virtualenv -p python3.8 /home/user/venv
+RUN virtualenv -p python3.8 venv
 
-COPY backend/requirements/requirements.in ./
+COPY backend/requirements/requirements.in backend/requirements/requirements.in
 
-RUN pip-compile requirements.in > requirements.txt
-RUN /home/user/venv/bin/pip install -r requirements.txt
+RUN pip-compile backend/requirements/requirements.in > backend/requirements/requirements.txt
+RUN /home/user/venv/bin/pip install -r backend/requirements/requirements.txt
 
-COPY backend/app/ /home/user/app/
-RUN chown -R user:user /home/user/app/
+COPY backend/app/ ./backend/app/
+RUN chown -R user:user /home/user/backend/
 
 ##### Adding configuration files ######
-RUN rm /etc/nginx/sites-enabled/default
-COPY backend/config/nginx.conf /etc/nginx/nginx.conf
-COPY backend/config/backend-nginx.conf /etc/nginx/sites-enabled/backend-nginx.conf
-COPY backend/config/general-security-headers.conf /etc/nginx/snippets/general-security-headers.conf
-COPY backend/config/uwsgi.ini /home/user/config/uwsgi.ini
-COPY backend/config/circus.ini /home/user/config/circus.ini
-COPY backend/config/start.sh /home/user/start.sh
-RUN chmod +x /home/user/start.sh
+COPY backend/config/ /home/user/config/
+RUN rm /etc/nginx/sites-enabled/default /etc/nginx/nginx.conf
+RUN ln -s /home/user/config/nginx.conf /etc/nginx/nginx.conf
+RUN ln -s /home/user/config/backend-nginx.conf /etc/nginx/sites-enabled/backend-nginx.conf
+RUN ln -s /home/user/config/general-security-headers.conf /etc/nginx/snippets/general-security-headers.conf
+
+RUN chmod +x /home/user/config/start.sh
 
 RUN mkdir -p /var/www/
 RUN chown -R user:user /var/www/
@@ -63,8 +62,8 @@ RUN \
   CHANNELS_REDIS_URL="redis://redis:6379/20"\
   CACHE_URL="redis://redis:6379/1"\
   PUBLIC_IP="127.0.0.1"\
-  /home/user/venv/bin/python /home/user/app/manage.py collectstatic
+  /home/user/venv/bin/python /home/user/backend/app/manage.py collectstatic
 
 USER user
 
-CMD /home/user/start.sh
+CMD /home/user/config/start.sh
