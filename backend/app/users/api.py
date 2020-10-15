@@ -20,6 +20,7 @@ from . import models, validation
 
 logger = logging.getLogger(__name__)
 
+register_schema = validation.RegisterSchema()
 reset_password_schema = validation.ResetPasswordSchema()
 reset_check_schema = validation.ResetCheckSchema()
 
@@ -77,6 +78,77 @@ def logout(request):
     django_logout(request)
     return JsonResponse({"success": True})
 
+
+@require_http_methods(["POST"])
+def activate(request):
+
+    payload = json.loads(request.body)
+    key = payload.get("activation_key")
+
+    if key is None:
+        return JsonResponse(
+            {"error": "No key in post body"}, status=401
+        )
+
+    user, error = models.User.check_activation_key(key)
+    if user is None:
+        # User has failed activation check
+        # Check if the token has expired
+        expired_user, expired_error = models.User.check_activation_key(
+            key, max_age=None
+        )
+        if expired_user:
+            expired_user.send_activation_email(request)
+            return JsonResponse({
+                "error": (
+                    "That token has expired. A new email has been sent"
+                    "to your address. PLease click on the new "
+                    "link in the email."
+                ),
+            }, status=401)
+
+        return JsonResponse({"error": error}, status=401)
+
+    if user.is_active:
+        return JsonResponse(
+            {
+                "is_active": True,
+                "error": "User is already active."
+            },
+            status=400
+        )
+    else:
+        user.activate()
+
+    return JsonResponse(user.to_json())
+
+
+@require_http_methods(["POST"])
+def register(request):
+
+    try:
+        register_data = load_data_from_schema(
+            register_schema, json.loads(request.body)
+        )
+    except SchemaError as e:
+        return JsonResponse(
+            {"error": True, "errors": e.errors}, status=401
+        )
+
+    existing_user = models.User.objects.filter(
+        email__iexact=register_data.get("email")
+    ).exists()
+
+    if existing_user:
+        errors = {"email": ["This email is already registered"]}
+        return JsonResponse(
+            {"error": True, "errors": errors}, status=401
+        )
+
+    new_user = models.User.create_inactive_user(register_data)
+    new_user.send_activation_email(request)
+
+    return JsonResponse(new_user.to_json())
 
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)

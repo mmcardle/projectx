@@ -9,7 +9,6 @@ import CentralContainer from '../containers/CentralContainer'
 
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 
 function Login(props) {
@@ -46,34 +45,30 @@ function Login(props) {
 
   return (
     <CentralContainer>
-      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
-        <Card.Img variant="top" src="logo.svg" className="p-2 w-50 m-auto" />
-        <Card.Body>
-          <Card.Title className="text-center display-3">Project X</Card.Title>
-          <Card.Body>
-            <Form onSubmit={click}>
-              { error ? <Alert variant="danger">{error}</Alert> : <></> }
-              <Form.Group controlId="loginEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
-                <Form.Text className="text-muted">
-                  We'll never share your email with anyone else.
-                </Form.Text>
-              </Form.Group>
-              <Form.Group controlId="loginPassword">
-                <Form.Label>Password</Form.Label>
-                <Form.Control required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-              </Form.Group>
-              <Button block variant="primary" type="submit">
-                Login
-              </Button>
-            </Form>
-            <div className="text-center mt-2" >
-              <Link to="/forgot_password">Forgot Password</Link>
-            </div>
-          </Card.Body>
-        </Card.Body>
-      </Card>
+      <Form onSubmit={click}>
+        { error ? <Alert variant="danger">{error}</Alert> : <></> }
+        <Form.Group controlId="loginEmail">
+          <Form.Label>Email address</Form.Label>
+          <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
+        </Form.Group>
+        <Form.Group controlId="loginPassword">
+          <Form.Label>Password</Form.Label>
+          <Form.Control required type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
+        </Form.Group>
+        <Button block variant="primary" type="submit">
+          Login
+        </Button>
+      </Form>
+      <div className="text-center mt-2">
+        <Link to="/register">
+          <Button block variant="secondary">
+            <span>Register Account</span>
+          </Button>
+        </Link>
+      </div>
+      <div className="text-center mt-2">
+        <Link to="/forgot_password">Forgot Password</Link>
+      </div>
     </CentralContainer>
   );
 }

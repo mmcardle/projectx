@@ -1,23 +1,17 @@
 version: v1beta9
 images:
   app:
-    image: devspace
+    image: mmc4rdle/projectx-backend
     dockerfile: ./backend/Dockerfile
     preferSyncOverRebuild: true
     injectRestartHelper: true
     appendDockerfileInstructions:
     - USER root
-    build:
-      docker:
-        skipPush: true
   frontend:
-    image: frontend
+    image: mmc4rdle/projectx-frontend
     dockerfile: ./frontend/Dockerfile
     preferSyncOverRebuild: true
     injectRestartHelper: true
-    build:
-      docker:
-        skipPush: true
 deployments:
 - name: projectx
   helm:
@@ -41,7 +35,7 @@ deployments:
           value: redis://redis:6379/0
         - name: CACHE_URL
           value: redis://redis:6379/1
-        image: devspace
+        image: mmc4rdle/projectx-backend
       service:
         ports:
         - port: 8000
@@ -60,7 +54,7 @@ deployments:
           value: "true"
         - name: HOST
           value: "127.0.0.1"
-        image: frontend
+        image: mmc4rdle/projectx-frontend
       service:
         ports:
         - port: 3000

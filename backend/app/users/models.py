@@ -5,8 +5,9 @@ import logging
 
 from asgiref.sync import AsyncToSync
 from channels.layers import get_channel_layer
+from common.models import IndexedTimeStampedModel
 from django.core import signing
-from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
@@ -19,19 +20,23 @@ from . import emails
 logger = logging.getLogger(__name__)
 
 REDIS_PASSWORD_RESET_KEY = "password_reset"
+
+ACTIVATION_SALT = "account_activation"
 PASSWORD_RESET_SALT = "password_reset"
+
 MAX_PASSWORD_RESET_HOURS = 24
 MAX_PASSWORD_RESET_SECONDS = 60 * 60 * MAX_PASSWORD_RESET_HOURS
 
-from common.models import IndexedTimeStampedModel
-
-from django.contrib.auth.models import BaseUserManager
+MAX_ACTIVATION_HOURS = 24
+MAX_ACTIVATION_SECONDS = 60 * 60 * MAX_ACTIVATION_HOURS
 
 
 class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **kwargs):
         email = self.normalize_email(email)
+        if "username" not in kwargs:
+            kwargs["username"] = email
         user = self.model(email=email, **kwargs)
         user.set_password(password)
         user.save(using=self._db)
@@ -102,6 +107,10 @@ class User(AbstractUser, IndexedTimeStampedModel):
         if self.last_login:
             return self.last_login.isoformat()
 
+    def activate(self):
+        self.is_active = True
+        self.save()
+
     def reset_password(self):
 
         key = signing.dumps(
@@ -151,7 +160,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         redis_connection.hdel(REDIS_PASSWORD_RESET_KEY, key)
 
     @classmethod
-    def email_in_error(cle, email):
+    def email_in_error(cls, email):
         """
         If we get to here there are multiple users with emails
         with different cases e.g. (USER@example.com, user@example.com)
@@ -215,3 +224,51 @@ class User(AbstractUser, IndexedTimeStampedModel):
                 return user, ""
         except BadSignature:
             return None, "Bad Signature"
+
+    @classmethod
+    def check_activation_key(cls, key, max_age=MAX_ACTIVATION_SECONDS):
+        try:
+            user_data = signing.loads(
+                key, salt=ACTIVATION_SALT,
+                max_age=max_age
+            )
+            try:
+                user = cls.objects.get(email=user_data["email"])
+                return user, ""
+            except cls.DoesNotExist:
+                return None, "No such user"
+        except BadSignature:
+            return None, "Bad Signature"
+
+    def send_activation_email(self, request):
+
+        key = signing.dumps(
+            {"email": self.email}, salt=ACTIVATION_SALT
+        )
+
+        url = request.build_absolute_uri("/activate/%s" % key)
+
+        message = emails.account_activation.format(
+            expiration="%s hours" % MAX_ACTIVATION_HOURS,
+            url=url
+        )
+
+        subject = "Activate email %s" % self.email
+
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.email]
+        )
+
+    @classmethod
+    def create_inactive_user(cls, user_data):
+        user = cls.objects.create_user(
+            email=user_data["email"],
+            password=user_data["password1"],
+            first_name=user_data["first_name"],
+            last_name=user_data["last_name"],
+            is_active=False
+        )
+        return user

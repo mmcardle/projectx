@@ -1,7 +1,4 @@
 
-import actions from './store/actions';
-
-
 const create_websocket = () => {
   const wsprotocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
   const ws_url = `${wsprotocol + window.location.hostname}:${window.location.port}/ws/`;
@@ -19,7 +16,7 @@ const setup_websocket = (ws, dispatch) => {
     const msg = evt.data;
     const jsonMsg = JSON.parse(msg);
     if (jsonMsg.SOME_MESSAGE) {
-      dispatch({ type: actions.SET_USER, payload: jsonMsg });
+      //dispatch({ type: actions.SET_USER, payload: jsonMsg });
     } else {
       console.debug('Unknown message', jsonMsg);
     }

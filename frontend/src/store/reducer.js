@@ -26,11 +26,9 @@ const Reducer = (state, action) => {
       };
     }
     case actions.SET_LOADED: {
-      const websocket = create_websocket();
       return {
         ...state,
         loaded: true,
-        websocket,
       };
     }
     case actions.SET_LOGGED_OUT: {

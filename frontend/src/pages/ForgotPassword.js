@@ -9,7 +9,6 @@ import CentralContainer from '../containers/CentralContainer'
 
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 
 function ForgotPassword(props) {
@@ -39,36 +38,28 @@ function ForgotPassword(props) {
 
   return (
     <CentralContainer>
-      <Card bg="dark" text="white" border="secondary" style={{ width: '25rem' }} >
-        <Card.Img variant="top" src="logo.svg" className="p-2 w-50 m-auto" />
-        <Card.Body>
-          <Card.Title className="text-center display-3">Project X</Card.Title>
-          <Card.Body>
-            <Form onSubmit={click}>
-              { error ? <Alert variant="danger">{error}</Alert> : <></> }
-              <Form.Group controlId="forgotPasswordEmail">
-                <Form.Label>Email address</Form.Label>
-                <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
-                <Form.Text className="text-muted">
-                  We'll never share your email with anyone else.
-                </Form.Text>
-              </Form.Group>
-              {
-                complete ?
-                <Alert variant="info">
-                  A password reset email has been sent to the email address.
-                </Alert> :
-                <Button block variant="primary" type="submit">
-                  Submit Password Reset
-                </Button>
-              }
-            </Form>
-            <div className="text-center mt-2" >
-              <Link to="/login" className="text-muted">Back to Login</Link>
-            </div>
-          </Card.Body>
-        </Card.Body>
-      </Card>
+      <Form onSubmit={click}>
+        { error ? <Alert variant="danger">{error}</Alert> : <></> }
+        <Form.Group controlId="forgotPasswordEmail">
+          <Form.Label>Email address</Form.Label>
+          <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
+          <Form.Text className="text-muted">
+            We'll never share your email with anyone else.
+          </Form.Text>
+        </Form.Group>
+        {
+          complete ?
+          <Alert variant="info">
+            A password reset email has been sent to the email address.
+          </Alert> :
+          <Button block variant="primary" type="submit">
+            Submit Password Reset
+          </Button>
+        }
+      </Form>
+      <div className="text-center mt-2" >
+        <Link to="/login" className="text-muted">Back to Login</Link>
+      </div>
     </CentralContainer>
   );
 }

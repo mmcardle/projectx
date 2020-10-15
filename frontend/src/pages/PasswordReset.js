@@ -10,7 +10,6 @@ import CentralContainer from '../containers/CentralContainer'
 
 import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 
 
@@ -82,15 +81,7 @@ function PasswordReset(props) {
   const toCentral = (component) => {
     return (
       <CentralContainer>
-        <Card bg="dark" text="white" border="secondary" >
-          <Card.Img variant="top" src="../logo.svg" className="p-2 w-50 m-auto" />
-          <Card.Body>
-            <Card.Title className="text-center display-3">Project X</Card.Title>
-            <Card.Body>
-              {component}
-            </Card.Body>
-          </Card.Body>
-        </Card>
+        {component}
       </CentralContainer>
     )
   }

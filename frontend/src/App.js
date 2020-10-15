@@ -4,13 +4,15 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link
+  Link,
+  Redirect
 } from "react-router-dom";
 
-
-import Login from './pages/Login'
-import ForgotPassword from './pages/ForgotPassword'
-import Dashboard from './pages/Dashboard'
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Activate from './pages/Activate';
+import ForgotPassword from './pages/ForgotPassword';
+import Dashboard from './pages/Dashboard';
 
 import actions from './store/actions';
 import { getUserData } from './api/requests';
@@ -60,6 +62,8 @@ const App = function (props) {
             <Switch>
               <Route exact path="/"><Login /></Route>
               <Route path="/login"><Login /></Route>
+              <Route path="/register"><Register /></Route>
+              <Route path="/activate/:activation_key"><Activate /></Route>
               <Route path="/forgot_password"><ForgotPassword /></Route>
               <Route path="/password_reset/:reset_key"><PasswordReset /></Route>
               <Route path="*"><NotFound /></Route>
@@ -104,6 +108,8 @@ const App = function (props) {
 
         <div className="main-item" style={{height: "100%"}}>
           <Switch>
+            <Route path="/activate/:activation_key"><Activate /></Route>
+            <Route path="/login"><Redirect push to="/" /></Route>
             <Route exact path="/"><Dashboard /></Route>
             <Route path="*"><NotFound /></Route>
           </Switch>
