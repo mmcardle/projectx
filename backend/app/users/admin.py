@@ -22,13 +22,14 @@ class ProjectXUserAdmin(UserAdmin):
     actions = [send_activation_email]
 
     readonly_fields = ("public_uuid", "modified", "created")
-    list_display = ("public_uuid", "email", "is_active", "is_staff", "created", "modified")
+    list_display = ("public_uuid", "email", "display_name", "is_active", "is_staff", "created", "modified")
     list_filter = ("is_active", "is_staff", "groups")
     search_fields = ("email", "public_uuid")
     ordering = ("email",)
 
     fieldsets = (
         (None, {"fields": ("email", "password")}),
+        ("Details", {"fields": ("first_name", "last_name")}),
         (
             "Permissions",
             {"fields": ("is_active", "is_staff", "is_superuser")},

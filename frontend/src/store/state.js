@@ -24,7 +24,6 @@ function useUserStore() {
     user: store.user,
     websocket: store.websocket,
     loaded: store.loaded,
-    current_project: store.current_project,
     logout_url: store.logout_url,
   };
 }

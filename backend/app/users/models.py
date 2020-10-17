@@ -60,11 +60,8 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     objects = UserManager()
     
-    def get_full_name(self):
-        return self.email
-
-    def get_short_name(self):
-        return self.email
+    def display_name(self):
+        return self.get_full_name()
     
     def __str__(self):
         return "%s" % self.display_name()
@@ -81,9 +78,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
             self.email.replace("@", "_").replace(".", "_"),
             self.public_id[0:8],
         )
-
-    def display_name(self):
-        return self.get_full_name()
 
     def to_json(self):
         data = {

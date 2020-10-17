@@ -6,6 +6,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 from django.http import HttpResponse, JsonResponse
 from django.template import engines
 from django.urls import reverse
@@ -20,6 +22,8 @@ from . import models, validation
 
 logger = logging.getLogger(__name__)
 
+change_password_schema = validation.ChangePasswordSchema()
+change_details_schema = validation.ChangeDetailsSchema()
 register_schema = validation.RegisterSchema()
 reset_password_schema = validation.ResetPasswordSchema()
 reset_check_schema = validation.ResetCheckSchema()
@@ -74,6 +78,7 @@ def login(request):
         return JsonResponse({"token": _get_token(request)})
 
 
+@login_required
 def logout(request):
     django_logout(request)
     return JsonResponse({"success": True})
@@ -162,6 +167,58 @@ def reset_password(request):
         return JsonResponse({"error": True}, status=401)
 
     models.User.reset_email(email)
+
+    return JsonResponse({})
+
+
+@login_required
+@require_http_methods(["POST"])
+@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+def change_password(request):
+
+    try:
+        change_password_data = load_data_from_schema(
+            change_password_schema, json.loads(request.body)
+        )
+    except SchemaError as e:
+        return JsonResponse(
+            {"error": True, "errors": e.errors}, status=401
+        )
+
+    current_password = change_password_data["current_password"]
+    user = authenticate(username=request.user.email, password=current_password)
+    if user is not None:
+        password1 = change_password_data["password1"]
+        user.set_password(password1)
+        user.save()
+        update_session_auth_hash(request, user)
+    else:
+        return JsonResponse({
+            "error": True,
+            "errors": {"current_password": ["The current password is incorrect."]}
+        }, status=401)
+
+    return JsonResponse({})
+
+
+@login_required
+@require_http_methods(["POST"])
+@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+def change_details(request):
+
+    try:
+        change_details_data = load_data_from_schema(
+            change_details_schema, json.loads(request.body)
+        )
+    except SchemaError as e:
+        return JsonResponse(
+            {"error": True, "errors": e.errors}, status=401
+        )
+
+    user = request.user
+    user.first_name = change_details_data["first_name"]
+    user.last_name = change_details_data["last_name"]
+    user.save()
 
     return JsonResponse({})
 

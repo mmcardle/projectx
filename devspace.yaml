@@ -7,11 +7,6 @@ images:
     injectRestartHelper: true
     appendDockerfileInstructions:
     - USER root
-  frontend:
-    image: mmc4rdle/projectx-frontend
-    dockerfile: ./frontend/Dockerfile
-    preferSyncOverRebuild: true
-    injectRestartHelper: true
 deployments:
 - name: projectx
   helm:
@@ -21,10 +16,10 @@ deployments:
       - env:
         - name: SECRET_KEY
           value: DEV_SECRET_KEY
-        - name: DEBUG
-          value: "True"
-        - name: PYTHONASYNCIODEBUG
-          value: "True"
+        #- name: DEBUG
+        #  value: "True"
+        #- name: PYTHONASYNCIODEBUG
+        #  value: "True"
         - name: PUBLIC_IP
           value: 127.0.0.1
         - name: DJANGO_SETTINGS_MODULE
@@ -42,22 +37,6 @@ deployments:
       ingress:
         rules:
         - host: projectx
-- name: frontend
-  helm:
-    componentChart: true
-    values:
-      containers:
-      - env:
-        - name: PROJECTX_HOST
-          value: "projectx:8000"
-        - name: CHOKIDAR_USEPOLLING
-          value: "true"
-        - name: HOST
-          value: "127.0.0.1"
-        image: mmc4rdle/projectx-frontend
-      service:
-        ports:
-        - port: 3000
 - name: postgres
   helm:
     componentChart: true
@@ -91,9 +70,6 @@ dev:
   - imageName: app
     forward:
     - port: 8000
-  - imageName: frontend
-    forward:
-    - port: 3000
   open:
   - url: http://127.0.0.1:8000
   sync:
