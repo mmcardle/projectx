@@ -36,6 +36,7 @@ const Reducer = (state, action) => {
       if (websocket) websocket.close();
       return {
         ...initialState,
+        loaded: true,
       };
     }
     default:

@@ -17,7 +17,7 @@ def send_activation_email(_, request, queryset):
         logger.info(message)
 
 
-class UserAdmin(UserAdmin):
+class ProjectXUserAdmin(UserAdmin):
 
     actions = [send_activation_email]
 
@@ -36,4 +36,4 @@ class UserAdmin(UserAdmin):
     )
     add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email", "password1", "password2")}),)
 
-admin.site.register(models.User, UserAdmin)
+admin.site.register(models.User, ProjectXUserAdmin)

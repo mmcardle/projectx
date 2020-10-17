@@ -49,6 +49,18 @@ async function getUserData(dispatch) {
     return Promise.resolve(data);
   } catch (error) {
     dispatch({type: actions.SET_LOADED});
+    return Promise.resolve(error);
+  }
+}
+
+async function logout(dispatch, logout_url) {
+  try {
+    const token = await fetchToken(user_url);
+    await postJSON(logout_url, {}, { headers: { 'X-CSRFToken': token } });
+    dispatch({ type: actions.SET_LOGGED_OUT });
+    return Promise.resolve();
+  } catch (error) {
+    console.log('Could not log out', error);
     return Promise.reject(error);
   }
 }
@@ -60,5 +72,5 @@ async function loadUser(dispatch, user, logout_url, token) {
 }
 
 export {
-  getJSON, postJSON, getUserData, loadUser, fetchToken,
+  getJSON, postJSON, getUserData, loadUser, fetchToken, logout,
 };

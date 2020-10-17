@@ -41,6 +41,8 @@ services:
       - projectx
     environment:
       PROJECTX_HOST: "projectx:8000"
+      CHOKIDAR_USEPOLLING: "true"
+      HOST: "0.0.0.0"
     volumes:
       - ./frontend/src/:/frontend/src/
 

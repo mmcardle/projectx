@@ -98,6 +98,7 @@ def activate(request):
             key, max_age=None
         )
         if expired_user:
+            logger.error(expired_error)
             expired_user.send_activation_email(request)
             return JsonResponse({
                 "error": (

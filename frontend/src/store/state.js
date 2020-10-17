@@ -43,7 +43,6 @@ const storeNames = {
   user:  (Component) => (props) => <Component {...useUserStore()} {...props} />,
   token:  (Component) => (props) => <Component {...useKeyfromStore('token')} {...props} />,
   dispatch: (Component) => (props) => <Component {...useDispatchStore()} {...props} />,
-  loading: (Component) => (props) => <Component {...useKeyfromStore('loading')} {...props} />,
   logout_url: (Component) => (props) => <Component {...useKeyfromStore('logout_url')} {...props} />
 };
 
