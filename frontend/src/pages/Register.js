@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 
-import { postJSON, fetchToken } from '../api/requests';
-import { register_url } from '../api/urls';
+import { register } from '../api/requests';
 
 import CentralContainer from '../containers/CentralContainer'
 
@@ -20,29 +19,15 @@ function Register() {
   const [error, setError] = useState(undefined)
   const [complete, setComplete] = useState(false)
 
-  function register(email, password1, password2) {
+  function click(e) {
+    e.preventDefault();
     setError(undefined);
-    fetchToken().then((token) => {
-      console.debug('Get user data', token);
-      postJSON(
-        register_url,
-        { email, password1, password2, first_name, last_name },
-        { headers: { 'X-CSRFToken': token } },
-      ).then(() => {
-        setComplete(true)
-      }).catch((error) => {
-        console.error('Could not register.', error);
-        setError("Sorry we couldn't register you at this time.");
-      });
+    register(email, password1, password2, first_name, last_name).then(() => {
+      setComplete(true)
     }).catch((error) => {
       console.error('Could not register.', error);
       setError("Sorry we couldn't register you at this time.");
     });
-  }
-
-  function click(e) {
-    e.preventDefault();
-    register(email, password1, password2)
   }
 
   if (complete) {

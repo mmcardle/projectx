@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { withNamedStores } from '../store/state';
 
-import { postJSON, fetchToken } from '../api/requests';
-import { forgot_password_url } from '../api/urls';
+import { forgotPassword } from '../api/requests';
 
 import CentralContainer from '../containers/CentralContainer'
 
@@ -17,23 +16,15 @@ function ForgotPassword(props) {
   const [complete, setComplete] = useState(false)
   const [error, setError] = useState(undefined)
 
-  function forgotPassword(email) {
-    setError(undefined);
-    fetchToken().then((token) => {
-      postJSON(
-        forgot_password_url, { email }, { headers: { 'X-CSRFToken': token } },
-      ).then(() => {
-        setComplete(true)
-      }).catch((error) => {
-        console.error('Could not reset password', error);
-        setError('Sorry we could not reset your password at this time. Please try again in a few minutes.');
-      });
-    });
-  }
-
   function click(e) {
     e.preventDefault();
-    forgotPassword(email)
+    setError(undefined);
+    forgotPassword(email).then(() => {
+      setComplete(true)
+    }).catch((error) => {
+      console.log('Could not reset password', error);
+      setError('Sorry we could not reset your password at this time. Please try again in a few minutes.');
+    })
   }
 
   return (

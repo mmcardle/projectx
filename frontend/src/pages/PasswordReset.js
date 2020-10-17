@@ -3,8 +3,7 @@ import {
   Link, useParams
 } from "react-router-dom";
 import { withNamedStores } from '../store/state';
-import { postJSON, fetchToken } from '../api/requests';
-import { reset_password_check_url, reset_password_complete_url } from '../api/urls';
+import { resetPasswordCheck, resetPasswordComplete } from '../api/requests';
 
 import CentralContainer from '../containers/CentralContainer'
 
@@ -38,17 +37,11 @@ function PasswordReset(props) {
   useEffect(() => {
     if (!loadingResetKey) {
       setLoadingResetKey(true)
-      const params = {reset_key};
-
-      fetchToken().then((token) => {
-        postJSON(
-          reset_password_check_url, params, { headers: { 'X-CSRFToken': token } },
-        ).then((data) => {
-          setEmail(data.email);
-        }).catch((error) => {
-          setError('Sorry, there has been an issue resetting your password. Your token may have expired');
-          console.debug('Could not check reset key', error);
-        });
+      resetPasswordCheck(reset_key).then((data) => {
+        setEmail(data.email);
+      }).catch((error) => {
+        console.debug('Could not check reset key', error);
+        setError('Sorry, there has been an issue resetting your password. Your token may have expired');
       });
     }
   }, [loadingResetKey, reset_key, props.dispatch]);
@@ -62,21 +55,14 @@ function PasswordReset(props) {
     }
     
     setUpdatingPassword(true)
-    const params = { reset_key, password1, password2 };
-
-    fetchToken().then((token) => {
-      postJSON(
-        reset_password_complete_url, params, { headers: { 'X-CSRFToken': token } },
-      ).then(() => {
-        setUpdatingPassword(false)
-        setComplete(true)
-      }).catch((error) => {
-        setError(`Sorry we could not reset your password. ${errorToMessage(error)}`);
-        console.debug('Could not reset email', error);
-      });
+    resetPasswordComplete(reset_key, password1, password2).then(() => {
+      setUpdatingPassword(false)
+      setComplete(true)
+    }).catch((error) => {
+      console.debug('Could not reset your password', error);
+      setError(`Sorry we could not reset your password. ${errorToMessage(error)}`);
     });
   }
-
 
   const toCentral = (component) => {
     return (

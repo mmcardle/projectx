@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { withNamedStores } from '../store/state';
 
-import { postJSON, fetchToken, loadUser } from '../api/requests';
-import { login_url } from '../api/urls';
+import { login } from '../api/requests';
 
 import CentralContainer from '../containers/CentralContainer'
 
@@ -17,30 +16,14 @@ function Login(props) {
   const [password, setPassword] = useState("")
   const [error, setError] = useState(undefined)
 
-  function login(email, password) {
-    setError(undefined);
-    fetchToken().then((token) => {
-      console.debug('Get user data', token);
-      postJSON(
-        login_url,
-        { email, password },
-        { headers: { 'X-CSRFToken': token } },
-      ).then((data) => {
-        const { dispatch } = props;
-        loadUser(dispatch, data.user, data.logout_url, data.token)
-      }).catch((error) => {
-        console.error('Could not log in', error);
-        setError("Sorry we couldn't log you in at this time, please check email and password.");
-      });
-    }).catch((error) => {
-      console.error('Could not log in', error);
-      setError("Sorry we couldn't log you in at this time.");
-    });
-  }
-
   function click(e) {
     e.preventDefault();
-    login(email, password)
+    setError(undefined);
+    login(
+      props.dispatch, email, password
+    ).catch(error => {
+      setError("Sorry we couldn't log you in at this time, please check email and password.");
+    })
   }
 
   return (

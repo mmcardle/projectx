@@ -3,8 +3,7 @@ import {
   Link, useParams
 } from "react-router-dom";
 import { withNamedStores } from '../store/state';
-import { postJSON, fetchToken } from '../api/requests';
-import { activate_url } from '../api/urls';
+import { activate } from '../api/requests';
 
 import CentralContainer from '../containers/CentralContainer'
 
@@ -22,17 +21,11 @@ function PasswordReset(props) {
   useEffect(() => {
     if (!activating) {
       setActivating(true)
-      const params = {activation_key};
-
-      fetchToken().then((token) => {
-        postJSON(
-          activate_url, params, { headers: { 'X-CSRFToken': token } },
-        ).then((data) => {
-          setComplete(true);
-        }).catch((error) => {
-          setError('Sorry, there has been an issue activating your account. Your token may have expired');
-          console.debug('Could not activate account', error);
-        });
+      activate(activation_key).then(() => {
+        setComplete(true);
+      }).catch((error) => {
+        console.error('Could not activate account', error);
+        setError('Sorry, there has been an issue activating your account. Your token may have expired');
       });
     }
   }, [activating, activation_key, props.dispatch]);
