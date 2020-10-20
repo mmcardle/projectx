@@ -8,18 +8,20 @@ import ChangeDetails from './ChangeDetails';
 function Settings(props) {
   return (
     <div className="main-content-item">
-      <Container >
+      <Container className="text-white">
         <Row>
-          <Col className="p-3 my-2 bg-white border rounded">
+          <Col className="p-3 my-1 border border-secondary rounded bg-dark">
             <h1>Settings</h1>
           </Col>
         </Row>
         <Row>
-          <Col sm={4} className="p-3 m-1 bg-white border rounded">
+          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
             <ChangeDetails />
           </Col>
-          <Col sm={4} className="p-3 m-1 bg-white border rounded">
+          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
             <ChangePassword />
+          </Col>
+          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
           </Col>
         </Row>
       </Container>

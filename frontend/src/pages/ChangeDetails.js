@@ -18,15 +18,12 @@ function ChangeDetails(props) {
   const [errors, setErrors] = useState({})
 
   function click(e) {
+    e.preventDefault()
     setError(undefined);
     setErrors({});
-    e.preventDefault()
-
-    changeDetails(first_name, last_name)
-    .then(() => {
+    changeDetails(first_name, last_name).then(() => {
       setComplete(true);
-    })
-    .catch(error => {
+    }).catch(error => {
       if (error.response && error.response.data && error.response.data.errors) {
         setErrors(error.response.data.errors);
       }
