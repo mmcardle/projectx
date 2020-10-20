@@ -7,6 +7,8 @@ images:
     injectRestartHelper: true
     appendDockerfileInstructions:
     - USER root
+    entrypoint:
+      - /home/user/config/start.sh
 deployments:
 - name: projectx
   helm:
@@ -16,12 +18,8 @@ deployments:
       - env:
         - name: SECRET_KEY
           value: DEV_SECRET_KEY
-        #- name: DEBUG
-        #  value: "True"
-        #- name: PYTHONASYNCIODEBUG
-        #  value: "True"
         - name: PUBLIC_IP
-          value: 127.0.0.1
+          value: projectx.blueskyops.kubedev.sh
         - name: DJANGO_SETTINGS_MODULE
           value: projectx.settings
         - name: DATABASE_URL
@@ -31,12 +29,14 @@ deployments:
         - name: CACHE_URL
           value: redis://redis:6379/1
         image: mmc4rdle/projectx-backend
-      service:
-        ports:
-        - port: 8000
       ingress:
         rules:
-        - host: projectx
+        - host: projectx.blueskyops.kubedev.sh
+        tls: true
+      service:
+        ports:
+        - containerPort: 8000
+          port: 80
 - name: postgres
   helm:
     componentChart: true
@@ -62,9 +62,6 @@ deployments:
       service:
         ports:
         - port: 6379
-commands:
-  - name: manage
-    command: "devspace enter -c projectx --image app /home/user/venv/bin/python /home/user/backend/app/manage.py"
 dev:
   ports:
   - imageName: app
@@ -74,12 +71,20 @@ dev:
   - url: http://127.0.0.1:8000
   sync:
   - imageName: app
-    containerPath: /home/user/backend/app/
     localSubPath: ./backend/app/
+    containerPath: /home/user/backend/app/
     excludePaths:
-      - .git/
+    - .git/
     onUpload:
       restartContainer: true
+commands:
+- name: manage
+  command: devspace enter -c projectx --image app /home/user/venv/bin/python /home/user/backend/app/manage.py
+  description: ""
+- name: ingresslogs
+  command: kubectl logs -n ingress-nginx svc/ingress-nginx-controller
+- name: ingressbash
+  command: kubectl exec -n ingress-nginx -i --tty svc/ingress-nginx-controller -- bash
 profiles:
 - name: production
   patches:
