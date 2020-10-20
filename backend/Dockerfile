@@ -68,4 +68,6 @@ RUN \
 
 USER user
 
+EXPOSE 8000
+
 CMD /home/user/config/start.sh
