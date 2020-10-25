@@ -53,7 +53,7 @@ def user(request):
             "logout_url": _get_logout_url(request)
         })
     else:
-        return JsonResponse({"user": None}, status=401)
+        return JsonResponse({"user": None})
 
 
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
