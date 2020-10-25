@@ -21,7 +21,7 @@ function TopNav(props) {
   return (
     <Navbar className="main-item" bg="dark" variant="dark">
       <Navbar.Brand>
-        <Nav.Link as={Link} to="/" className="h4">ProjectX</Nav.Link>
+        <Nav.Link as={Link} to="/" className="h4">{process.env.REACT_APP_PROJECT_TITLE}</Nav.Link>
       </Navbar.Brand>
       <Nav className="mr-auto">
       </Nav>
