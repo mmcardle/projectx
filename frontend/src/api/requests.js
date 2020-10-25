@@ -47,9 +47,14 @@ async function getUserData(dispatch) {
     const data = await getJSON(user_url);
     console.debug('Fetched User Data', data);
     const { user } = data;
-    dispatch({
-      type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token,
-    });
+    if (user) {
+      dispatch({
+        type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token,
+      });
+    } else {
+      dispatch({type: actions.SET_LOADED});
+      return Promise.resolve();
+    }
     return Promise.resolve(data);
   } catch (error) {
     dispatch({type: actions.SET_LOADED});

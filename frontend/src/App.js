@@ -11,7 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Activate from './pages/Activate';
 import ForgotPassword from './pages/ForgotPassword';
-import Dashboard from './pages/Dashboard';
+import Main from './pages/Main';
 import NotFound from './pages/NotFound';
 import PasswordReset from './pages/PasswordReset';
 import SideBar from './pages/SideBar';
@@ -82,7 +82,7 @@ const App = function (props) {
             <Switch>
               <Route path="/activate/:activation_key"><Activate /></Route>
               <Route path="/login"><Redirect push to="/" /></Route>
-              <Route exact path="/"><Dashboard /></Route>
+              <Route exact path="/"><Main /></Route>
               <Route exact path="/settings"><Settings /></Route>
               <Route path="*"><NotFound /></Route>
             </Switch>
