@@ -10,7 +10,10 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({width: 900, height: 680});
-  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+  // TODO - load from a index file and update urls to use absolute url from environment
+  // mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+  mainWindow.loadURL(isDev ? 'http://localhost:3000' : 'https://projectx.blueskyops.com');
+  mainWindow.webContents.openDevTools()
   mainWindow.on('closed', () => mainWindow = null);
 }
 

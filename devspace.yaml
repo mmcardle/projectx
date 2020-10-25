@@ -19,7 +19,7 @@ deployments:
         - name: SECRET_KEY
           value: DEV_SECRET_KEY
         - name: PUBLIC_IP
-          value: projectx.blueskyops.kubedev.sh
+          value: projectx.blueskyops.com
         - name: DJANGO_SETTINGS_MODULE
           value: projectx.settings
         - name: DATABASE_URL
@@ -32,6 +32,7 @@ deployments:
       ingress:
         rules:
         - host: projectx.blueskyops.kubedev.sh
+        - host: projectx.blueskyops.com
         tls: true
       service:
         ports:
