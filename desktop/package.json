@@ -1,0 +1,35 @@
+{
+  "name": "projectx-desktop",
+  "author": "blueskyops.com",
+  "description": "ProjectX Desktop App",
+  "version": "0.1.0",
+  "homepage": "./",
+  "private": true,
+  "dependencies": {
+    "electron-is-dev": "^1.2.0"
+  },
+  "scripts": {
+    "start": "wait-on http://localhost:3000 && electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "main": "public/electron.js",
+  "build": {
+    "appId": "com.blueskyops.projectx-desktop",
+    "files": [
+      "public/**/*",
+      "node_modules/**/*"
+    ],
+    "directories":{
+      "buildResources": "assets"
+    }
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "devDependencies": {
+    "electron": "^10.1.4",
+    "electron-builder": "^22.9.1",
+    "wait-on": "^5.2.0"
+  }
+}
