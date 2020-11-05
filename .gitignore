@@ -133,3 +133,6 @@ dmypy.json
 
 # Ignore DevSpace cache and log folder
 .devspace/
+
+tests/node_modules/
+tests/tests_output/
