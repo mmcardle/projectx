@@ -1,7 +1,17 @@
 {
   "dependencies": {
     "chromedriver": "^86.0.0",
+    "cross-env": "^7.0.2",
     "geckodriver": "^1.20.0",
-    "nightwatch": "^1.5.0"
+    "nightwatch": "^1.5.0",
+    "start-server-and-test": "^1.11.5",
+    "wait-on": "^5.2.0"
+  },
+  "scripts": {
+    "test": "nightwatch",
+    "prestart-server": "cd ../frontend && yarn build && cd ../ && docker-compose build && docker-compose stop",
+    "start-server": "docker-compose up",
+    "ci": "start-server-and-test start-server http://localhost:8000 test",
+    "postci": "cd ../ && docker-compose stop"
   }
 }
