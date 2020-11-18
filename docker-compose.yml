@@ -37,7 +37,7 @@ services:
       dockerfile: frontend/Dockerfile
     ports:
       - "3001:3000"
-    depends_on: 
+    depends_on:
       - projectx
     environment:
       PROJECTX_HOST: "projectx:8000"

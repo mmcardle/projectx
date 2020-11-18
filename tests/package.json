@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "nightwatch",
-    "prestart-server": "cd ../frontend && yarn build && cd ../ && docker-compose build && docker-compose stop",
+    "prestart-server": "cd ../frontend && yarn install && yarn bic && cd ../ && docker-compose build projectx && docker-compose stop",
     "start-server": "docker-compose up",
     "ci": "start-server-and-test start-server http://localhost:8000 test",
     "postci": "cd ../ && docker-compose stop"
