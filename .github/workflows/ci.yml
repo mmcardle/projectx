@@ -28,4 +28,5 @@ jobs:
     - run: cd frontend && yarn build
     - run: docker-compose build projectx
     - run: cd tests && yarn install
+    - run: cd tests && ./node_modules/.bin/chromedriver -v
     - run: cd tests && yarn ci
