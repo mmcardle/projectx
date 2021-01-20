@@ -38,16 +38,15 @@ function useKeyfromStore(key) {
   return { [key]: val };
 }
 
-function withDisplayName(component, displayName) {
-  component.displayName = displayName;
-  return component
+function asComponent(Component, store, props) {
+  return <Component {...store} {...props} />
 }
 
 const storeNames = {
-  user:  (Component) => (props) => withDisplayName(<Component {...useUserStore()} {...props} />, "UserComponent"),
-  token:  (Component) => (props) => withDisplayName(<Component {...useKeyfromStore('token')} {...props} />, "TokenComponent"),
-  dispatch: (Component) => (props) => withDisplayName(<Component {...useDispatchStore()} {...props} />, "DispatchComponent"),
-  logout_url: (Component) => (props) => withDisplayName(<Component {...useKeyfromStore('logout_url')} {...props} />, "LogoutURLComponent")
+  user:  (Component) => (props) => asComponent(Component, useUserStore(), props),
+  token:  (Component) => (props) => asComponent(Component, useKeyfromStore('token'), props),
+  dispatch:  (Component) => (props) => asComponent(Component, useDispatchStore(), props),
+  logout_url:  (Component) => (props) => asComponent(Component, useKeyfromStore('logout_url'), props),
 };
 
 // Applies multiple stores to a Component
