@@ -28,7 +28,7 @@ function Login(props) {
 
   return (
     <CentralContainer>
-      <Form onSubmit={click}>
+      <Form onSubmit={click} id="login_form">
         { error ? <Alert variant="danger">{error}</Alert> : <></> }
         <Form.Group controlId="loginEmail">
           <Form.Label>Email address</Form.Label>

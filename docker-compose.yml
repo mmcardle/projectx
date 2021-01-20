@@ -29,22 +29,22 @@ services:
     volumes:
       - ./backend/:/home/user/backend/
 
-  frontend:
-    hostname: frontend
-    tty: true
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-    ports:
-      - "3001:3000"
-    depends_on: 
-      - projectx
-    environment:
-      PROJECTX_HOST: "projectx:8000"
-      CHOKIDAR_USEPOLLING: "true"
-      HOST: "0.0.0.0"
-    volumes:
-      - ./frontend/src/:/frontend/src/
+  #frontend:
+  #  hostname: frontend
+  #  tty: true
+  #  build:
+  #    context: .
+  #    dockerfile: frontend/Dockerfile
+  #  ports:
+  #    - "3001:3000"
+  #  depends_on:
+  #    - projectx
+  #  environment:
+  #    PROJECTX_HOST: "projectx:8000"
+  #    CHOKIDAR_USEPOLLING: "true"
+  #    HOST: "0.0.0.0"
+  #  volumes:
+  #    - ./frontend/src/:/frontend/src/
 
   postgres:
     hostname: postgres
