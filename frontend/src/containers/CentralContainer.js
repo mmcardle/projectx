@@ -1,4 +1,6 @@
+/* global process */
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import { Container, Row, Col } from 'react-bootstrap';
 import Card from 'react-bootstrap/Card';
@@ -23,6 +25,10 @@ function CentralContainer(props) {
         </div>
     </div>
   );
+}
+
+CentralContainer.propTypes = {
+  children: PropTypes.arrayOf(PropTypes.node).isRequired
 }
 
 export default CentralContainer;

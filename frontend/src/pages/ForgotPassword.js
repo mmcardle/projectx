@@ -10,7 +10,7 @@ import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-function ForgotPassword(props) {
+function ForgotPassword() {
 
   const [email, setEmail] = useState("")
   const [complete, setComplete] = useState(false)
@@ -35,7 +35,7 @@ function ForgotPassword(props) {
           <Form.Label>Email address</Form.Label>
           <Form.Control required type="email" placeholder="Enter email" value={email} onChange={e => setEmail(e.target.value)} />
           <Form.Text className="text-muted">
-            We'll never share your email with anyone else.
+            We&apos;ll never share your email with anyone else.
           </Form.Text>
         </Form.Group>
         {

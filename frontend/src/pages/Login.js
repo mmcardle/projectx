@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { withNamedStores } from '../store/state';
+import PropTypes from 'prop-types';
 
 import { login } from '../api/requests';
 
@@ -22,6 +23,7 @@ function Login(props) {
     login(
       props.dispatch, email, password
     ).catch(error => {
+      console.error(error)
       setError("Sorry we couldn't log you in at this time, please check email and password.");
     })
   }
@@ -54,6 +56,10 @@ function Login(props) {
       </div>
     </CentralContainer>
   );
+}
+
+Login.propTypes = {
+  dispatch: PropTypes.func.isRequired,
 }
 
 export default withNamedStores(Login, ['dispatch']);

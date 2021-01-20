@@ -2,7 +2,7 @@ import React from 'react';
 
 import Dashboard from '../project/Dashboard'
 
-function Main(props) {
+function Main() {
   return (
     <div className="main-content-item text-center">
       <div className="w-50 mx-auto">

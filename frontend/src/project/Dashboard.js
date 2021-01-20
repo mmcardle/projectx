@@ -1,5 +1,6 @@
 import React from 'react';
 import { withNamedStores } from '../store/state';
+import PropTypes from 'prop-types';
 
 function Dashboard(props) {
   return (
@@ -10,6 +11,12 @@ function Dashboard(props) {
       </div>
     </div>
   );
+}
+
+Dashboard.propTypes = {
+  user: PropTypes.shape({
+    display_name: PropTypes.string.isRequired,
+  })
 }
 
 export default withNamedStores(Dashboard, ['user']);

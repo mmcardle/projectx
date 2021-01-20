@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 import Nav from 'react-bootstrap/Nav';
 
-function SideBar(props) {
+function SideBar() {
   return (
     <div className="main-sidebar p-2">
       <Nav defaultActiveKey="/home" className="flex-column" >

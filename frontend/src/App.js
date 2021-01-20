@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 import {
   BrowserRouter as Router,
@@ -91,6 +92,14 @@ const App = function (props) {
       </div>
     </Router>
   );
+}
+
+App.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  loaded: PropTypes.bool.isRequired,
+  user: PropTypes.shape({
+    display_name: PropTypes.string.isRequired,
+  })
 }
 
 export default withNamedStores(App, ['user', 'dispatch', 'logout_url']);

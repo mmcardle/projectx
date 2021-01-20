@@ -1,7 +1,8 @@
-
+/* global process */
 import React from 'react';
 import { withNamedStores } from '../store/state';
 import { Link } from "react-router-dom";
+import PropTypes from 'prop-types';
 
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
@@ -30,6 +31,11 @@ function TopNav(props) {
       </Form>
     </Navbar>
   );
+}
+
+TopNav.propTypes = {
+  dispatch: PropTypes.func.isRequired,
+  logout_url: PropTypes.string.isRequired,
 }
 
 export default withNamedStores(TopNav, ['user', 'dispatch']);

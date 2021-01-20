@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
 import { withNamedStores } from '../store/state';
 import { changeDetails } from '../api/requests';
@@ -51,6 +52,13 @@ function ChangeDetails(props) {
       </Button>
     </Form>
   );
+}
+
+ChangeDetails.propTypes = {
+  user: PropTypes.shape({
+    first_name: PropTypes.string.isRequired,
+    last_name: PropTypes.string.isRequired,
+  })
 }
 
 export default withNamedStores(ChangeDetails, ['user']);
