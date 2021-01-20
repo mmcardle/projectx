@@ -5,7 +5,7 @@ const create_websocket = () => {
   return new WebSocket(ws_url);
 };
 
-const setup_websocket = (ws, dispatch) => {
+const setup_websocket = (ws, /*dispatch*/) => {
   const websocket = ws;
 
   websocket.onopen = () => {

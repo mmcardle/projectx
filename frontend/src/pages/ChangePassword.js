@@ -6,7 +6,7 @@ import Alert from 'react-bootstrap/Alert';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 
-function ChangePassword(props) {
+function ChangePassword() {
 
   const [current_password, setCurrentPassword] = useState("")
   const [password1, setPassword1] = useState("")

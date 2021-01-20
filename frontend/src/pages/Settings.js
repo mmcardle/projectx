@@ -5,7 +5,7 @@ import { Container, Row, Col } from 'react-bootstrap';
 import ChangePassword from './ChangePassword';
 import ChangeDetails from './ChangeDetails';
 
-function Settings(props) {
+function Settings() {
   return (
     <div className="main-content-item">
       <Container className="text-white">
