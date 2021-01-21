@@ -26,7 +26,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: cd frontend && yarn install
     - run: cd frontend && yarn build
-    - run: docker-compose build projectx
     - run: cd tests && yarn install
     - run: cd tests && ./node_modules/.bin/chromedriver -v
-    - run: cd tests && yarn ci
+    - run: docker-compose build projectx
+    - run: docker-compose up -d
+    - run: docker-compose exec -T projectx /home/user/venv/bin/python /home/user/backend/app/manage.py wait_for_db
+    - run: cd tests && yarn test
