@@ -1,6 +1,6 @@
 channels
 channels_redis
-Django>=3,<4
+Django
 daphne
 django-dbsettings
 django-environ

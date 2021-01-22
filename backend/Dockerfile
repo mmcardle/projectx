@@ -24,14 +24,12 @@ WORKDIR /home/user/
 
 ##### Installing pip wheel virtualenv circus
 RUN python3.8 -m pip install -U pip
-RUN python3.8 -m pip install pip wheel virtualenv circus pip-tools
+RUN python3.8 -m pip install pip wheel virtualenv circus
 
 ##### Creating virtualenv at /home/user/venv
 RUN virtualenv -p python3.8 venv
 
-COPY backend/requirements/requirements.in backend/requirements/requirements.in
-
-RUN pip-compile backend/requirements/requirements.in > backend/requirements/requirements.txt
+COPY backend/requirements/requirements.txt backend/requirements/requirements.txt
 RUN /home/user/venv/bin/pip install -r backend/requirements/requirements.txt
 
 COPY backend/app/ ./backend/app/
