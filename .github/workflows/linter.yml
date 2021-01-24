@@ -1,9 +1,4 @@
-###########################
-###########################
-## Linter GitHub Actions ##
-###########################
-###########################
-name: Lint Code Base
+name: Lint Frontend
 
 #
 # Documentation:
@@ -31,5 +26,5 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: cd frontend && yarn install
-      - run: cd frontend && yarn lint
+      - run: yarn --cwd frontend install
+      - run: yarn --cwd frontend lint

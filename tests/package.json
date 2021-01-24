@@ -1,17 +1,23 @@
 {
   "dependencies": {
-    "chromedriver": "^86.0.0",
+    "chromedriver": "^87.0.7",
     "cross-env": "^7.0.2",
     "geckodriver": "^1.20.0",
     "nightwatch": "^1.5.0",
-    "start-server-and-test": "^1.11.5",
     "wait-on": "^5.2.0"
   },
   "scripts": {
     "test": "nightwatch",
-    "prestart-server": "cd ../frontend && yarn install && yarn bic && cd ../ && docker-compose build projectx && docker-compose stop",
-    "start-server": "docker-compose up",
-    "ci": "start-server-and-test start-server http://localhost:8000 test",
-    "postci": "cd ../ && docker-compose stop"
+    "test:ci_chrome": "nightwatch --headless -e chrome",
+    "test:ci_firefox": "nightwatch --headless -e firefox",
+    "pretest:ci": "wait-on http://localhost:8000",
+    "test:ci": "yarn test:ci_chrome && yarn test:ci_firefox",
+    "build:frontend": "yarn --cwd ../frontend install && yarn --cwd ../frontend bic",
+    "build:backend": "docker-compose build projectx",
+    "build": "yarn build:frontend && yarn build:backend",
+    "prestart-server": "yarn build",
+    "start-server": "docker-compose up -d",
+    "ci": "yarn start-server && yarn test:ci",
+    "postci": "docker-compose stop"
   }
 }

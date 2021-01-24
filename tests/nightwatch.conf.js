@@ -204,13 +204,16 @@ module.exports = {
 function loadServices() {
   try {
     Services.seleniumServer = require('selenium-server');
+    console.log("Selenium:", Services.seleniumServer.path);
   } catch (err) {}
 
   try {
     Services.chromedriver = require('chromedriver');
+    console.log("Chrome:", Services.chromedriver.version, Services.chromedriver.path);
   } catch (err) {}
 
   try {
     Services.geckodriver = require('geckodriver');
+    console.log("Firefox:", Services.geckodriver.version, Services.geckodriver.path);
   } catch (err) {}
 }
