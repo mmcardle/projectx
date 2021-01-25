@@ -56,6 +56,10 @@ jobs:
         with:
           name: frontend-build-folder
           path: frontend/build/
+      - run: docker-compose pull
+      - uses: satackey/action-docker-layer-caching@v0.0.11
+        # Ignore the failure of a step and avoid terminating the job.
+        continue-on-error: true
       - run: docker-compose build
 
   python-setup:
