@@ -37,7 +37,7 @@ jobs:
       
       - run: yarn --cwd frontend install
       - run: yarn --cwd frontend build
-      - name: Upload output file
+      - name: Save frontend build folder
         uses: actions/upload-artifact@v1
         with:
           name: frontend-build-folder
@@ -45,7 +45,10 @@ jobs:
 
   docker-setup:
     needs: frontend-setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    
+    name: docker setup
+
     steps:
       - uses: actions/checkout@v2
       - name: Download frontend build
@@ -62,7 +65,7 @@ jobs:
       matrix:
         python-version: ['3.x']
     
-    name: Python ${{ matrix.python-version }}
+    name: python ${{ matrix.python-version }} setup
     
     steps:
       - uses: actions/checkout@v2
@@ -71,7 +74,41 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      - run: pip install -r backend/requirements/requirements.txt
+      
+      - run: pip install -r backend/requirements/test.txt
+      
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+      
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+  python-unittests:
+    needs: python-setup
+    runs-on: ubuntu-20.04
+    
+    strategy:
+      matrix:
+        python-version: ['3.x']
+    
+    name: python ${{ matrix.python-version }} unittest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - run: pip install -r backend/requirements/test.txt
+      - run: cd backend && python -m pytest
 
   system-tests:
     needs: docker-setup
