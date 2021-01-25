@@ -6,8 +6,8 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
 from django.template import engines
 from django.urls import reverse
@@ -156,6 +156,7 @@ def register(request):
 
     return JsonResponse(new_user.to_json())
 
+
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 def reset_password(request):
@@ -273,6 +274,7 @@ def reset_password_complete(request):
     user.delete_reset_key(user.email)
 
     return JsonResponse(user.to_json())
+
 
 def admin_su_logout(request):
 

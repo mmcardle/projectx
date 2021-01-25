@@ -62,6 +62,7 @@ class ResetPasswordSchema(Schema):
             raise ValidationError("Passwords must match.", "password2")
         return data
 
+
 class ChangePasswordSchema(Schema):
     current_password = fields.Str(required=True)
     password1 = fields.Str(required=True)
@@ -79,7 +80,6 @@ class ChangePasswordSchema(Schema):
         if data["password1"] != data["password2"]:
             raise ValidationError("Passwords must match.", "password2")
         return data
-
 
 
 class ChangeDetailsSchema(Schema):

@@ -5,7 +5,6 @@ from django.contrib.auth.admin import UserAdmin
 
 from . import models
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -36,5 +35,6 @@ class ProjectXUserAdmin(UserAdmin):
         ),
     )
     add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email", "password1", "password2")}),)
+
 
 admin.site.register(models.User, ProjectXUserAdmin)
