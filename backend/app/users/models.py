@@ -1,19 +1,21 @@
-import uuid
 import calendar
 import json
 import logging
+import uuid
 
 from asgiref.sync import AsyncToSync
 from channels.layers import get_channel_layer
-from common.models import IndexedTimeStampedModel
-from django.core import signing
-from django.contrib.auth.models import AbstractUser, BaseUserManager, PermissionsMixin
-from django.db import models
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import (AbstractUser, BaseUserManager,
+                                        PermissionsMixin)
+from django.core import signing
 from django.core.mail import send_mail
 from django.core.signing import BadSignature
+from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from django_redis import get_redis_connection
+
+from common.models import IndexedTimeStampedModel
 
 from . import emails
 
@@ -59,13 +61,13 @@ class User(AbstractUser, IndexedTimeStampedModel):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
-    
+
     def display_name(self):
         return self.get_full_name()
-    
+
     def __str__(self):
         return "%s" % self.display_name()
-    
+
     @property
     def public_id(self):
         return str(self.public_uuid)

@@ -34,6 +34,8 @@ automat==20.2.0
     # via
     #   -r requirements/requirements.txt
     #   twisted
+autopep8==1.5.4
+    # via -r requirements/test.in
 cffi==1.14.4
     # via
     #   -r requirements/requirements.txt
@@ -121,6 +123,8 @@ incremental==17.5.0
     #   twisted
 iniconfig==1.1.1
     # via pytest
+isort==5.7.0
+    # via -r requirements/test.in
 marshmallow==3.10.0
     # via -r requirements/requirements.txt
 msgpack==1.0.2
@@ -148,6 +152,10 @@ pyasn1==0.4.8
     #   -r requirements/requirements.txt
     #   pyasn1-modules
     #   service-identity
+pycodestyle==2.6.0
+    # via
+    #   -r requirements/test.in
+    #   autopep8
 pycparser==2.20
     # via
     #   -r requirements/requirements.txt
@@ -218,7 +226,9 @@ starlette==0.13.6
     #   -r requirements/requirements.txt
     #   fastapi
 toml==0.10.2
-    # via pytest
+    # via
+    #   autopep8
+    #   pytest
 twisted[http2,tls]==20.3.0
     # via
     #   -r requirements/requirements.txt
@@ -227,6 +237,10 @@ txaio==20.12.1
     # via
     #   -r requirements/requirements.txt
     #   autobahn
+unify==0.5
+    # via -r requirements/test.in
+untokenize==0.1.1
+    # via unify
 uvicorn==0.13.3
     # via -r requirements/requirements.txt
 uwsgi==2.0.19.1
