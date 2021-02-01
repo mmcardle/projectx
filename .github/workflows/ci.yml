@@ -78,9 +78,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
-      
-      - run: pip install --upgrade pip wheel
-      - run: pip install -r backend/requirements/test.txt
 
       - name: pip cache
         uses: actions/cache@v2
@@ -88,7 +85,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-   
+
+      - run: pip install --upgrade pip wheel
+      - run: pip install -r backend/requirements/test.txt
 
   python-unittests:
     needs: python-setup
@@ -148,11 +148,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
       - run: pip install -r backend/requirements/test.txt
-      - name: ${{ matrix.python-version }} Unit Tests
-        env:
-          PROJECTX_DB_HOST: localhost
-          PROJECTX_REDIS_HOST: localhost
-        run: env && cd backend && python -m pytest
+      - run: cd backend && python -m pytest
 
   python-lint:
     needs: python-setup
@@ -172,6 +168,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - run: pip install -r backend/requirements/test.txt
       - run: python -m ${{ matrix.lint-command }} backend/app backend/tests/
 
