@@ -18,7 +18,7 @@ from ratelimit.decorators import ratelimit
 
 from common.validation import SchemaError, load_data_from_schema
 
-from . import models, validation
+from . import decorators, models, validation
 
 logger = logging.getLogger(__name__)
 
@@ -85,51 +85,6 @@ def logout(request):
 
 
 @require_http_methods(["POST"])
-def activate(request):
-
-    payload = json.loads(request.body)
-    key = payload.get("activation_key")
-
-    if key is None:
-        return JsonResponse(
-            {"error": "No key in post body"}, status=401
-        )
-
-    user, error = models.User.check_activation_key(key)
-    if user is None:
-        # User has failed activation check
-        # Check if the token has expired
-        expired_user, expired_error = models.User.check_activation_key(
-            key, max_age=None
-        )
-        if expired_user:
-            logger.error(expired_error)
-            expired_user.send_activation_email(request)
-            return JsonResponse({
-                "error": (
-                    "That token has expired. A new email has been sent"
-                    "to your address. PLease click on the new "
-                    "link in the email."
-                ),
-            }, status=401)
-
-        return JsonResponse({"error": error}, status=401)
-
-    if user.is_active:
-        return JsonResponse(
-            {
-                "is_active": True,
-                "error": "User is already active."
-            },
-            status=400
-        )
-    else:
-        user.activate()
-
-    return JsonResponse(user.to_json())
-
-
-@require_http_methods(["POST"])
 def register(request):
 
     try:
@@ -152,7 +107,7 @@ def register(request):
         )
 
     new_user = models.User.create_inactive_user(register_data)
-    new_user.send_activation_email(request)
+    new_user.send_account_activation_email(request)
 
     return JsonResponse(new_user.to_json())
 
@@ -272,6 +227,37 @@ def reset_password_complete(request):
 
     # Key can only be used once
     user.delete_reset_key(user.email)
+
+    return JsonResponse(user.to_json())
+
+
+@require_http_methods(["POST"])
+@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.activate_check_payload
+def activate_check(request):
+
+    user = request.validated_data["user"]
+
+    return JsonResponse({
+        "is_active": user.is_active, "user": user.to_json()
+    })
+
+
+@require_http_methods(["POST"])
+@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.activate_payload
+def activate(request):
+
+    # request.validated_data set by the activate_payload
+    user = request.validated_data["user"]
+    user.username = request.validated_data["username"]
+    user.first_name = request.validated_data["first_name"]
+    user.last_name = request.validated_data["last_name"]
+    user.set_password(request.validated_data["password1"])
+    user.activate()
+
+    # Key can only be used once
+    user.delete_activate_key(user.email)
 
     return JsonResponse(user.to_json())
 

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def send_activation_email(_, request, queryset):
     for user in queryset:
-        user.send_activation_email(request)
+        user.send_account_activation_email(request)
         message = "%s Activation Email Sent." % user
         messages.info(request, message)
         logger.info(message)

@@ -67,7 +67,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: ['3.x']
+        python-version: ['3.9']
     
     name: python ${{ matrix.python-version }} setup
     
@@ -79,17 +79,13 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
       
+      - run: pip install --upgrade pip wheel
       - run: pip install -r backend/requirements/test.txt
-      
-      - name: Get pip cache dir
-        id: pip-cache
-        run: |
-          echo "::set-output name=dir::$(pip cache dir)"
-      
+
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ${{ steps.pip-cache.outputs.dir }}
+          path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
@@ -97,10 +93,43 @@ jobs:
   python-unittests:
     needs: python-setup
     runs-on: ubuntu-20.04
-    
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: mysecretpassword
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+
+      redis:
+        # Docker Hub image
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 6379 on service container to the host
+          - 6379:6379
+
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9']
+        python-version: ['3.9']
+        #python-version: ['3.7', '3.8', '3.9']
     
     name: python ${{ matrix.python-version }} unittest
     
@@ -111,8 +140,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - run: pip install -r backend/requirements/test.txt
-      - run: cd backend && python -m pytest
+      - name: ${{ matrix.python-version }} Unit Tests
+        env:
+          PROJECTX_DB_HOST: localhost
+          PROJECTX_REDIS_HOST: localhost
+        run: env && cd backend && python -m pytest
 
   python-lint:
     needs: python-setup
@@ -120,7 +160,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.x']
+        python-version: ['3.9']
         lint-command: ['pycodestyle', 'isort --check-only --diff', 'unify --check-only --recursive --quote \"']
 
     name: python ${{ matrix.python-version }} lint - ${{ matrix.lint-command }}

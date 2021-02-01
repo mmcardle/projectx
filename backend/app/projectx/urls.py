@@ -17,10 +17,19 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from users.api import admin_su_logout
+
 urlpatterns = [
-    path("admin/", admin.site.urls, name="admin"),
     path(
-        "app/",
+        "admin/",
+        include([
+            path("", admin.site.urls, name="admin"),
+            path("su/", include("django_su.urls")),
+            path("su/logout/", admin_su_logout, name="admin_su_logout"),
+        ])
+    ),
+    path(
+        "api/",
         include([
             path("users/", include("users.urls")),
         ])
