@@ -3,12 +3,12 @@ up:
 	docker-compose up
 
 manage:
-	docker-compose exec projectx /home/user/venv/bin/python /home/user/backend/app/manage.py
+	docker-compose exec projectx /home/user/venv/bin/python /home/user/backend/app/manage.py ${command}
 
 build:
-	cd frontend && yarn install
-	cd frontend && yarn build
-	cd tests && yarn install
+	yarn --cwd frontend install
+	yarn --cwd frontend bic
+	yarn --cwd tests install
 	docker-compose build projectx
 
 lint:

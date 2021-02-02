@@ -107,7 +107,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         self.is_active = True
         self.save()
 
-    def reset_password(self):
+    def send_reset_password_email(self):
 
         key = signing.dumps(
             {"email": self.email}, salt=PASSWORD_RESET_SALT
@@ -180,7 +180,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         try:
             if user_exists:
                 user = cls.objects.get(email__iexact=email)
-                user.reset_password()
+                user.send_reset_password_email()
             else:
                 # Do nothing if the email does not exist so
                 # that you cannot enumerate the emails
@@ -236,7 +236,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         except BadSignature:
             return None, "Bad Signature"
 
-    def send_activation_email(self, request):
+    def send_account_activation_email(self, request):
 
         key = signing.dumps(
             {"email": self.email}, salt=ACTIVATION_SALT

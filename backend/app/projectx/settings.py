@@ -92,6 +92,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
+    # Custom validators
+    {"NAME": "users.validation.NumberValidator", "OPTIONS": {"min": 1}},
+    {"NAME": "users.validation.UppercaseValidator", "OPTIONS": {"min": 1}},
+    {"NAME": "users.validation.LowercaseValidator", "OPTIONS": {"min": 1}},
+    {"NAME": "users.validation.SymbolValidator", "OPTIONS": {"min": 1}},
 ]
 
 # Internationalization
@@ -116,7 +121,7 @@ STATIC_URL = "/site_media/static/"
 STATIC_ROOT = Path("/") / "var" / "www" / "site_media" / "static"
 
 # Django Channels
-ASGI_APPLICATION = "projectx.routing.application"
+ASGI_APPLICATION = "projectx.asgi.application"
 
 CHANNELS_REDIS_URL = env.url("CHANNELS_REDIS_URL")
 CHANNEL_LAYERS = {
