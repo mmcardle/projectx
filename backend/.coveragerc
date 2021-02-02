@@ -1,0 +1,10 @@
+[run]
+omit =
+    app/wsgi.py
+    app/manage.py
+    app/**/migrations/**
+
+[report]
+exclude_lines =
+    if __name__ == .__main__.:
+    pragma: no cover

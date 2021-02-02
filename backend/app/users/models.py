@@ -259,6 +259,10 @@ class User(AbstractUser, IndexedTimeStampedModel):
         )
 
     @classmethod
+    def email_exists(cls, email):
+        return cls.objects.filter(email__iexact=email).exists()
+
+    @classmethod
     def create_inactive_user(cls, user_data):
         user = cls.objects.create_user(
             email=user_data["email"],

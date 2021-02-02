@@ -187,12 +187,73 @@ def test_logout(mocker):
     assert django_logout.mock_calls == [mock.call(request)]
 
 
-def test_reset_password(mocker):
+def test_register(mocker):
 
-    User = mocker.patch("users.api.models.User")
+    User = mocker.patch(
+        "users.api.models.User",
+        email_exists=mocker.Mock(return_value=False),
+    )
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
-    body = json.dumps({"email": "email"})
+    data = {
+        "password2": "password",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "email": "email@tempurl.com",
+        "password1": "password",
+    }
+    request = make_request(method="POST", body=json.dumps(data), user=mock.Mock())
+
+    api.register(request)
+    assert JsonResponse.mock_calls == [
+        mock.call(User.create_inactive_user.return_value.to_json.return_value)
+    ]
+    assert User.mock_calls == [
+        mock.call.email_exists("email@tempurl.com"),
+        mock.call.create_inactive_user(data),
+        mock.call.create_inactive_user().send_account_activation_email(request),
+        mock.call.create_inactive_user().to_json(),
+    ]
+
+
+def test_register_email_exists(mocker):
+
+    User = mocker.patch(
+        "users.api.models.User",
+        email_exists=mocker.Mock(return_value=True),
+    )
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+
+    data = {
+        "password2": "password",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "email": "email@tempurl.com",
+        "password1": "password",
+    }
+    request = make_request(method="POST", body=json.dumps(data), user=mock.Mock())
+
+    api.register(request)
+    assert JsonResponse.mock_calls == [
+        mock.call({
+            "error": True,
+            "errors": {"email": ["This email is already registered"]}
+        }, status=401)
+    ]
+    assert User.mock_calls == [
+        mock.call.email_exists("email@tempurl.com"),
+    ]
+
+
+def test_reset_password(mocker):
+
+    User = mocker.patch(
+        "users.api.models.User",
+        email_exists=mocker.Mock(return_value=True),
+    )
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+
+    body = json.dumps({"email": "none@example.com"})
     request = make_request(method="POST", body=body, user=mock.Mock())
 
     api.reset_password(request)
@@ -200,128 +261,73 @@ def test_reset_password(mocker):
         mock.call({})
     ]
     assert User.mock_calls == [
-        mock.call.reset_email("email")
+        mock.call.email_exists("none@example.com"),
+        mock.call.reset_email("none@example.com"),
     ]
 
 
 def test_reset_password_no_such_email(mocker):
 
-    user = mock.Mock()
-    User = mock.Mock(
-        objects=mock.Mock(
-            filter=mock.Mock(
-                return_value=mock.Mock(
-                    exists=mock.Mock(return_value=False)
-                )
-            )
-        )
+    User = mocker.patch(
+        "users.api.models.User",
+        email_exists=mocker.Mock(return_value=False),
     )
-    user_models = mocker.patch("users.api.models")
-    user_models.User = User
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
-    body = json.dumps({"email": "nosuchemail"})
+    body = json.dumps({"email": "nosuchemail@example.com"})
     request = make_request(method="POST", body=body, user=mock.Mock())
 
     api.reset_password(request)
     assert JsonResponse.mock_calls == [
         mock.call({})
     ]
-    assert user.mock_calls == []
-
-
-def test_reset_password_bad_data(mocker):
-    JsonResponse = mocker.patch("users.api.JsonResponse")
-    request = make_request(method="POST", body="xxx", user=mock.Mock())
-    api.reset_password(request)
-    assert JsonResponse.mock_calls == [
-        mock.call({"error": True}, status=401)
+    assert User.mock_calls == [
+        mock.call.email_exists("nosuchemail@example.com"),
     ]
 
 
 def test_reset_password_check(mocker):
 
-    load_data_from_schema = mocker.patch("users.api.load_data_from_schema")
-
-    user = mock.Mock(name="u")
-    User = mock.Mock(
-        check_reset_key=lambda key: (user, None)
+    user = mock.Mock()
+    User = mocker.patch(
+        "users.api.models.User",
+        check_reset_key=mock.Mock(return_value=(user, None))
     )
-    user_models = mocker.patch("users.api.models")
-    user_models.User = User
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
-    body = json.dumps({"email": "email"})
+    body = json.dumps({"reset_key": "reset_key"})
     request = make_request(method="POST", body=body, user=mock.Mock())
 
     api.reset_password_check(request)
     assert JsonResponse.mock_calls == [
         mock.call({"email": user.email})
     ]
-
-    assert load_data_from_schema.mock_calls == [
-        mock.call(
-            api.reset_check_schema, {"email": "email"}
-        ),
-        mock.call().get("reset_key")
-    ]
-
-
-def test_reset_password_check_bad_data(mocker):
-
-    user = mock.Mock(name="u")
-    User = mock.Mock(
-        check_reset_key=lambda key: (user, None)
-    )
-    user_models = mocker.patch("users.api.models")
-    user_models.User = User
-    JsonResponse = mocker.patch("users.api.JsonResponse")
-
-    body = json.dumps({"k": "v"})
-    request = make_request(method="POST", body=body, user=mock.Mock())
-
-    api.reset_password_check(request)
-    assert JsonResponse.mock_calls == [
-        mock.call({
-            "error": True,
-            "errors": {
-                "reset_key": ["Missing data for required field."],
-                "k": ["Unknown field."]
-            }
-        }, status=401)
+    assert User.mock_calls == [
+        mock.call.check_reset_key("reset_key"),
     ]
 
 
 def test_reset_password_check_user_is_None(mocker):
 
-    load_data_from_schema = mocker.patch("users.api.load_data_from_schema")
-
-    User = mock.Mock(
-        check_reset_key=lambda key: (None, "error")
+    User = mocker.patch(
+        "users.api.models.User",
+        check_reset_key=mock.Mock(return_value=(None, "error"))
     )
-    user_models = mocker.patch("users.api.models")
-    user_models.User = User
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
-    body = json.dumps({"email": "email"})
+    body = json.dumps({"reset_key": "reset_key"})
     request = make_request(method="POST", body=body, user=mock.Mock())
 
     api.reset_password_check(request)
     assert JsonResponse.mock_calls == [
         mock.call({"error": "error"}, status=401)
     ]
-
-    assert load_data_from_schema.mock_calls == [
-        mock.call(
-            api.reset_check_schema, {"email": "email"}
-        ),
-        mock.call().get("reset_key")
+    assert User.mock_calls == [
+        mock.call.check_reset_key("reset_key"),
     ]
 
 
 def test_reset_password_complete(mocker):
-
-    load_data_from_schema = mocker.patch("users.api.load_data_from_schema")
 
     user = mock.Mock()
     User = mock.Mock(
@@ -333,8 +339,8 @@ def test_reset_password_complete(mocker):
 
     body = json.dumps({
         "reset_key": "reset_key",
-        "password1": "password1_value",
-        "password2": "password2_value"
+        "password1": "password_value_1A!",
+        "password2": "password_value_1A!"
     })
     request = make_request(method="POST", body=body, user=mock.Mock())
 
@@ -343,61 +349,16 @@ def test_reset_password_complete(mocker):
         mock.call(user.to_json.return_value)
     ]
 
-    assert load_data_from_schema.mock_calls == [
-        mock.call(
-            api.reset_password_schema,
-            {
-                "reset_key": "reset_key",
-                "password1": "password1_value",
-                "password2": "password2_value"
-            }
-        ),
-        mock.call().get("reset_key"),
-        mock.call().get("password1")
-    ]
-    expected_password = (
-        load_data_from_schema.return_value.get.return_value
-    )
     assert user.mock_calls == [
-        mock.call.set_password(expected_password),
+        mock.call.set_password("password_value_1A!"),
         mock.call.save(),
         mock.call.delete_reset_key(user.email),
         mock.call.to_json()
     ]
 
 
-def test_reset_password_complete_bad_data(mocker):
-
-    User = mock.Mock(
-        check_reset_key=lambda key: (None, "error")
-    )
-    user_models = mocker.patch("users.api.models")
-    user_models.User = User
-    JsonResponse = mocker.patch("users.api.JsonResponse")
-
-    body = json.dumps({
-        "xxx": "xxx",
-    })
-    request = make_request(method="POST", body=body, user=mock.Mock())
-
-    api.reset_password_complete(request)
-    assert JsonResponse.mock_calls == [
-        mock.call({
-            "error": True,
-            "errors": {
-                "password1": ["Missing data for required field."],
-                "password2": ["Missing data for required field."],
-                "reset_key": ["Missing data for required field."],
-                "xxx": ["Unknown field."]
-            }
-        }, status=401)
-    ]
-
-
 def test_reset_password_complete_no_user(mocker):
 
-    load_data_from_schema = mocker.patch("users.api.load_data_from_schema")
-
     User = mock.Mock(
         check_reset_key=lambda key: (None, "error")
     )
@@ -406,8 +367,9 @@ def test_reset_password_complete_no_user(mocker):
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
     body = json.dumps({
-        "password1": "password1",
-        "password2": "password2"
+        "reset_key": "reset_key",
+        "password1": "password_value_1A!",
+        "password2": "password_value_1A!"
     })
     request = make_request(method="POST", body=body, user=mock.Mock())
 
@@ -416,16 +378,76 @@ def test_reset_password_complete_no_user(mocker):
         mock.call({"error": "error"}, status=401)
     ]
 
-    assert load_data_from_schema.mock_calls == [
-        mock.call(
-            api.reset_password_schema,
-            {
-                "password1": "password1",
-                "password2": "password2"
-            }
-        ),
-        mock.call().get("reset_key")
+
+def test_change_password(mocker):
+
+    authenticate = mocker.patch("users.api.authenticate")
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+    update_session_auth_hash = mocker.patch("users.api.update_session_auth_hash")
+
+    body = json.dumps({
+        "current_password": "current_password",
+        "password1": "password",
+        "password2": "password",
+    })
+    request = make_request(method="POST", body=body, user=mock.Mock())
+
+    api.change_password(request)
+
+    assert JsonResponse.mock_calls == [
+        mocker.call({})
     ]
+    assert authenticate.mock_calls == [
+        mocker.call(username=request.user.email, password="current_password"),
+        mocker.call().set_password("password"),
+        mocker.call().save(),
+    ]
+    assert update_session_auth_hash.mock_calls == [
+        mocker.call(request, authenticate.return_value)
+    ]
+
+
+def test_change_password_bad_authentication(mocker):
+
+    mocker.patch("users.api.authenticate", return_value=None)
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+
+    body = json.dumps({
+        "current_password": "current_password",
+        "password1": "password",
+        "password2": "password"
+    })
+    request = make_request(method="POST", body=body, user=mock.Mock())
+
+    api.change_password(request)
+    assert JsonResponse.mock_calls == [
+        mock.call({
+            "error": True,
+            "errors": {
+                "current_password": ["The current password is incorrect."],
+            }
+        }, status=401)
+    ]
+
+
+def test_change_details(mocker):
+
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+    user = mock.Mock()
+
+    body = json.dumps({
+        "first_name": "first_name",
+        "last_name": "last_name",
+    })
+    request = make_request(method="POST", body=body, user=user)
+
+    api.change_details(request)
+
+    assert JsonResponse.mock_calls == [mocker.call({})]
+    assert user.mock_calls == [mocker.call.save()]
+
+    assert user.first_name == "first_name"
+    assert user.last_name == "last_name"
 
 
 def test_activate_check_api(mocker):

@@ -47,11 +47,10 @@ def load_data_from_schema(schema, data):
 
 
 def check_schema_payload(user, payload, schema_class):
-
     schema = schema_class()
     schema.context = {"user": user}
     try:
-        call = load_data_from_schema(schema, payload)
-        return True, call
+        data = load_data_from_schema(schema, payload)
+        return True, data
     except SchemaError as e:
         return False, e.errors

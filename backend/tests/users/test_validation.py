@@ -1,9 +1,103 @@
 import pytest
+from django.core.exceptions import ValidationError as DjangoValidationError
 from marshmallow.exceptions import ValidationError
 
 from common.validation import SchemaError, load_data_from_schema
 from users import validation
 from users.models import User
+
+
+def test_NumberValidator():
+    validation.NumberValidator(min=1).validate("1")
+
+
+def test_UppercaseValidator():
+    validation.UppercaseValidator(min=1).validate("A")
+
+
+def test_LowercaseValidator():
+    validation.LowercaseValidator(min=1).validate("a")
+
+
+def test_SymbolValidator():
+    validation.SymbolValidator(min=1).validate("$")
+
+
+def test_NumberValidator_zero():
+    validation.NumberValidator(min=0).validate("")
+
+
+def test_UppercaseValidator_zero():
+    validation.UppercaseValidator(min=0).validate("")
+
+
+def test_LowercaseValidator_zero():
+    validation.LowercaseValidator(min=0).validate("")
+
+
+def test_SymbolValidator_zero():
+    validation.SymbolValidator(min=0).validate("")
+
+
+def test_NumberValidator_not_enough():
+    with pytest.raises(DjangoValidationError):
+        validation.NumberValidator(min=2).validate("1")
+
+
+def test_UppercaseValidator_not_enough():
+    with pytest.raises(DjangoValidationError):
+        validation.UppercaseValidator(min=2).validate("A")
+
+
+def test_LowercaseValidator_not_enough():
+    with pytest.raises(DjangoValidationError):
+        validation.LowercaseValidator(min=2).validate("a")
+
+
+def test_SymbolValidator_not_enough():
+    with pytest.raises(DjangoValidationError):
+        validation.SymbolValidator(min=2).validate("$")
+
+
+@pytest.mark.parametrize("symbol", validation.SymbolValidator.symbols)
+def test_SymbolValidator_all_valid_chars(symbol):
+    validation.SymbolValidator(min=1).validate(symbol)
+
+
+def test_NumberValidator_help_text():
+    assert validation.NumberValidator(min=1).get_help_text() == (
+        "This password must contain at least 1 digit(s), 0-9."
+    )
+    assert validation.NumberValidator(min=2).get_help_text() == (
+        "This password must contain at least 2 digit(s), 0-9."
+    )
+
+
+def test_UppercaseValidator_help_text():
+    assert validation.UppercaseValidator(min=1).get_help_text() == (
+        "This password must contain at least 1 uppercase letter, A-Z."
+    )
+    assert validation.UppercaseValidator(min=2).get_help_text() == (
+        "This password must contain at least 2 uppercase letter, A-Z."
+    )
+
+
+def test_LowercaseValidator_help_text():
+    assert validation.LowercaseValidator(min=1).get_help_text() == (
+        "This password must contain at least 1 lowercase letter, a-z."
+    )
+    assert validation.LowercaseValidator(min=2).get_help_text() == (
+        "This password must contain at least 2 lowercase letter, a-z."
+    )
+
+
+def test_SymbolValidator_help_text():
+    assert validation.SymbolValidator(min=1).get_help_text() == (
+        r"This password must contain at least 1 symbol: ()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
+    )
+    assert validation.SymbolValidator(min=2).get_help_text() == (
+        r"This password must contain at least 2 symbol: ()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
+    )
 
 
 def make_valid_password():
@@ -15,7 +109,7 @@ def test_reset_check_schema_all_ok():
     data = {
         "reset_key": "reset_key",
     }
-    result = validation.ResetCheckSchema().load(data)
+    result = validation.ResetPasswordCheckSchema().load(data)
 
     assert result == data
 
@@ -27,7 +121,7 @@ def test_reset_password_schema_all_ok():
         "password1": password,
         "password2": password,
     }
-    result = validation.ResetPasswordSchema().load(data)
+    result = validation.ResetPasswordCompleteSchema().load(data)
 
     assert result == data
 
@@ -40,7 +134,7 @@ def test_reset_password_load_data_from_schema_invalid():
     }
     with pytest.raises(SchemaError) as e:
         load_data_from_schema(
-            validation.ResetPasswordSchema(), data
+            validation.ResetPasswordCompleteSchema(), data
         )
     assert e.value.errors["password1"] == [
         "This password is too short. It must contain at least 8 characters.",
@@ -51,7 +145,7 @@ def test_reset_password_load_data_from_schema_invalid():
     ]
 
 
-def test_reset_password_load_data_from_schema_passwords_dont_match():
+def test_reset_password_complete_load_data_from_schema_passwords_dont_match():
     password1 = make_valid_password()
     password2 = make_valid_password()
     data = {
@@ -61,7 +155,7 @@ def test_reset_password_load_data_from_schema_passwords_dont_match():
     }
     with pytest.raises(SchemaError) as e:
         load_data_from_schema(
-            validation.ResetPasswordSchema(), data
+            validation.ResetPasswordCompleteSchema(), data
         )
     assert e.value.errors["password2"] == [
         "Passwords must match."

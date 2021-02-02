@@ -111,11 +111,15 @@ class RegisterSchema(Schema):
         return data
 
 
-class ResetCheckSchema(Schema):
+class ResetPasswordSchema(Schema):
+    email = fields.Email(required=True)
+
+
+class ResetPasswordCheckSchema(Schema):
     reset_key = fields.Str(required=True)
 
 
-class ResetPasswordSchema(Schema):
+class ResetPasswordCompleteSchema(Schema):
     reset_key = fields.Str(required=True)
     password1 = fields.Str(required=True)
     password2 = fields.Str(required=True)
