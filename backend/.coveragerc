@@ -1,6 +1,6 @@
 [run]
 omit =
-    app/wsgi.py
+    app/projectx/wsgi.py
     app/manage.py
     app/**/migrations/**
 

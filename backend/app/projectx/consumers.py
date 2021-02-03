@@ -32,7 +32,7 @@ class BaseWebSocketConsumer(JsonWebsocketConsumer):
             logger.exception("No data in message %s", message)
 
     def receive_json(self, content, **kwargs):
-        logger.debug("receive_json %s", content)
+        logger.debug("receive_json %s.", content)
         logger.warning("Ignoring message %s.", content)
 
     def disconnect(self, code):
