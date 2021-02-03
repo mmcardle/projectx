@@ -6,13 +6,11 @@ import uuid
 from asgiref.sync import AsyncToSync
 from channels.layers import get_channel_layer
 from django.conf import settings
-from django.contrib.auth.models import (AbstractUser, BaseUserManager,
-                                        PermissionsMixin)
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core import signing
 from django.core.mail import send_mail
 from django.core.signing import BadSignature
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from django_redis import get_redis_connection
 
 from common.models import IndexedTimeStampedModel
@@ -98,10 +96,12 @@ class User(AbstractUser, IndexedTimeStampedModel):
     def _last_login_timestamp(self):
         if self.last_login:
             return calendar.timegm(self.last_login.utctimetuple())
+        return None
 
     def _last_login_timestamp_iso(self):
         if self.last_login:
             return self.last_login.isoformat()
+        return None
 
     def activate(self):
         self.is_active = True
@@ -126,7 +126,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         schema = "http" if settings.DEBUG else "https"
         port = ":8000" if settings.DEBUG else ""
 
-        message = emails.reset_password.format(
+        message = emails.RESET_PASSWORD.format(
             title="ProjectX Password Reset",
             expiration="%s hours" % MAX_PASSWORD_RESET_HOURS,
             schema=schema,
@@ -166,8 +166,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         all the addresses.
         """
         logger.exception(
-            "Multiple users with the same case insensitive email %s"
-            % email
+            "Multiple users with the same case insensitive email %s", email
         )
 
     @classmethod
@@ -208,10 +207,8 @@ class User(AbstractUser, IndexedTimeStampedModel):
                     payload = json.loads(raw_payload)
                     if payload["key"] == key:
                         return user, ""
-                    else:
-                        return None, "Password Reset key invalid or expired"
-                else:
-                    return None, "No Password Reset key found"
+                    return None, "Password Reset key invalid or expired"
+                return None, "No Password Reset key found"
             except cls.DoesNotExist:
                 return None, "No such user"
             except cls.MultipleObjectsReturned:
@@ -244,7 +241,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
         url = request.build_absolute_uri("/activate/%s" % key)
 
-        message = emails.account_activation.format(
+        message = emails.ACCOUNT_ACTIVATION.format(
             expiration="%s hours" % MAX_ACTIVATION_HOURS,
             url=url
         )

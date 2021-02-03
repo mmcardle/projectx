@@ -1,22 +1,19 @@
-import ipaddress
 import json
 import logging
 
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.template import engines
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
-from . import decorators, models, validation
+from . import decorators, models
 
 logger = logging.getLogger(__name__)
 
@@ -33,19 +30,17 @@ def _request_is_sudo(request):
 def _get_logout_url(request):
     if _request_is_sudo(request):
         return reverse("admin_su_logout")
-    else:
-        return reverse("user_api_logout")
+    return reverse("user_api_logout")
 
 
-def user(request):
+def user_details(request):
     if request.user.is_authenticated:
         return JsonResponse({
             "user": request.user.to_json(),
             "token": _get_token(request),
             "logout_url": _get_logout_url(request)
         })
-    else:
-        return JsonResponse({"user": None})
+    return JsonResponse({"user": None})
 
 
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
@@ -64,10 +59,8 @@ def login(request):
                 "token": request.META["CSRF_COOKIE"],
                 "logout_url": _get_logout_url(request)
             })
-        else:
-            return JsonResponse({"success": False}, status=401)
-    else:
-        return JsonResponse({"token": _get_token(request)})
+        return JsonResponse({"success": False}, status=401)
+    return JsonResponse({"token": _get_token(request)})
 
 
 @login_required

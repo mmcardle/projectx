@@ -44,14 +44,14 @@ def test_get_logout_url_su_request():
     assert api._get_logout_url(su_request) == "/admin/su/logout/"
 
 
-def test_user_authenticated(mocker):
+def test_user_details_authenticated(mocker):
 
     JsonResponse = mocker.patch("users.api.JsonResponse")
     mocker.patch("users.api._get_token", return_value="token")
 
     user = mock.Mock()
     request = make_request(user=user)
-    api.user(request)
+    api.user_details(request)
 
     assert JsonResponse.mock_calls == [
         mock.call({
@@ -62,13 +62,13 @@ def test_user_authenticated(mocker):
     ]
 
 
-def test_user_unauthenticated(mocker):
+def test_user_details_unauthenticated(mocker):
 
     JsonResponse = mocker.patch("users.api.JsonResponse")
 
     user = mock.Mock(is_authenticated=False)
     request = make_request(user=user)
-    api.user(request)
+    api.user_details(request)
 
     assert JsonResponse.mock_calls == [
         mock.call({"user": None})

@@ -8,94 +8,94 @@ from users.models import User
 
 
 def test_NumberValidator():
-    validation.NumberValidator(min=1).validate("1")
+    validation.NumberValidator(minimum=1).validate("1")
 
 
 def test_UppercaseValidator():
-    validation.UppercaseValidator(min=1).validate("A")
+    validation.UppercaseValidator(minimum=1).validate("A")
 
 
 def test_LowercaseValidator():
-    validation.LowercaseValidator(min=1).validate("a")
+    validation.LowercaseValidator(minimum=1).validate("a")
 
 
 def test_SymbolValidator():
-    validation.SymbolValidator(min=1).validate("$")
+    validation.SymbolValidator(minimum=1).validate("$")
 
 
 def test_NumberValidator_zero():
-    validation.NumberValidator(min=0).validate("")
+    validation.NumberValidator(minimum=0).validate("")
 
 
 def test_UppercaseValidator_zero():
-    validation.UppercaseValidator(min=0).validate("")
+    validation.UppercaseValidator(minimum=0).validate("")
 
 
 def test_LowercaseValidator_zero():
-    validation.LowercaseValidator(min=0).validate("")
+    validation.LowercaseValidator(minimum=0).validate("")
 
 
 def test_SymbolValidator_zero():
-    validation.SymbolValidator(min=0).validate("")
+    validation.SymbolValidator(minimum=0).validate("")
 
 
 def test_NumberValidator_not_enough():
     with pytest.raises(DjangoValidationError):
-        validation.NumberValidator(min=2).validate("1")
+        validation.NumberValidator(minimum=2).validate("1")
 
 
 def test_UppercaseValidator_not_enough():
     with pytest.raises(DjangoValidationError):
-        validation.UppercaseValidator(min=2).validate("A")
+        validation.UppercaseValidator(minimum=2).validate("A")
 
 
 def test_LowercaseValidator_not_enough():
     with pytest.raises(DjangoValidationError):
-        validation.LowercaseValidator(min=2).validate("a")
+        validation.LowercaseValidator(minimum=2).validate("a")
 
 
 def test_SymbolValidator_not_enough():
     with pytest.raises(DjangoValidationError):
-        validation.SymbolValidator(min=2).validate("$")
+        validation.SymbolValidator(minimum=2).validate("$")
 
 
 @pytest.mark.parametrize("symbol", validation.SymbolValidator.symbols)
 def test_SymbolValidator_all_valid_chars(symbol):
-    validation.SymbolValidator(min=1).validate(symbol)
+    validation.SymbolValidator(minimum=1).validate(symbol)
 
 
 def test_NumberValidator_help_text():
-    assert validation.NumberValidator(min=1).get_help_text() == (
+    assert validation.NumberValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 digit(s), 0-9."
     )
-    assert validation.NumberValidator(min=2).get_help_text() == (
+    assert validation.NumberValidator(minimum=2).get_help_text() == (
         "This password must contain at least 2 digit(s), 0-9."
     )
 
 
 def test_UppercaseValidator_help_text():
-    assert validation.UppercaseValidator(min=1).get_help_text() == (
+    assert validation.UppercaseValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 uppercase letter, A-Z."
     )
-    assert validation.UppercaseValidator(min=2).get_help_text() == (
+    assert validation.UppercaseValidator(minimum=2).get_help_text() == (
         "This password must contain at least 2 uppercase letter, A-Z."
     )
 
 
 def test_LowercaseValidator_help_text():
-    assert validation.LowercaseValidator(min=1).get_help_text() == (
+    assert validation.LowercaseValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 lowercase letter, a-z."
     )
-    assert validation.LowercaseValidator(min=2).get_help_text() == (
+    assert validation.LowercaseValidator(minimum=2).get_help_text() == (
         "This password must contain at least 2 lowercase letter, a-z."
     )
 
 
 def test_SymbolValidator_help_text():
-    assert validation.SymbolValidator(min=1).get_help_text() == (
+    assert validation.SymbolValidator(minimum=1).get_help_text() == (
         r"This password must contain at least 1 symbol: ()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
     )
-    assert validation.SymbolValidator(min=2).get_help_text() == (
+    assert validation.SymbolValidator(minimum=2).get_help_text() == (
         r"This password must contain at least 2 symbol: ()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
     )
 

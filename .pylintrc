@@ -1,0 +1,8 @@
+[MASTER]
+load-plugins=pylint_django
+django-settings-module=projectx.settings
+disable=
+    missing-docstring,\
+    missing-module-docstring
+max-line-length=120
+init-hook=sys.path.append("backend/app/")

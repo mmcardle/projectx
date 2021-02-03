@@ -1,6 +1,4 @@
-import json
 import logging
-from json.decoder import JSONDecodeError
 
 from channels.consumer import SyncConsumer
 
