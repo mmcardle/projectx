@@ -8,7 +8,7 @@ from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
 from users.models import (REDIS_ACCOUNT_ACTIVATION_KEY,
-                          REDIS_PASSWORD_RESET_KEY, LowercaseEmailField, User)
+                          REDIS_PASSWORD_RESET_KEY, User)
 
 
 @pytest.mark.django_db
@@ -26,11 +26,6 @@ def test_UserManager():
 
     assert user_with_username.email == "another@tempurl.com"
     assert user_with_username.username == "username"
-
-
-def test_LowercaseEmailField():
-    assert LowercaseEmailField().to_python(None) is None
-    assert LowercaseEmailField().to_python("NONE@tempurl.com") == "none@tempurl.com"
 
 
 @pytest.mark.django_db
