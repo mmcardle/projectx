@@ -1,3 +1,4 @@
+# pylint: disable=no-self-use
 import logging
 import re
 
@@ -11,12 +12,13 @@ from users.models import User
 logger = logging.getLogger(__name__)
 
 
-class NumberValidator(object):
+class NumberValidator():
 
-    def __init__(self, min=0):
-        self.min = min
+    def __init__(self, minimum=0):
+        self.min = minimum
 
     def validate(self, password, user=None):
+        # pylint: disable=unused-argument
         if not len(re.findall(r"\d", password)) >= self.min:
             raise DjangoValidationError(
                 _(f"This password must contain at least {self.min} digit(s), 0-9."),
@@ -27,12 +29,13 @@ class NumberValidator(object):
         return _(f"This password must contain at least {self.min} digit(s), 0-9.")
 
 
-class UppercaseValidator(object):
+class UppercaseValidator():
 
-    def __init__(self, min=0):
-        self.min = min
+    def __init__(self, minimum=0):
+        self.min = minimum
 
     def validate(self, password, user=None):
+        # pylint: disable=unused-argument
         if not len(re.findall(r"[A-Z]", password)) >= self.min:
             raise DjangoValidationError(
                 _(f"This password must contain at least {self.min} uppercase letter, A-Z."),
@@ -43,12 +46,13 @@ class UppercaseValidator(object):
         return _(f"This password must contain at least {self.min} uppercase letter, A-Z.")
 
 
-class LowercaseValidator(object):
+class LowercaseValidator():
 
-    def __init__(self, min=0):
-        self.min = min
+    def __init__(self, minimum=0):
+        self.min = minimum
 
     def validate(self, password, user=None):
+        # pylint: disable=unused-argument
         if not len(re.findall(r"[a-z]", password)) >= self.min:
             raise DjangoValidationError(
                 _(f"This password must contain at least {self.min} lowercase letter, a-z."),
@@ -59,14 +63,15 @@ class LowercaseValidator(object):
         return _(f"This password must contain at least {self.min} lowercase letter, a-z.")
 
 
-class SymbolValidator(object):
+class SymbolValidator():
 
     symbols = r"()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
 
-    def __init__(self, min=0):
-        self.min = min
+    def __init__(self, minimum=0):
+        self.min = minimum
 
     def validate(self, password, user=None):
+        # pylint: disable=unused-argument
         if not len(re.findall(r"[()[\]{}|\\`~!@#$%^&*_\-+=;:'\",<>./?]", password)) >= self.min:
             raise DjangoValidationError(
                 _(f"This password must contain at least {self.min} symbol: {self.symbols}"),
@@ -106,16 +111,21 @@ class RegisterSchema(Schema):
 
     @post_load
     def check_passwords(self, data, **kwargs):
+        # pylint: disable=unused-argument
         if data["password1"] != data["password2"]:
             raise ValidationError("Passwords must match.", "password2")
         return data
 
 
-class ResetCheckSchema(Schema):
+class ResetPasswordSchema(Schema):
+    email = fields.Email(required=True)
+
+
+class ResetPasswordCheckSchema(Schema):
     reset_key = fields.Str(required=True)
 
 
-class ResetPasswordSchema(Schema):
+class ResetPasswordCompleteSchema(Schema):
     reset_key = fields.Str(required=True)
     password1 = fields.Str(required=True)
     password2 = fields.Str(required=True)
@@ -124,11 +134,12 @@ class ResetPasswordSchema(Schema):
     def validate_password1(self, value):
         try:
             validate_password(value)
-        except DjangoValidationError as e:
-            raise ValidationError(e.messages, "password1")
+        except DjangoValidationError as django_ex:
+            raise ValidationError(django_ex.messages, "password1") from django_ex
 
     @post_load
     def check_passwords(self, data, **kwargs):
+        # pylint: disable=unused-argument
         if data["password1"] != data["password2"]:
             raise ValidationError("Passwords must match.", "password2")
         return data
@@ -148,6 +159,7 @@ class ChangePasswordSchema(Schema):
 
     @post_load
     def check_passwords(self, data, **kwargs):
+        # pylint: disable=unused-argument
         if data["password1"] != data["password2"]:
             raise ValidationError("Passwords must match.", "password2")
         return data
@@ -178,11 +190,11 @@ class ActivateCheckSchema(Schema):
 
     def check_activate_key(self, activate_key):
 
-        user, error = User.check_activation_key(activate_key)
+        user, _ = User.check_activation_key(activate_key)
         if user is None:
             # User has failed activation check
             # Check if the token has expired
-            expired_user, expired_error = User.check_activation_key(
+            expired_user, _ = User.check_activation_key(
                 activate_key, max_age=None
             )
             if expired_user:
@@ -200,6 +212,7 @@ class ActivateCheckSchema(Schema):
 
     @post_load
     def post_process(self, data, **kwargs):
+        # pylint: disable=unused-argument
         activate_key = data["activate_key"]
         data["user"] = self.check_activate_key(activate_key)
         return data
@@ -216,11 +229,13 @@ class ActivateSchema(ActivateCheckSchema):
     @validates("username")
     def validate_username_length(self, username):
         if len(username) < 3:
-            raise ValidationError("Sorry that username is too short, must be 3 characters or more.", "username")
+            raise ValidationError(
+                "Sorry that username is too short, must be 3 characters or more.", "username"
+            )
         try:
             User.username_validator(username)
-        except DjangoValidationError as e:
-            raise ValidationError(e.messages, "username")
+        except DjangoValidationError as django_ex:
+            raise ValidationError(django_ex.messages, "username") from django_ex
 
     def check_for_unique_username(self, username):
         if User.objects.filter(username=username).exists():
@@ -230,8 +245,8 @@ class ActivateSchema(ActivateCheckSchema):
     def validate_password1(self, value):
         try:
             validate_password(value)
-        except DjangoValidationError as e:
-            raise ValidationError(e.messages, "password1")
+        except DjangoValidationError as django_ex:
+            raise ValidationError(django_ex.messages, "password1") from django_ex
 
     @post_load
     def post_process(self, data, **kwargs):

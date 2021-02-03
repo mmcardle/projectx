@@ -9,13 +9,19 @@ https://docs.djangoproject.com/
 import os
 from pathlib import Path
 
-import daphne.server  # noqa
 import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-env = environ.Env(DEBUG=(bool, False), )
+env = environ.Env(
+    DEBUG=(bool, False),
+    SECRET_KEY=(str, "SECRET_KEY"),
+    PUBLIC_IP=(str, "localhost"),
+    DATABASE_URL=(str, "psql://postgres:mysecretpassword@localhost:5432/postgres"),
+    CACHE_URL=(str, "redis://@localhost:6379/0"),
+    CHANNELS_REDIS_URL=(str, "redis://localhost:6379/1"),
+)
 
 SECRET_KEY = env.str("SECRET_KEY")
 DEBUG = env("DEBUG")
@@ -26,7 +32,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = [PUBLIC_IP]
 
-if DEBUG:
+if DEBUG:  # pragma: no cover
     ALLOWED_HOSTS.append("projectx")  # Allows connections from internal docker services
 
 # Application definition
@@ -93,10 +99,10 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
     # Custom validators
-    {"NAME": "users.validation.NumberValidator", "OPTIONS": {"min": 1}},
-    {"NAME": "users.validation.UppercaseValidator", "OPTIONS": {"min": 1}},
-    {"NAME": "users.validation.LowercaseValidator", "OPTIONS": {"min": 1}},
-    {"NAME": "users.validation.SymbolValidator", "OPTIONS": {"min": 1}},
+    {"NAME": "users.validation.NumberValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "users.validation.UppercaseValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "users.validation.LowercaseValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "users.validation.SymbolValidator", "OPTIONS": {"minimum": 1}},
 ]
 
 # Internationalization
@@ -140,7 +146,7 @@ DEFAULT_FROM_EMAIL = "noreply@projectx.com"
 if DEBUG:  # pragma: no cover
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    # TODO Choose a production email backend
+    # Choose a production email backend
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Logging setup

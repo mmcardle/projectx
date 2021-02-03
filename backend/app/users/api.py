@@ -1,32 +1,21 @@
-import ipaddress
 import json
 import logging
 
-from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.template import engines
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
-from common.validation import SchemaError, load_data_from_schema
-
-from . import decorators, models, validation
+from . import decorators, models
 
 logger = logging.getLogger(__name__)
-
-change_password_schema = validation.ChangePasswordSchema()
-change_details_schema = validation.ChangeDetailsSchema()
-register_schema = validation.RegisterSchema()
-reset_password_schema = validation.ResetPasswordSchema()
-reset_check_schema = validation.ResetCheckSchema()
 
 
 def _get_token(request):
@@ -41,19 +30,17 @@ def _request_is_sudo(request):
 def _get_logout_url(request):
     if _request_is_sudo(request):
         return reverse("admin_su_logout")
-    else:
-        return reverse("user_api_logout")
+    return reverse("user_api_logout")
 
 
-def user(request):
+def user_details(request):
     if request.user.is_authenticated:
         return JsonResponse({
             "user": request.user.to_json(),
             "token": _get_token(request),
             "logout_url": _get_logout_url(request)
         })
-    else:
-        return JsonResponse({"user": None})
+    return JsonResponse({"user": None})
 
 
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
@@ -72,10 +59,8 @@ def login(request):
                 "token": request.META["CSRF_COOKIE"],
                 "logout_url": _get_logout_url(request)
             })
-        else:
-            return JsonResponse({"success": False}, status=401)
-    else:
-        return JsonResponse({"token": _get_token(request)})
+        return JsonResponse({"success": False}, status=401)
+    return JsonResponse({"token": _get_token(request)})
 
 
 @login_required
@@ -85,20 +70,11 @@ def logout(request):
 
 
 @require_http_methods(["POST"])
+@decorators.register_payload
 def register(request):
 
-    try:
-        register_data = load_data_from_schema(
-            register_schema, json.loads(request.body)
-        )
-    except SchemaError as e:
-        return JsonResponse(
-            {"error": True, "errors": e.errors}, status=401
-        )
-
-    existing_user = models.User.objects.filter(
-        email__iexact=register_data.get("email")
-    ).exists()
+    email = request.validated_data.get("email")
+    existing_user = models.User.email_exists(email)
 
     if existing_user:
         errors = {"email": ["This email is already registered"]}
@@ -106,7 +82,7 @@ def register(request):
             {"error": True, "errors": errors}, status=401
         )
 
-    new_user = models.User.create_inactive_user(register_data)
+    new_user = models.User.create_inactive_user(request.validated_data)
     new_user.send_account_activation_email(request)
 
     return JsonResponse(new_user.to_json())
@@ -114,37 +90,50 @@ def register(request):
 
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.reset_password_payload
 def reset_password(request):
 
-    try:
-        email = json.loads(request.body)["email"]
-    except (json.decoder.JSONDecodeError, KeyError):
-        logger.exception("Reset Password Failure")
-        return JsonResponse({"error": True}, status=401)
-
-    models.User.reset_email(email)
+    email = request.validated_data["email"]
+    if models.User.email_exists(email):
+        models.User.reset_email(email, request)
+    else:
+        # Do nothing different to prevent email enumeration
+        pass
 
     return JsonResponse({})
+
+
+@require_http_methods(["POST"])
+@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.reset_password_complete_payload
+def reset_password_complete(request):
+
+    reset_data = request.validated_data
+    key = reset_data.get("reset_key")
+
+    user, error = models.User.check_reset_key(key)
+    if user is None:
+        return JsonResponse({"error": error}, status=401)
+
+    user.set_password(reset_data.get("password1"))
+    user.save()
+
+    # Key can only be used once
+    user.delete_reset_key(user.email)
+
+    return JsonResponse(user.to_json())
 
 
 @login_required
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.change_password_payload
 def change_password(request):
 
-    try:
-        change_password_data = load_data_from_schema(
-            change_password_schema, json.loads(request.body)
-        )
-    except SchemaError as e:
-        return JsonResponse(
-            {"error": True, "errors": e.errors}, status=401
-        )
-
-    current_password = change_password_data["current_password"]
+    current_password = request.validated_data["current_password"]
     user = authenticate(username=request.user.email, password=current_password)
     if user is not None:
-        password1 = change_password_data["password1"]
+        password1 = request.validated_data["password1"]
         user.set_password(password1)
         user.save()
         update_session_auth_hash(request, user)
@@ -160,16 +149,10 @@ def change_password(request):
 @login_required
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.change_details_payload
 def change_details(request):
 
-    try:
-        change_details_data = load_data_from_schema(
-            change_details_schema, json.loads(request.body)
-        )
-    except SchemaError as e:
-        return JsonResponse(
-            {"error": True, "errors": e.errors}, status=401
-        )
+    change_details_data = request.validated_data
 
     user = request.user
     user.first_name = change_details_data["first_name"]
@@ -181,54 +164,16 @@ def change_details(request):
 
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
+@decorators.reset_password_check_payload
 def reset_password_check(request):
 
-    try:
-        reset_check_validation = load_data_from_schema(
-            reset_check_schema, json.loads(request.body)
-        )
-    except SchemaError as e:
-        return JsonResponse(
-            {"error": True, "errors": e.errors}, status=401
-        )
-
-    reset_data = reset_check_validation
-    key = reset_data.get("reset_key")
+    key = request.validated_data.get("reset_key")
 
     user, error = models.User.check_reset_key(key)
     if user is None:
         return JsonResponse({"error": error}, status=401)
 
     return JsonResponse({"email": user.email})
-
-
-@require_http_methods(["POST"])
-@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
-def reset_password_complete(request):
-
-    try:
-        reset_complete_validation = load_data_from_schema(
-            reset_password_schema, json.loads(request.body)
-        )
-    except SchemaError as e:
-        return JsonResponse(
-            {"error": True, "errors": e.errors}, status=401
-        )
-
-    reset_data = reset_complete_validation
-    key = reset_data.get("reset_key")
-
-    user, error = models.User.check_reset_key(key)
-    if user is None:
-        return JsonResponse({"error": error}, status=401)
-
-    user.set_password(reset_data.get("password1"))
-    user.save()
-
-    # Key can only be used once
-    user.delete_reset_key(user.email)
-
-    return JsonResponse(user.to_json())
 
 
 @require_http_methods(["POST"])

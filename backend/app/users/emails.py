@@ -1,11 +1,11 @@
-reset_password = '''
+RESET_PASSWORD = '''
 Please click on the link below to reset your email within {expiration} ...
-{schema}://{site}{port}{url}
+{url}
 Regards
 ProjectX
 '''  # noqa
 
-account_activation = '''
+ACCOUNT_ACTIVATION = '''
 Please click on the link below to activate your account within {expiration} ...
 {url}
 Regards

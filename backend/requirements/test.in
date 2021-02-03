@@ -2,6 +2,8 @@
 autopep8
 isort
 pycodestyle
+pylint
+pylint_django
 pytest
 pytest-asyncio
 pytest-coverage

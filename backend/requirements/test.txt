@@ -15,6 +15,8 @@ asgiref==3.3.1
     #   channels-redis
     #   daphne
     #   django
+astroid==2.4.2
+    # via pylint
 async-timeout==3.0.1
     # via
     #   -r requirements/requirements.txt
@@ -124,9 +126,15 @@ incremental==17.5.0
 iniconfig==1.1.1
     # via pytest
 isort==5.7.0
-    # via -r requirements/test.in
+    # via
+    #   -r requirements/test.in
+    #   pylint
+lazy-object-proxy==1.4.3
+    # via astroid
 marshmallow==3.10.0
     # via -r requirements/requirements.txt
+mccabe==0.6.1
+    # via pylint
 msgpack==1.0.2
     # via
     #   -r requirements/requirements.txt
@@ -168,6 +176,15 @@ pyhamcrest==2.0.2
     # via
     #   -r requirements/requirements.txt
     #   twisted
+pylint-django==2.4.2
+    # via -r requirements/test.in
+pylint-plugin-utils==0.6
+    # via pylint-django
+pylint==2.6.0
+    # via
+    #   -r requirements/test.in
+    #   pylint-django
+    #   pylint-plugin-utils
 pyopenssl==20.0.1
     # via
     #   -r requirements/requirements.txt
@@ -214,6 +231,7 @@ service-identity==18.1.0
 six==1.15.0
     # via
     #   -r requirements/requirements.txt
+    #   astroid
     #   automat
     #   cryptography
     #   pyopenssl
@@ -228,6 +246,7 @@ starlette==0.13.6
 toml==0.10.2
     # via
     #   autopep8
+    #   pylint
     #   pytest
 twisted[http2,tls]==20.3.0
     # via
@@ -245,6 +264,8 @@ uvicorn==0.13.3
     # via -r requirements/requirements.txt
 uwsgi==2.0.19.1
     # via -r requirements/requirements.txt
+wrapt==1.12.1
+    # via astroid
 zope.interface==5.2.0
     # via
     #   -r requirements/requirements.txt

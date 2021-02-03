@@ -13,6 +13,7 @@ build:
 
 lint:
 	pycodestyle backend/app/ backend/tests/
+	pylint backend/app
 	isort --check-only --diff backend/app backend/tests
 	unify --check-only --recursive --quote \" backend/app backend/tests
 

@@ -1,12 +1,32 @@
 from unittest import mock
 
-import pytest
-
-from users.admin import ProjectXUserAdmin
+from users.admin import ProjectXUserAdmin, send_activation_email
 from users.models import User
 
 
-def test_admin(mocker):
+def test_send_activation_email(mocker):
+
+    messages = mocker.patch("users.admin.messages")
+    request = mock.Mock()
+    user1 = mocker.Mock()
+    user2 = mocker.Mock()
+    queryset = [user1, user2]
+
+    send_activation_email(None, request, queryset)
+
+    assert messages.mock_calls == [
+        mock.call.info(request, "%s Activation Email Sent." % user1),
+        mock.call.info(request, "%s Activation Email Sent." % user2),
+    ]
+    assert user1.mock_calls == [
+        mocker.call.send_account_activation_email(request)
+    ]
+    assert user2.mock_calls == [
+        mocker.call.send_account_activation_email(request)
+    ]
+
+
+def test_admin():
 
     admin = ProjectXUserAdmin(User, mock.Mock())
 
