@@ -95,7 +95,7 @@ def reset_password(request):
 
     email = request.validated_data["email"]
     if models.User.email_exists(email):
-        models.User.reset_email(email)
+        models.User.reset_email(email, request)
     else:
         # Do nothing different to prevent email enumeration
         pass

@@ -262,7 +262,7 @@ def test_reset_password(mocker):
     ]
     assert User.mock_calls == [
         mock.call.email_exists("none@example.com"),
-        mock.call.reset_email("none@example.com"),
+        mock.call.reset_email("none@example.com", request),
     ]
 
 

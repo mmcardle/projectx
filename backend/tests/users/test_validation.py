@@ -105,6 +105,55 @@ def make_valid_password():
     return User.objects.make_random_password() + "aA$1"
 
 
+def test_register_schema():
+    data = {
+        "email": "none@tempurl.com",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "password1": "password",
+        "password2": "password",
+    }
+    result = validation.RegisterSchema().load(data)
+    assert result == data
+
+
+def test_register_schema_non_matching_passwords():
+    data = {
+        "email": "none@tempurl.com",
+        "first_name": "first_name",
+        "last_name": "last_name",
+        "password1": "Password_!1",
+        "password2": "Password_!2",
+    }
+    with pytest.raises(SchemaError) as e:
+        load_data_from_schema(
+            validation.RegisterSchema(), data
+        )
+    assert e.value.errors == {
+        "password2": ["Passwords must match."]
+    }
+
+
+def test_register_schema_bad_data():
+    data = {
+        "email": "not_an_email",
+        "first_name": "X" * 50,
+        "last_name": "X" * 50,
+        "password1": "P1",
+        "password2": "P2",
+    }
+    with pytest.raises(SchemaError) as e:
+        load_data_from_schema(
+            validation.RegisterSchema(), data
+        )
+    assert e.value.errors == {
+        "email": ["Not a valid email address."],
+        "first_name": ["First Name must be less than 40 characters."],
+        "last_name": ["Last Name must be less than 40 characters."],
+        "password1": ["Password must be greater than 8 characters."]
+    }
+
+
 def test_reset_check_schema_all_ok():
     data = {
         "reset_key": "reset_key",
@@ -162,6 +211,70 @@ def test_reset_password_complete_load_data_from_schema_passwords_dont_match():
     ]
 
 
+def test_change_password_schema():
+    data = {
+        "current_password": "current_password",
+        "password1": "password",
+        "password2": "password",
+    }
+    result = validation.ChangePasswordSchema().load(data)
+    assert result == data
+
+
+def test_change_password_non_matching_passwords():
+    data = {
+        "current_password": "current_password",
+        "password1": "Password_!1",
+        "password2": "Password_!2",
+    }
+    with pytest.raises(SchemaError) as e:
+        load_data_from_schema(
+            validation.ChangePasswordSchema(), data
+        )
+    assert e.value.errors == {
+        "password2": ["Passwords must match."]
+    }
+
+
+def test_change_password_bad_data():
+    data = {
+        "current_password": "current_password",
+        "password1": "P1",
+        "password2": "P2",
+    }
+    with pytest.raises(SchemaError) as e:
+        load_data_from_schema(
+            validation.ChangePasswordSchema(), data
+        )
+    assert e.value.errors == {
+        "password1": ["Password must be greater than 8 characters."]
+    }
+
+
+def test_change_details_schema():
+    data = {
+        "first_name": "first_name",
+        "last_name": "last_name",
+    }
+    result = validation.ChangeDetailsSchema().load(data)
+    assert result == data
+
+
+def test_change_details_schema_bad_data():
+    data = {
+        "first_name": "X" * 50,
+        "last_name": "X" * 50,
+    }
+    with pytest.raises(SchemaError) as e:
+        load_data_from_schema(
+            validation.ChangeDetailsSchema(), data
+        )
+    assert e.value.errors == {
+        "first_name": ["First Name must be less than 40 characters."],
+        "last_name": ["Last Name must be less than 40 characters."],
+    }
+
+
 @pytest.mark.django_db
 def test_ActivateCheckSchema_valid_key(mocker):
 
@@ -179,7 +292,7 @@ def test_ActivateCheckSchema_valid_key(mocker):
 @pytest.mark.django_db
 def test_ActivateCheckSchema_bad_key(mocker):
 
-    user = User.objects.create(username="user")
+    User.objects.create(username="user")
     check_activation_key = mocker.patch("users.validation.User.check_activation_key",
                                         side_effect=[(None, None), (None, None)])
 

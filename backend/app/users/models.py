@@ -20,9 +20,10 @@ from . import emails
 logger = logging.getLogger(__name__)
 
 REDIS_PASSWORD_RESET_KEY = "password_reset"
-
-ACTIVATION_SALT = "account_activation"
 PASSWORD_RESET_SALT = "password_reset"
+
+REDIS_ACCOUNT_ACTIVATION_KEY = "account_activation"
+ACCOUNT_ACTIVATION_SALT = "account_activation"
 
 MAX_PASSWORD_RESET_HOURS = 24
 MAX_PASSWORD_RESET_SECONDS = 60 * 60 * MAX_PASSWORD_RESET_HOURS
@@ -50,9 +51,18 @@ class UserManager(BaseUserManager):
         return user
 
 
+class LowercaseEmailField(models.EmailField):
+    def to_python(self, value):
+        value = super().to_python(value)
+        # Value can be None so check that it's a string before lowercasing.
+        if isinstance(value, str):
+            return value.lower()
+        return value
+
+
 class User(AbstractUser, IndexedTimeStampedModel):
 
-    email = models.EmailField(max_length=255, unique=True)
+    email = LowercaseEmailField(max_length=255, unique=True)
     public_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     USERNAME_FIELD = "email"
@@ -87,18 +97,18 @@ class User(AbstractUser, IndexedTimeStampedModel):
             "last_name": self.last_name,
             "display_name": self.display_name(),
             "email": self.email,
-            "last_login_timestamp": self._last_login_timestamp(),
-            "last_login_timestamp_iso": self._last_login_timestamp_iso(),
+            "last_login_timestamp": self.last_login_timestamp(),
+            "last_login_timestamp_iso": self.last_login_timestamp_iso(),
         }
 
         return data
 
-    def _last_login_timestamp(self):
+    def last_login_timestamp(self):
         if self.last_login:
             return calendar.timegm(self.last_login.utctimetuple())
         return None
 
-    def _last_login_timestamp_iso(self):
+    def last_login_timestamp_iso(self):
         if self.last_login:
             return self.last_login.isoformat()
         return None
@@ -107,7 +117,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         self.is_active = True
         self.save()
 
-    def send_reset_password_email(self):
+    def send_reset_password_email(self, request):
 
         key = signing.dumps(
             {"email": self.email}, salt=PASSWORD_RESET_SALT
@@ -121,17 +131,11 @@ class User(AbstractUser, IndexedTimeStampedModel):
             payload
         )
 
-        url = "/password_reset/%s" % key
-
-        schema = "http" if settings.DEBUG else "https"
-        port = ":8000" if settings.DEBUG else ""
+        url = request.build_absolute_uri("/password_reset/%s" % key)
 
         message = emails.RESET_PASSWORD.format(
             title="ProjectX Password Reset",
             expiration="%s hours" % MAX_PASSWORD_RESET_HOURS,
-            schema=schema,
-            site=settings.PUBLIC_IP,
-            port=port,
             url=url
         )
 
@@ -156,78 +160,44 @@ class User(AbstractUser, IndexedTimeStampedModel):
         redis_connection.hdel(REDIS_PASSWORD_RESET_KEY, key)
 
     @classmethod
-    def email_in_error(cls, email):
-        """
-        If we get to here there are multiple users with emails
-        with different cases e.g. (USER@example.com, user@example.com)
-        We try to prevent this at registration but it is possible
-        the user has been editted (in the admin)
-        So lets alart on the exception but still send the email to
-        all the addresses.
-        """
-        logger.exception(
-            "Multiple users with the same case insensitive email %s", email
-        )
-
-    @classmethod
-    def reset_email(cls, email):
+    def reset_email(cls, email, request):
 
         user_exists = cls.objects.filter(
             email__iexact=email
         ).exists()
 
-        try:
-            if user_exists:
-                user = cls.objects.get(email__iexact=email)
-                user.send_reset_password_email()
-            else:
-                # Do nothing if the email does not exist so
-                # that you cannot enumerate the emails
-                pass
-        except cls.MultipleObjectsReturned:
-            cls.email_in_error(email)
-            users = cls.objects.filter(email__iexact=email)
-            for user in users:
-                user.reset_password()
+        if user_exists:
+            user = cls.objects.get(email__iexact=email)
+            user.send_reset_password_email(request)
+        else:
+            # Do nothing if the email does not exist so
+            # that you cannot enumerate the emails
+            pass
 
     @classmethod
-    def check_reset_key(cls, key):
+    def check_reset_key(cls, key, max_age=MAX_PASSWORD_RESET_SECONDS):
+        return cls.check_key(key, PASSWORD_RESET_SALT, max_age, REDIS_PASSWORD_RESET_KEY)
+
+    @classmethod
+    def check_activation_key(cls, key, max_age=MAX_ACTIVATION_SECONDS):
+        return cls.check_key(key, ACCOUNT_ACTIVATION_SALT, max_age, REDIS_ACCOUNT_ACTIVATION_KEY)
+
+    @classmethod
+    def check_key(cls, key, salt, max_age, redis_key):
         try:
-            user_data = signing.loads(
-                key, salt=PASSWORD_RESET_SALT,
-                max_age=MAX_PASSWORD_RESET_SECONDS
-            )
+            user_data = signing.loads(key, salt=salt, max_age=max_age)
 
             email = user_data["email"]
             try:
                 user = cls.objects.get(email__iexact=email)
                 redis_connection = get_redis_connection()
-                raw_payload = redis_connection.hget(REDIS_PASSWORD_RESET_KEY, email)
+                raw_payload = redis_connection.hget(redis_key, email)
                 if raw_payload:
                     payload = json.loads(raw_payload)
                     if payload["key"] == key:
                         return user, ""
-                    return None, "Password Reset key invalid or expired"
-                return None, "No Password Reset key found"
-            except cls.DoesNotExist:
-                return None, "No such user"
-            except cls.MultipleObjectsReturned:
-                cls.email_in_error(email)
-                user = cls.objects.filter(email__iexact=email).first()
-                return user, ""
-        except BadSignature:
-            return None, "Bad Signature"
-
-    @classmethod
-    def check_activation_key(cls, key, max_age=MAX_ACTIVATION_SECONDS):
-        try:
-            user_data = signing.loads(
-                key, salt=ACTIVATION_SALT,
-                max_age=max_age
-            )
-            try:
-                user = cls.objects.get(email=user_data["email"])
-                return user, ""
+                    return None, "Key invalid or expired"
+                return None, "No Key found"
             except cls.DoesNotExist:
                 return None, "No such user"
         except BadSignature:
@@ -236,17 +206,25 @@ class User(AbstractUser, IndexedTimeStampedModel):
     def send_account_activation_email(self, request):
 
         key = signing.dumps(
-            {"email": self.email}, salt=ACTIVATION_SALT
+            {"email": self.email}, salt=ACCOUNT_ACTIVATION_SALT
         )
 
         url = request.build_absolute_uri("/activate/%s" % key)
+
+        redis_connection = get_redis_connection()
+        payload = json.dumps({"key": key}).encode("utf-8")
+        redis_connection.hset(
+            REDIS_ACCOUNT_ACTIVATION_KEY,
+            self.email,
+            payload
+        )
 
         message = emails.ACCOUNT_ACTIVATION.format(
             expiration="%s hours" % MAX_ACTIVATION_HOURS,
             url=url
         )
 
-        subject = "Activate email %s" % self.email
+        subject = "Account Activation for %s" % self.email
 
         send_mail(
             subject,
@@ -261,11 +239,10 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     @classmethod
     def create_inactive_user(cls, user_data):
-        user = cls.objects.create_user(
+        return cls.objects.create_user(
             email=user_data["email"],
             password=user_data["password1"],
             first_name=user_data["first_name"],
             last_name=user_data["last_name"],
             is_active=False
         )
-        return user
