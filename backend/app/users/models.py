@@ -16,6 +16,7 @@ from django_redis import get_redis_connection
 from common.models import IndexedTimeStampedModel
 
 from . import emails
+from .fields import LowercaseEmailField
 
 logger = logging.getLogger(__name__)
 
@@ -49,15 +50,6 @@ class UserManager(BaseUserManager):
         user.is_staff = True
         user.save(using=self._db)
         return user
-
-
-class LowercaseEmailField(models.EmailField):
-    def to_python(self, value):
-        value = super().to_python(value)
-        # Value can be None so check that it's a string before lowercasing.
-        if isinstance(value, str):
-            return value.lower()
-        return value
 
 
 class User(AbstractUser, IndexedTimeStampedModel):

@@ -10,7 +10,8 @@ from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 
 from projectx.routing import websocket_urlpatterns
 
-from django.core.asgi import get_asgi_application  # noqa isort:skip
+from django.core.asgi import get_asgi_application  # noqa isort:skip pylint: disable=wrong-import-order
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projectx.settings")  # noqa
 django_asgi_app = get_asgi_application()  # noqa
 
