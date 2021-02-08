@@ -8,7 +8,7 @@ const host = process.env.PROJECTX_HOST || '127.0.0.1:8000';
 module.exports = (app) => {
   app.use(
     createProxyMiddleware(
-      '/api/',
+      '/app/',
       {
         target: `http://${host}`,
         changeOrigin: true,
