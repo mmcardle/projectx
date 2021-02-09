@@ -15,3 +15,4 @@ psycopg2-binary
 Twisted[tls,http2]
 uvicorn
 uwsgi
+idna<3

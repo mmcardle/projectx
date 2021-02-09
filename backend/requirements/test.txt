@@ -28,7 +28,7 @@ attrs==20.3.0
     #   pytest
     #   service-identity
     #   twisted
-autobahn==20.12.3
+autobahn==21.1.1
     # via
     #   -r requirements/requirements.txt
     #   daphne
@@ -38,6 +38,8 @@ automat==20.2.0
     #   twisted
 autopep8==1.5.4
     # via -r requirements/test.in
+certifi==2020.12.5
+    # via requests
 cffi==1.14.4
     # via
     #   -r requirements/requirements.txt
@@ -48,6 +50,8 @@ channels==3.0.3
     # via
     #   -r requirements/requirements.txt
     #   channels-redis
+chardet==4.0.0
+    # via requests
 click==7.1.2
     # via
     #   -r requirements/requirements.txt
@@ -58,7 +62,7 @@ constantly==15.1.0
     #   twisted
 coverage==5.3.1
     # via pytest-cov
-cryptography==3.3.1
+cryptography==3.4.3
     # via
     #   -r requirements/requirements.txt
     #   autobahn
@@ -80,7 +84,7 @@ django-redis==4.12.1
     # via -r requirements/requirements.txt
 django-su==0.9.0
     # via -r requirements/requirements.txt
-django==3.1.5
+django==3.1.6
     # via
     #   -r requirements/requirements.txt
     #   channels
@@ -114,10 +118,11 @@ hyperlink==21.0.0
     #   -r requirements/requirements.txt
     #   autobahn
     #   twisted
-idna==3.1
+idna==2.10
     # via
     #   -r requirements/requirements.txt
     #   hyperlink
+    #   requests
     #   twisted
 incremental==17.5.0
     # via
@@ -216,7 +221,7 @@ pytest==6.2.1
     #   pytest-env
     #   pytest-mock
     #   pytest-pythonpath
-pytz==2020.5
+pytz==2021.1
     # via
     #   -r requirements/requirements.txt
     #   django
@@ -224,6 +229,8 @@ redis==3.5.3
     # via
     #   -r requirements/requirements.txt
     #   django-redis
+requests==2.25.1
+    # via -r requirements/test.in
 service-identity==18.1.0
     # via
     #   -r requirements/requirements.txt
@@ -233,7 +240,6 @@ six==1.15.0
     #   -r requirements/requirements.txt
     #   astroid
     #   automat
-    #   cryptography
     #   pyopenssl
 sqlparse==0.4.1
     # via
@@ -260,6 +266,8 @@ unify==0.5
     # via -r requirements/test.in
 untokenize==0.1.1
     # via unify
+urllib3==1.26.3
+    # via requests
 uvicorn==0.13.3
     # via -r requirements/requirements.txt
 uwsgi==2.0.19.1
