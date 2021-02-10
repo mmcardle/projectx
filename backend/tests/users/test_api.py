@@ -34,7 +34,7 @@ def test_request_is_sudo():
 
 
 def test_get_logout_url_normal_request():
-    assert api._get_logout_url(make_request()) == "/api/users/logout/"
+    assert api._get_logout_url(make_request()) == "/app/users/logout/"
 
 
 def test_get_logout_url_su_request():
@@ -57,7 +57,7 @@ def test_user_details_authenticated(mocker):
         mock.call({
             "user": user.to_json(),
             "token": "token",
-            "logout_url": "/api/users/logout/"
+            "logout_url": "/app/users/logout/"
         })
     ]
 
@@ -137,7 +137,7 @@ def test_login_POST(mocker):
             "success": True,
             "user": authenticate().to_json(),
             "token": mock.ANY,
-            "logout_url": "/api/users/logout/"
+            "logout_url": "/app/users/logout/"
         })
     ]
     assert django_login.mock_calls == [

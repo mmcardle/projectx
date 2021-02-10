@@ -28,7 +28,7 @@ urlpatterns = [
         ])
     ),
     path(
-        "api/",
+        "app/",
         include([
             path("users/", include("users.urls")),
         ])
