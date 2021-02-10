@@ -86,11 +86,11 @@ async function login(dispatch, email, password) {
   }
 }
 
-async function activate(activation_key) {
+async function activate(activate_key) {
   try {
     const token = await fetchToken(user_url);
     const data = await postJSON(
-      activate_url, {activation_key}, { headers: { 'X-CSRFToken': token } },
+      activate_url, {activate_key}, { headers: { 'X-CSRFToken': token } },
     )
     return Promise.resolve(data);
   } catch (error) {
