@@ -5,8 +5,8 @@ ENV PYTHONUNBUFFERED 1
 
 ##### We require some dev packages to install python requirements
 RUN apt-get -y update && apt-get install --no-install-recommends -y \
-  python3.8 \
-  python3.8-dev \
+  python3.9 \
+  python3.9-dev \
   python3 \
   python3-dev \
   python3-venv \
@@ -22,15 +22,15 @@ RUN groupadd user && useradd --create-home --home-dir /home/user -g user user
 
 WORKDIR /home/user/
 
-##### Installing pip wheel virtualenv circus
-RUN python3.8 -m pip install -U pip
-RUN python3.8 -m pip install pip wheel virtualenv circus
+##### Installing base python dependancies
+RUN python3.9 -m pip install -U pip
+RUN python3.9 -m pip install circus pipenv
 
-##### Creating virtualenv at /home/user/venv
-RUN virtualenv -p python3.8 venv
+COPY Pipfile /home/user/
+COPY Pipfile.lock /home/user/
 
-COPY backend/requirements/requirements.txt backend/requirements/requirements.txt
-RUN /home/user/venv/bin/pip install -r backend/requirements/requirements.txt
+ENV PIPENV_VENV_IN_PROJECT=1
+RUN pipenv install
 
 COPY backend/app/ ./backend/app/
 RUN chown -R user:user /home/user/backend/
@@ -62,7 +62,7 @@ RUN \
   CHANNELS_REDIS_URL="redis://redis:6379/20"\
   CACHE_URL="redis://redis:6379/1"\
   PUBLIC_IP="127.0.0.1"\
-  /home/user/venv/bin/python /home/user/backend/app/manage.py collectstatic
+  /home/user/.venv/bin/python /home/user/backend/app/manage.py collectstatic
 
 USER user
 

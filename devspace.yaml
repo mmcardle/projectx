@@ -80,7 +80,7 @@ dev:
       restartContainer: true
 commands:
 - name: manage
-  command: devspace enter -c projectx --image app /home/user/venv/bin/python /home/user/backend/app/manage.py
+  command: devspace enter -c projectx --image app /home/user/.venv/bin/python /home/user/backend/app/manage.py
   description: ""
 - name: ingresslogs
   command: kubectl logs -n ingress-nginx svc/ingress-nginx-controller

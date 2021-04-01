@@ -82,13 +82,13 @@ jobs:
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-   
 
-      - run: pip install --upgrade pip wheel
-      - run: pip install -r backend/requirements/test.txt
+      - run: pip install --upgrade pip
+      - run: pip install pipenv && pipenv install --dev
 
   python-unittests:
     needs: python-setup
@@ -128,7 +128,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.8', '3.9']
+        python-version: ['3.9', '3.8']
     
     name: python ${{ matrix.python-version }} unittest
     
@@ -144,16 +144,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+      
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - run: pip install -r requirements/test.txt
-      - run: python -m pytest
-      - run: coverage report --fail-under=100
+      
+      - run: pip install pipenv && pipenv install --dev
+      - run: pipenv run python -m pytest
+      - run: pipenv run coverage report --fail-under=100
 
   python-lint:
     needs: python-setup
@@ -177,15 +179,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
+      
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements/test.txt') }}
+          path: ~/.local/share/virtualenvs
+          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - run: pip install -r backend/requirements/test.txt
-      - run: python -m ${{ matrix.lint-command }}
+      
+      - run: pip install pipenv && pipenv install --dev
+      - run: pipenv run python -m ${{ matrix.lint-command }}
 
   system-tests:
     needs: docker-setup
