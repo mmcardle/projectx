@@ -184,7 +184,7 @@ class ChangeDetailsSchema(Schema):
             )
 
 
-class ActivateCheckSchema(Schema):
+class ActivateSchema(Schema):
 
     activate_key = fields.Str(required=True)
 
@@ -215,58 +215,4 @@ class ActivateCheckSchema(Schema):
         # pylint: disable=unused-argument
         activate_key = data["activate_key"]
         data["user"] = self.check_activate_key(activate_key)
-        return data
-
-
-class ActivateSchema(ActivateCheckSchema):
-
-    username = fields.Str(required=True)
-    password1 = fields.Str(required=True)
-    password2 = fields.Str(required=True)
-    first_name = fields.Str(required=True)
-    last_name = fields.Str(required=True)
-
-    @validates("username")
-    def validate_username_length(self, username):
-        if len(username) < 3:
-            raise ValidationError(
-                "Sorry that username is too short, must be 3 characters or more.", "username"
-            )
-        try:
-            User.username_validator(username)
-        except DjangoValidationError as django_ex:
-            raise ValidationError(django_ex.messages, "username") from django_ex
-
-    def check_for_unique_username(self, username):
-        if User.objects.filter(username=username).exists():
-            raise ValidationError("Sorry that username is not available.", "username")
-
-    @validates("password1")
-    def validate_password1(self, value):
-        try:
-            validate_password(value)
-        except DjangoValidationError as django_ex:
-            raise ValidationError(django_ex.messages, "password1") from django_ex
-
-    @post_load
-    def post_process(self, data, **kwargs):
-
-        password1 = data["password1"]
-        password2 = data["password2"]
-
-        if password1 != password2:
-            raise ValidationError("Passwords must match.", "password1")
-
-        activate_key = data["activate_key"]
-
-        user = self.check_activate_key(activate_key)
-
-        # The user currently has a username set during the account creation process.
-        # If they request a new username we need to check that it is unique
-        requested_username = data["username"]
-        if user.username != requested_username:
-            self.check_for_unique_username(requested_username)
-
-        data["user"] = user
-
         return data

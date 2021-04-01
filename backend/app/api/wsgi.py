@@ -1,5 +1,5 @@
 """
-WSGI config for Project3.
+WSGI config for ProjectX.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -24,6 +24,7 @@ application = FastAPI(
     description="ProjectX Demo",
     version="0.0.1",
     docs_url="/api/docs",
+    redoc_url="/api/redoc",
     openapi_url="/api/v1/openapi.json"
 )
 

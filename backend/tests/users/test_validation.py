@@ -276,12 +276,12 @@ def test_change_details_schema_bad_data():
 
 
 @pytest.mark.django_db
-def test_ActivateCheckSchema_valid_key(mocker):
+def test_ActivateSchema_valid_key(mocker):
 
     user = User.objects.create(username="user")
     check_activation_key = mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
 
-    schema = validation.ActivateCheckSchema()
+    schema = validation.ActivateSchema()
     result = schema.load({"activate_key": "activate_key"})
 
     assert result == {"activate_key": "activate_key", "user": user}
@@ -290,13 +290,13 @@ def test_ActivateCheckSchema_valid_key(mocker):
 
 
 @pytest.mark.django_db
-def test_ActivateCheckSchema_bad_key(mocker):
+def test_ActivateSchema_bad_key(mocker):
 
     User.objects.create(username="user")
     check_activation_key = mocker.patch("users.validation.User.check_activation_key",
                                         side_effect=[(None, None), (None, None)])
 
-    schema = validation.ActivateCheckSchema()
+    schema = validation.ActivateSchema()
     with pytest.raises(ValidationError) as ve:
         schema.load({"activate_key": "activate_key"})
 
@@ -307,14 +307,14 @@ def test_ActivateCheckSchema_bad_key(mocker):
 
 
 @pytest.mark.django_db
-def test_ActivateCheckSchema_expired_key(mocker):
+def test_ActivateSchema_expired_key(mocker):
 
     user = User.objects.create(username="user", email="user@example.com")
     check_activation_key = mocker.patch("users.validation.User.check_activation_key",
                                         side_effect=[(None, None), (user, None)])
     send_account_activation_email = mocker.patch("users.validation.User.send_account_activation_email")
 
-    schema = validation.ActivateCheckSchema()
+    schema = validation.ActivateSchema()
     with pytest.raises(ValidationError) as ve:
         schema.load({"activate_key": "activate_key"})
 
@@ -323,196 +323,3 @@ def test_ActivateCheckSchema_expired_key(mocker):
     ]
     assert check_activation_key.mock_calls == [mocker.call("activate_key"), mocker.call("activate_key", max_age=None)]
     assert send_account_activation_email.mock_calls == [mocker.call()]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_valid_key(mocker):
-
-    user = User.objects.create(username="username")
-    check_activation_key = mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    password = make_valid_password()
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "username",
-        "password1": password,
-        "password2": password,
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-    schema = validation.ActivateSchema()
-    result = schema.load(data)
-
-    assert result == {
-        "activate_key": "activate_key",
-        "username": "username",
-        "password1": password,
-        "password2": password,
-        "first_name": "first_name",
-        "last_name": "last_name",
-        "user": user
-    }
-
-    assert check_activation_key.mock_calls == [mocker.call("activate_key")]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_valid_key_changing_username(mocker):
-
-    user = User.objects.create(username="username")
-    check_activation_key = mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    password = make_valid_password()
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "new_username",
-        "password1": password,
-        "password2": password,
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-    schema = validation.ActivateSchema()
-    result = schema.load(data)
-
-    assert result == {
-        "activate_key": "activate_key",
-        "username": "new_username",
-        "password1": password,
-        "password2": password,
-        "first_name": "first_name",
-        "last_name": "last_name",
-        "user": user
-    }
-
-    assert check_activation_key.mock_calls == [mocker.call("activate_key")]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_requesting_non_unique_username(mocker):
-
-    user = User.objects.create(username="user")
-    User.objects.create(username="otheruser", email="otheruser@tempurl.com")
-
-    mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    password = make_valid_password()
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "otheruser",
-        "password1": password,
-        "password2": password,
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-    schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
-        schema.load(data)
-
-    assert ve.value.messages["username"] == [
-        "Sorry that username is not available."
-    ]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_valid_key_password_not_valid(mocker):
-
-    user = User.objects.create(username="user")
-    mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "username",
-        "password1": "pass",
-        "password2": "pass",
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-
-    schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
-        schema.load(data)
-
-    assert ve.value.messages["password1"] == [
-        "This password is too short. It must contain at least 8 characters.",
-        "This password is too common.",
-        "This password must contain at least 1 digit(s), 0-9.",
-        "This password must contain at least 1 uppercase letter, A-Z.",
-        "This password must contain at least 1 symbol: ()[]{}|\\`~!@#$%^&*_-+=;:'\\\",<>./?",
-    ]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_valid_key_username_with_space(mocker):
-
-    user = User.objects.create(username="user")
-    mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "username with space",
-        "password1": "password",
-        "password2": "password",
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-
-    schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
-        schema.load(data)
-
-    assert ve.value.messages["username"] == [
-        "Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters."
-    ]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_valid_key_username_too_short(mocker):
-
-    user = User.objects.create(username="user")
-    mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "u",
-        "password1": "password",
-        "password2": "password",
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-
-    schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
-        schema.load(data)
-
-    assert ve.value.messages["username"] == [
-        "Sorry that username is too short, must be 3 characters or more."
-    ]
-
-
-@pytest.mark.django_db
-def test_ActivateSchema_passwords_must_match(mocker):
-
-    user = User.objects.create(username="user")
-    mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
-
-    password = make_valid_password()
-
-    data = {
-        "activate_key": "activate_key",
-        "username": "user",
-        "password1": password,
-        "password2": User.objects.make_random_password(),  # different password2
-        "first_name": "first_name",
-        "last_name": "last_name",
-    }
-
-    schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
-        schema.load(data)
-    print(ve.value.messages)
-    assert ve.value.messages["password1"] == [
-        "Passwords must match."
-    ]

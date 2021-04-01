@@ -178,33 +178,15 @@ def reset_password_check(request):
 
 @require_http_methods(["POST"])
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
-@decorators.activate_check_payload
-def activate_check(request):
+@decorators.activate_payload
+def activate(request):
 
     user = request.validated_data["user"]
+    user.activate()
 
     return JsonResponse({
         "is_active": user.is_active, "user": user.to_json()
     })
-
-
-@require_http_methods(["POST"])
-@ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
-@decorators.activate_payload
-def activate(request):
-
-    # request.validated_data set by the activate_payload
-    user = request.validated_data["user"]
-    user.username = request.validated_data["username"]
-    user.first_name = request.validated_data["first_name"]
-    user.last_name = request.validated_data["last_name"]
-    user.set_password(request.validated_data["password1"])
-    user.activate()
-
-    # Key can only be used once
-    user.delete_activate_key(user.email)
-
-    return JsonResponse(user.to_json())
 
 
 def admin_su_logout(request):

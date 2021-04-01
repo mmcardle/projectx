@@ -450,7 +450,7 @@ def test_change_details(mocker):
     assert user.last_name == "last_name"
 
 
-def test_activate_check_api(mocker):
+def test_activate_api(mocker):
 
     user = mock.Mock()
     data = {"user": user}
@@ -460,44 +460,10 @@ def test_activate_check_api(mocker):
 
     request = make_request(method="POST", body="{}", user=mock.Mock())
 
-    api.activate_check(request)
+    api.activate(request)
 
     assert JsonResponse.mock_calls == [
         mock.call({"is_active": user.is_active, "user": user.to_json.return_value})
-    ]
-
-
-def test_activate_api(mocker):
-
-    user = mock.Mock()
-    data = {
-        "user": user,
-        "username": "username",
-        "first_name": "first_name",
-        "last_name": "last_name",
-        "password1": "password1",
-    }
-    mocker.patch("common.validation.load_data_from_schema", return_value=data)
-
-    JsonResponse = mocker.patch("users.api.JsonResponse")
-
-    request = make_request(method="POST", body="{}", user=mock.Mock())
-
-    api.activate(request)
-
-    assert user.mock_calls == [
-        mocker.call.set_password("password1"),
-        mocker.call.activate(),
-        mocker.call.delete_activate_key(user.email),
-        mocker.call.to_json(),
-    ]
-
-    assert user.username == "username"
-    assert user.first_name == "first_name"
-    assert user.last_name == "last_name"
-
-    assert JsonResponse.mock_calls == [
-        mock.call(user.to_json.return_value)
     ]
 
 
