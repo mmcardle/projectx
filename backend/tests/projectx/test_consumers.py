@@ -96,8 +96,7 @@ def test_web_socket_consumer_disconnect(websocket_consumer, mocker):
     websocket_consumer.disconnect("close_code")
     assert logger.mock_calls == [
         mock.call.debug(
-            "Disconnect %s %s from channels %s",
-            websocket_consumer.user, "channel_name", ["channel1", "channel2"]
+            "Disconnect %s %s from channels %s", websocket_consumer.user, "channel_name", ["channel1", "channel2"]
         ),
     ]
 

@@ -28,10 +28,7 @@ def users_get(_: User = Depends(check_api_key)) -> MultipleAPIUsers:
     response_model=SingleAPIUser,
     name="users-post",
 )
-def user_post(
-    api_user: APIUser,
-    _: User = Depends(check_api_key)
-) -> SingleAPIUser:
+def user_post(api_user: APIUser, _: User = Depends(check_api_key)) -> SingleAPIUser:
     user = api_user.new_user()
     return SingleAPIUser.from_model(user)
 
@@ -72,10 +69,7 @@ def user_put(
     response_model=SingleAPIUser,
     name="user-delete",
 )
-def user_delete(
-    user: User = Depends(get_user),
-    _: User = Depends(check_api_key)
-) -> SingleAPIUser:
+def user_delete(user: User = Depends(get_user), _: User = Depends(check_api_key)) -> SingleAPIUser:
     api_user = SingleAPIUser.from_model(user)
     user.delete()
     return api_user

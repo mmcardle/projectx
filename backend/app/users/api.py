@@ -35,11 +35,9 @@ def _get_logout_url(request):
 
 def user_details(request):
     if request.user.is_authenticated:
-        return JsonResponse({
-            "user": request.user.to_json(),
-            "token": _get_token(request),
-            "logout_url": _get_logout_url(request)
-        })
+        return JsonResponse(
+            {"user": request.user.to_json(), "token": _get_token(request), "logout_url": _get_logout_url(request)}
+        )
     return JsonResponse({"user": None})
 
 
@@ -52,13 +50,15 @@ def login(request):
         user = authenticate(request, username=email, password=password)
         if user is not None:
             django_login(request, user)
-            return JsonResponse({
-                "success": True,
-                "user": user.to_json(),
-                # new csrf token will have been created
-                "token": request.META["CSRF_COOKIE"],
-                "logout_url": _get_logout_url(request)
-            })
+            return JsonResponse(
+                {
+                    "success": True,
+                    "user": user.to_json(),
+                    # new csrf token will have been created
+                    "token": request.META["CSRF_COOKIE"],
+                    "logout_url": _get_logout_url(request),
+                }
+            )
         return JsonResponse({"success": False}, status=401)
     return JsonResponse({"token": _get_token(request)})
 
@@ -78,9 +78,7 @@ def register(request):
 
     if existing_user:
         errors = {"email": ["This email is already registered"]}
-        return JsonResponse(
-            {"error": True, "errors": errors}, status=401
-        )
+        return JsonResponse({"error": True, "errors": errors}, status=401)
 
     new_user = models.User.create_inactive_user(request.validated_data)
     new_user.send_account_activation_email(request)
@@ -138,10 +136,9 @@ def change_password(request):
         user.save()
         update_session_auth_hash(request, user)
     else:
-        return JsonResponse({
-            "error": True,
-            "errors": {"current_password": ["The current password is incorrect."]}
-        }, status=401)
+        return JsonResponse(
+            {"error": True, "errors": {"current_password": ["The current password is incorrect."]}}, status=401
+        )
 
     return JsonResponse({})
 
@@ -184,9 +181,7 @@ def activate(request):
     user = request.validated_data["user"]
     user.activate()
 
-    return JsonResponse({
-        "is_active": user.is_active, "user": user.to_json()
-    })
+    return JsonResponse({"is_active": user.is_active, "user": user.to_json()})
 
 
 def admin_su_logout(request):
