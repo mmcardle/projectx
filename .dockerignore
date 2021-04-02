@@ -5,6 +5,9 @@
 !/backend/
 /backend/Dockerfile
 
+!Pipfile
+!Pipfile.lock
+
 !/frontend/build/
 
 # Ignore devspace.yaml file to prevent image rebuilding after config changes
