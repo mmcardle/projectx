@@ -15,9 +15,7 @@ API_KEY = "api_key"
 def test_bad_api_key():
     response = client.get("/api/users/", headers={"X-API-Key": "BAD_API_KEY"})
     assert response.status_code == 400
-    assert response.json() == {
-        "detail": "X-API-Key header invalid."
-    }
+    assert response.json() == {"detail": "X-API-Key header invalid."}
 
 
 @pytest.mark.django_db
@@ -25,13 +23,7 @@ def test_no_api_key():
     response = client.get("/api/users/")
     assert response.status_code == 422
     assert response.json() == {
-        "detail": [
-            {
-                "loc": ["header", "x-api-key"],
-                "msg": "field required",
-                "type": "value_error.missing"
-            }
-        ],
+        "detail": [{"loc": ["header", "x-api-key"], "msg": "field required", "type": "value_error.missing"}],
     }
 
 
@@ -57,17 +49,14 @@ def test_users_create_update_and_get(mocker):
         "email": email,
         "first_name": "first_name",
         "last_name": "last_name",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
     response = client.get("/api/users/", headers={"X-API-Key": API_KEY})
     assert response.status_code == 200
-    assert response.json() == {"items": [{
-        "email": email,
-        "first_name": "first_name",
-        "last_name": "last_name",
-        "public_uuid": mocker.ANY
-    }]}
+    assert response.json() == {
+        "items": [{"email": email, "first_name": "first_name", "last_name": "last_name", "public_uuid": mocker.ANY}]
+    }
 
     public_uuid = response.json()["items"][0]["public_uuid"]
 
@@ -77,7 +66,7 @@ def test_users_create_update_and_get(mocker):
         "email": email,
         "first_name": "first_name",
         "last_name": "last_name",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
 
@@ -96,7 +85,7 @@ def test_users_create_and_update(mocker):
         "email": email,
         "first_name": "first_name",
         "last_name": "last_name",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
     user_uuid = response.json()["public_uuid"]
@@ -111,7 +100,7 @@ def test_users_create_and_update(mocker):
         "email": email,
         "first_name": "first_name2",
         "last_name": "last_name2",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
 
@@ -130,7 +119,7 @@ def test_users_create_and_delete(mocker):
         "email": email,
         "first_name": "first_name",
         "last_name": "last_name",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
     user_uuid = response.json()["public_uuid"]
@@ -144,7 +133,7 @@ def test_users_create_and_delete(mocker):
         "email": email,
         "first_name": "first_name",
         "last_name": "last_name",
-        "public_uuid": mocker.ANY
+        "public_uuid": mocker.ANY,
     }
 
     response = client.delete(

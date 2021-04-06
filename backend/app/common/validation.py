@@ -8,14 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class SchemaError(Exception):
-
     def __init__(self, message, errors):
         super().__init__(message)
         self.errors = errors
 
 
 def create_payload_decorator(function, schema_class, error_msg="Invalid Data"):
-
     def wrap(request, *args, **kwargs):
         payload = json.loads(request.body)
         user = request.user
@@ -26,10 +24,13 @@ def create_payload_decorator(function, schema_class, error_msg="Invalid Data"):
             return function(request, *args, **kwargs)
 
         logger.error("%s: %s", error_msg, check_result)
-        return JsonResponse({
-            "error": error_msg,
-            "errors": check_result,
-        }, status=400)
+        return JsonResponse(
+            {
+                "error": error_msg,
+                "errors": check_result,
+            },
+            status=400,
+        )
 
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__

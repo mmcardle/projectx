@@ -38,17 +38,11 @@ class BaseWebSocketConsumer(JsonWebsocketConsumer):
     def disconnect(self, code):
         # pylint: disable=unused-argument
         for channel in self.joined_channels:
-            AsyncToSync(self.channel_layer.group_discard)(
-                channel, self.channel_name
-            )
-        logger.debug(
-            "Disconnect %s %s from channels %s",
-            self.user, self.channel_name, self.joined_channels
-        )
+            AsyncToSync(self.channel_layer.group_discard)(channel, self.channel_name)
+        logger.debug("Disconnect %s %s from channels %s", self.user, self.channel_name, self.joined_channels)
 
 
 class UserWebSocketConsumer(BaseWebSocketConsumer):
-
     def connect(self):
         self.user = self.scope["user"]
         self.joined_channels = []
@@ -63,7 +57,4 @@ class UserWebSocketConsumer(BaseWebSocketConsumer):
         AsyncToSync(self.channel_layer.group_add)(user_channel_name, self.channel_name)
 
         self.joined_channels = [user_channel_name]
-        logger.info(
-            "New User Connection %s joined %s (%s)",
-            self.user, self.joined_channels, self.channel_name
-        )
+        logger.info("New User Connection %s joined %s (%s)", self.user, self.joined_channels, self.channel_name)

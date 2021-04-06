@@ -21,16 +21,20 @@ from users.api import admin_su_logout
 urlpatterns = [
     path(
         "admin/",
-        include([
-            path("", admin.site.urls, name="admin"),
-            path("su/", include("django_su.urls")),
-            path("su/logout/", admin_su_logout, name="admin_su_logout"),
-        ])
+        include(
+            [
+                path("", admin.site.urls, name="admin"),
+                path("su/", include("django_su.urls")),
+                path("su/logout/", admin_su_logout, name="admin_su_logout"),
+            ]
+        ),
     ),
     path(
         "app/",
-        include([
-            path("users/", include("users.urls")),
-        ])
+        include(
+            [
+                path("users/", include("users.urls")),
+            ]
+        ),
     ),
 ]

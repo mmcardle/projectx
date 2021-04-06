@@ -12,8 +12,7 @@ from users.models import User
 logger = logging.getLogger(__name__)
 
 
-class NumberValidator():
-
+class NumberValidator:
     def __init__(self, minimum=0):
         self.min = minimum
 
@@ -29,8 +28,7 @@ class NumberValidator():
         return _(f"This password must contain at least {self.min} digit(s), 0-9.")
 
 
-class UppercaseValidator():
-
+class UppercaseValidator:
     def __init__(self, minimum=0):
         self.min = minimum
 
@@ -46,8 +44,7 @@ class UppercaseValidator():
         return _(f"This password must contain at least {self.min} uppercase letter, A-Z.")
 
 
-class LowercaseValidator():
-
+class LowercaseValidator:
     def __init__(self, minimum=0):
         self.min = minimum
 
@@ -63,7 +60,7 @@ class LowercaseValidator():
         return _(f"This password must contain at least {self.min} lowercase letter, a-z.")
 
 
-class SymbolValidator():
+class SymbolValidator:
 
     symbols = r"()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
 
@@ -91,23 +88,17 @@ class RegisterSchema(Schema):
     @validates("first_name")
     def validate_first_name(self, value):
         if len(value) > 40:
-            raise ValidationError(
-                "First Name must be less than 40 characters."
-            )
+            raise ValidationError("First Name must be less than 40 characters.")
 
     @validates("last_name")
     def validate_last_name(self, value):
         if len(value) > 40:
-            raise ValidationError(
-                "Last Name must be less than 40 characters."
-            )
+            raise ValidationError("Last Name must be less than 40 characters.")
 
     @validates("password1")
     def validate_password1(self, value):
         if len(value) < 8:
-            raise ValidationError(
-                "Password must be greater than 8 characters."
-            )
+            raise ValidationError("Password must be greater than 8 characters.")
 
     @post_load
     def check_passwords(self, data, **kwargs):
@@ -153,9 +144,7 @@ class ChangePasswordSchema(Schema):
     @validates("password1")
     def validate_password1(self, value):
         if len(value) < 8:
-            raise ValidationError(
-                "Password must be greater than 8 characters."
-            )
+            raise ValidationError("Password must be greater than 8 characters.")
 
     @post_load
     def check_passwords(self, data, **kwargs):
@@ -172,16 +161,12 @@ class ChangeDetailsSchema(Schema):
     @validates("first_name")
     def validate_first_name(self, value):
         if len(value) > 40:
-            raise ValidationError(
-                "First Name must be less than 40 characters."
-            )
+            raise ValidationError("First Name must be less than 40 characters.")
 
     @validates("last_name")
     def validate_last_name(self, value):
         if len(value) > 40:
-            raise ValidationError(
-                "Last Name must be less than 40 characters."
-            )
+            raise ValidationError("Last Name must be less than 40 characters.")
 
 
 class ActivateSchema(Schema):
@@ -194,16 +179,14 @@ class ActivateSchema(Schema):
         if user is None:
             # User has failed activation check
             # Check if the token has expired
-            expired_user, _ = User.check_activation_key(
-                activate_key, max_age=None
-            )
+            expired_user, _ = User.check_activation_key(activate_key, max_age=None)
             if expired_user:
                 expired_user.send_account_activation_email()
                 raise ValidationError(
                     "That token has expired. A new email has been sent "
                     "to your address. Please click on the new "
                     "link in the email.",
-                    "activate_key"
+                    "activate_key",
                 )
 
             raise ValidationError("Sorry that activation key is not valid.", "activate_key")

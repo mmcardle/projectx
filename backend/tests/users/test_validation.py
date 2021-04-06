@@ -126,12 +126,8 @@ def test_register_schema_non_matching_passwords():
         "password2": "Password_!2",
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.RegisterSchema(), data
-        )
-    assert e.value.errors == {
-        "password2": ["Passwords must match."]
-    }
+        load_data_from_schema(validation.RegisterSchema(), data)
+    assert e.value.errors == {"password2": ["Passwords must match."]}
 
 
 def test_register_schema_bad_data():
@@ -143,14 +139,12 @@ def test_register_schema_bad_data():
         "password2": "P2",
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.RegisterSchema(), data
-        )
+        load_data_from_schema(validation.RegisterSchema(), data)
     assert e.value.errors == {
         "email": ["Not a valid email address."],
         "first_name": ["First Name must be less than 40 characters."],
         "last_name": ["Last Name must be less than 40 characters."],
-        "password1": ["Password must be greater than 8 characters."]
+        "password1": ["Password must be greater than 8 characters."],
     }
 
 
@@ -182,9 +176,7 @@ def test_reset_password_load_data_from_schema_invalid():
         "password2": "pass",
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.ResetPasswordCompleteSchema(), data
-        )
+        load_data_from_schema(validation.ResetPasswordCompleteSchema(), data)
     assert e.value.errors["password1"] == [
         "This password is too short. It must contain at least 8 characters.",
         "This password is too common.",
@@ -203,12 +195,8 @@ def test_reset_password_complete_load_data_from_schema_passwords_dont_match():
         "password2": password2,
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.ResetPasswordCompleteSchema(), data
-        )
-    assert e.value.errors["password2"] == [
-        "Passwords must match."
-    ]
+        load_data_from_schema(validation.ResetPasswordCompleteSchema(), data)
+    assert e.value.errors["password2"] == ["Passwords must match."]
 
 
 def test_change_password_schema():
@@ -228,12 +216,8 @@ def test_change_password_non_matching_passwords():
         "password2": "Password_!2",
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.ChangePasswordSchema(), data
-        )
-    assert e.value.errors == {
-        "password2": ["Passwords must match."]
-    }
+        load_data_from_schema(validation.ChangePasswordSchema(), data)
+    assert e.value.errors == {"password2": ["Passwords must match."]}
 
 
 def test_change_password_bad_data():
@@ -243,12 +227,8 @@ def test_change_password_bad_data():
         "password2": "P2",
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.ChangePasswordSchema(), data
-        )
-    assert e.value.errors == {
-        "password1": ["Password must be greater than 8 characters."]
-    }
+        load_data_from_schema(validation.ChangePasswordSchema(), data)
+    assert e.value.errors == {"password1": ["Password must be greater than 8 characters."]}
 
 
 def test_change_details_schema():
@@ -266,9 +246,7 @@ def test_change_details_schema_bad_data():
         "last_name": "X" * 50,
     }
     with pytest.raises(SchemaError) as e:
-        load_data_from_schema(
-            validation.ChangeDetailsSchema(), data
-        )
+        load_data_from_schema(validation.ChangeDetailsSchema(), data)
     assert e.value.errors == {
         "first_name": ["First Name must be less than 40 characters."],
         "last_name": ["Last Name must be less than 40 characters."],
@@ -293,16 +271,15 @@ def test_ActivateSchema_valid_key(mocker):
 def test_ActivateSchema_bad_key(mocker):
 
     User.objects.create(username="user")
-    check_activation_key = mocker.patch("users.validation.User.check_activation_key",
-                                        side_effect=[(None, None), (None, None)])
+    check_activation_key = mocker.patch(
+        "users.validation.User.check_activation_key", side_effect=[(None, None), (None, None)]
+    )
 
     schema = validation.ActivateSchema()
     with pytest.raises(ValidationError) as ve:
         schema.load({"activate_key": "activate_key"})
 
-    assert ve.value.messages["activate_key"] == [
-        "Sorry that activation key is not valid."
-    ]
+    assert ve.value.messages["activate_key"] == ["Sorry that activation key is not valid."]
     assert check_activation_key.mock_calls == [mocker.call("activate_key"), mocker.call("activate_key", max_age=None)]
 
 
@@ -310,8 +287,9 @@ def test_ActivateSchema_bad_key(mocker):
 def test_ActivateSchema_expired_key(mocker):
 
     user = User.objects.create(username="user", email="user@example.com")
-    check_activation_key = mocker.patch("users.validation.User.check_activation_key",
-                                        side_effect=[(None, None), (user, None)])
+    check_activation_key = mocker.patch(
+        "users.validation.User.check_activation_key", side_effect=[(None, None), (user, None)]
+    )
     send_account_activation_email = mocker.patch("users.validation.User.send_account_activation_email")
 
     schema = validation.ActivateSchema()

@@ -12,7 +12,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelManagers(
             name="user",
-            managers=[
-            ],
+            managers=[],
         ),
     ]

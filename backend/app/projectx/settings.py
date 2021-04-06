@@ -86,18 +86,24 @@ AUTH_USER_MODEL = "users.User"
 DATABASES = {"default": env.db()}
 
 # Cache
-CACHES = {
-    "default": env.cache()
-}
+CACHES = {"default": env.cache()}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator", },
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", },
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator", },
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator", },
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
     # Custom validators
     {"NAME": "users.validation.NumberValidator", "OPTIONS": {"minimum": 1}},
     {"NAME": "users.validation.UppercaseValidator", "OPTIONS": {"minimum": 1}},
@@ -136,7 +142,7 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [(CHANNELS_REDIS_URL.hostname, CHANNELS_REDIS_URL.port)],
             "capacity": 500,  # default 100
-            "expiry": 20
+            "expiry": 20,
         },
     },
 }
@@ -154,15 +160,10 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "simple": {
-            "format": "%(levelname)s %(name)s:%(lineno)s %(message)s"
-        },
+        "simple": {"format": "%(levelname)s %(name)s:%(lineno)s %(message)s"},
     },
     "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "simple"
-        },
+        "console": {"class": "logging.StreamHandler", "formatter": "simple"},
     },
     "loggers": {
         "": {
@@ -196,6 +197,6 @@ LOGGING = {
             "handlers": ["console"],
             "level": "INFO",
             "propagate": False,
-        }
-    }
+        },
+    },
 }

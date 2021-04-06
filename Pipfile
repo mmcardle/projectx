@@ -56,10 +56,7 @@ Twisted = {version = "==20.3.0", extras = ["http2", "tls"]}
 uWSGI = "==2.0.19.1"
 
 [dev-packages]
-
-autopep8 = "*"
 isort = "*"
-pycodestyle = "*"
 pylint = "*"
 pylint_django = "*"
 pytest = "*"
@@ -71,6 +68,10 @@ pytest-mock = "*"
 pytest-pythonpath = "*"
 requests = "*"
 unify = "*"
+black = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true

@@ -34,7 +34,6 @@ MAX_ACTIVATION_SECONDS = 60 * 60 * MAX_ACTIVATION_HOURS
 
 
 class UserManager(BaseUserManager):
-
     def create_user(self, email, password=None, **kwargs):
         email = self.normalize_email(email)
         if "username" not in kwargs:
@@ -111,40 +110,25 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     def send_reset_password_email(self, request):
 
-        key = signing.dumps(
-            {"email": self.email}, salt=PASSWORD_RESET_SALT
-        )
+        key = signing.dumps({"email": self.email}, salt=PASSWORD_RESET_SALT)
 
         redis_connection = get_redis_connection()
         payload = json.dumps({"key": key}).encode("utf-8")
-        redis_connection.hset(
-            REDIS_PASSWORD_RESET_KEY,
-            self.email,
-            payload
-        )
+        redis_connection.hset(REDIS_PASSWORD_RESET_KEY, self.email, payload)
 
         url = request.build_absolute_uri("/password_reset/%s" % key)
 
         message = emails.RESET_PASSWORD.format(
-            title="ProjectX Password Reset",
-            expiration="%s hours" % MAX_PASSWORD_RESET_HOURS,
-            url=url
+            title="ProjectX Password Reset", expiration="%s hours" % MAX_PASSWORD_RESET_HOURS, url=url
         )
 
         subject = "Password Reset for %s" % self.email
 
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.email]
-        )
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
     def send_data_to_user(self, data):
         payload = json.dumps(data)
-        AsyncToSync(get_channel_layer().group_send)(
-            self.unique_name(), {"type": "user.message", "data": payload}
-        )
+        AsyncToSync(get_channel_layer().group_send)(self.unique_name(), {"type": "user.message", "data": payload})
 
     @classmethod
     def delete_reset_key(cls, key):
@@ -154,9 +138,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
     @classmethod
     def reset_email(cls, email, request):
 
-        user_exists = cls.objects.filter(
-            email__iexact=email
-        ).exists()
+        user_exists = cls.objects.filter(email__iexact=email).exists()
 
         if user_exists:
             user = cls.objects.get(email__iexact=email)
@@ -197,33 +179,19 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     def send_account_activation_email(self, request):
 
-        key = signing.dumps(
-            {"email": self.email}, salt=ACCOUNT_ACTIVATION_SALT
-        )
+        key = signing.dumps({"email": self.email}, salt=ACCOUNT_ACTIVATION_SALT)
 
         url = request.build_absolute_uri("/activate/%s" % key)
 
         redis_connection = get_redis_connection()
         payload = json.dumps({"key": key}).encode("utf-8")
-        redis_connection.hset(
-            REDIS_ACCOUNT_ACTIVATION_KEY,
-            self.email,
-            payload
-        )
+        redis_connection.hset(REDIS_ACCOUNT_ACTIVATION_KEY, self.email, payload)
 
-        message = emails.ACCOUNT_ACTIVATION.format(
-            expiration="%s hours" % MAX_ACTIVATION_HOURS,
-            url=url
-        )
+        message = emails.ACCOUNT_ACTIVATION.format(expiration="%s hours" % MAX_ACTIVATION_HOURS, url=url)
 
         subject = "Account Activation for %s" % self.email
 
-        send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [self.email]
-        )
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
     @classmethod
     def email_exists(cls, email):
@@ -236,5 +204,5 @@ class User(AbstractUser, IndexedTimeStampedModel):
             password=user_data["password1"],
             first_name=user_data["first_name"],
             last_name=user_data["last_name"],
-            is_active=False
+            is_active=False,
         )

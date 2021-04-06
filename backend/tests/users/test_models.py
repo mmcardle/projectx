@@ -7,8 +7,7 @@ from django.core.signing import BadSignature
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
-from users.models import (REDIS_ACCOUNT_ACTIVATION_KEY,
-                          REDIS_PASSWORD_RESET_KEY, User)
+from users.models import REDIS_ACCOUNT_ACTIVATION_KEY, REDIS_PASSWORD_RESET_KEY, User
 
 
 @pytest.mark.django_db
@@ -61,7 +60,7 @@ def test_user_model():
         public_uuid="bf113177-a583-41d9-8ad4-695114f4e30c",
         email="none@tempurl.com",
         first_name="First",
-        last_name="Last"
+        last_name="Last",
     )
     assert user.to_json() == {
         "display_name": "First Last",
@@ -105,12 +104,15 @@ def test_user_send_reset_password_email(mocker):
     user = User(username="user", email="user@example.com")
     request = mocker.Mock()
     user.send_reset_password_email(request)
-    expected_message = '''
+    expected_message = (
+        """
 Please click on the link below to reset your email within 24 hours ...
 %s
 Regards
 ProjectX
-''' % request.build_absolute_uri.return_value  # noqa
+"""
+        % request.build_absolute_uri.return_value
+    )  # noqa
 
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
@@ -118,7 +120,7 @@ ProjectX
             "Password Reset for user@example.com",
             mocker.ANY,  # Tested in assertion above for ease of debug
             settings.DEFAULT_FROM_EMAIL,
-            ["user@example.com"]
+            ["user@example.com"],
         )
     ]
 
@@ -136,7 +138,7 @@ def test_user_send_data_to_user(mocker):
 
     assert AsyncToSync.mock_calls == [
         mock.call(get_channel_layer().group_send),
-        mock.call()("user1_tempurl_com_12345678", {"type": "user.message", "data": '{"data": "message"}'})
+        mock.call()("user1_tempurl_com_12345678", {"type": "user.message", "data": '{"data": "message"}'}),
     ]
 
 
@@ -144,27 +146,19 @@ def test_user_delete_reset_key(mocker):
     get_redis_connection = mocker.patch("users.models.get_redis_connection")
     User.delete_reset_key("key")
 
-    assert get_redis_connection.return_value.mock_calls == [
-        mock.call.hdel(REDIS_PASSWORD_RESET_KEY, "key")
-    ]
+    assert get_redis_connection.return_value.mock_calls == [mock.call.hdel(REDIS_PASSWORD_RESET_KEY, "key")]
 
 
 def test_user_check_reset_key(mocker):
 
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection",
-        return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        return_value={"email": "user@example.com"}
-    )
+    signing.loads = mock.Mock(return_value={"email": "user@example.com"})
     user = mock.Mock()
-    mocker.patch.object(
-        User, "objects",
-        mock.Mock(get=lambda email__iexact: user)
-    )
+    mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
     check_user, error = User.check_reset_key("key")
 
     assert check_user == user
@@ -176,9 +170,7 @@ def test_user_check_reset_key(mocker):
 
 def test_user_check_reset_key_bad_signature(mocker):
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        side_effect=BadSignature()
-    )
+    signing.loads = mock.Mock(side_effect=BadSignature())
     check_user, error = User.check_reset_key("key")
 
     assert check_user is None
@@ -187,13 +179,8 @@ def test_user_check_reset_key_bad_signature(mocker):
 
 def test_user_check_reset_key_doesnot_exist(mocker):
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        return_value={"email": "user@example.com"}
-    )
-    mocker.patch.object(
-        User, "objects",
-        get=mock.Mock(side_effect=User.DoesNotExist())
-    )
+    signing.loads = mock.Mock(return_value={"email": "user@example.com"})
+    mocker.patch.object(User, "objects", get=mock.Mock(side_effect=User.DoesNotExist()))
     check_user, error = User.check_reset_key("key")
 
     assert User.objects.get.mock_calls == [mock.call(email__iexact="user@example.com")]
@@ -204,14 +191,11 @@ def test_user_check_reset_key_doesnot_exist(mocker):
 def test_user_check_reset_key_payload_not_in_redis(mocker):
 
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection",
-        return_value=mock.Mock(hget=mock.Mock(return_value=None))
+        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=None))
     )
 
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        return_value={"email": "user@example.com"}
-    )
+    signing.loads = mock.Mock(return_value={"email": "user@example.com"})
 
     user = mock.Mock()
     mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
@@ -228,14 +212,11 @@ def test_user_check_reset_key_wrong_key_in_redis(mocker):
 
     redis_payload = json.dumps({"key": "WRONG_KEY"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection",
-        return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
 
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        return_value={"email": "user@example.com"}
-    )
+    signing.loads = mock.Mock(return_value={"email": "user@example.com"})
 
     user = mock.Mock()
     mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
@@ -252,18 +233,12 @@ def test_user_check_activation_key(mocker):
 
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection",
-        return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
     signing = mocker.patch("users.models.signing")
-    signing.loads = mock.Mock(
-        return_value={"email": "user@example.com"}
-    )
+    signing.loads = mock.Mock(return_value={"email": "user@example.com"})
     user = mock.Mock()
-    mocker.patch.object(
-        User, "objects",
-        mock.Mock(get=lambda email__iexact: user)
-    )
+    mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
     check_user, error = User.check_activation_key("key")
 
     assert check_user == user
@@ -309,19 +284,22 @@ def test_user_send_account_activation_email(mocker):
     user = User.objects.create(username="user", email="user@example.com")
     request = mock.Mock()
     user.send_account_activation_email(request)
-    expected_message = '''
+    expected_message = (
+        """
 Please click on the link below to activate your account within 24 hours ...
 %s
 Regards
 ProjectX
-''' % request.build_absolute_uri.return_value  # noqa
+"""
+        % request.build_absolute_uri.return_value
+    )  # noqa
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
         mock.call(
             "Account Activation for user@example.com",
             mocker.ANY,  # Tested in assertion above for ease of debug
             settings.DEFAULT_FROM_EMAIL,
-            ["user@example.com"]
+            ["user@example.com"],
         )
     ]
 

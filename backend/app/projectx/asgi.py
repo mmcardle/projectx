@@ -16,10 +16,14 @@ from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 
 from projectx.routing import websocket_urlpatterns
 
-application = ProtocolTypeRouter({
-    "http": django_asgi_app,
-    "websocket":  AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
-    "channel": ChannelNameRouter({
-        # "channel_namee": AConsumer(),
-    }),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": django_asgi_app,
+        "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+        "channel": ChannelNameRouter(
+            {
+                # "channel_namee": AConsumer(),
+            }
+        ),
+    }
+)

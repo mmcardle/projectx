@@ -165,7 +165,7 @@ jobs:
       matrix:
         python-version: ['3.9']
         lint-command: 
-          - pycodestyle backend/app/ backend/tests/
+          - black --check backend/app/ backend/tests/
           - isort --check-only --diff backend/app/ backend/tests/
           - unify --check-only --recursive --quote \" backend/app/ backend/tests/
           - pylint backend/app/
