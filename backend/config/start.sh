@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
 
 echo "Applying any migrations"
 /home/user/.venv/bin/python /home/user/backend/app/manage.py migrate
