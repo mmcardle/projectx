@@ -1,4 +1,3 @@
-/* global process */
 import React from 'react';
 import { withNamedStores } from '../store/state';
 import { Link } from "react-router-dom";

@@ -1,6 +1,3 @@
-/* global require module process */
-
-// import createProxyMiddleware from 'http-proxy-middleware';
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const host = process.env.PROJECTX_HOST || '127.0.0.1:8000';
