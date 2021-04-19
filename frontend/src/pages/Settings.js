@@ -8,20 +8,20 @@ import ChangeDetails from './ChangeDetails';
 function Settings() {
   return (
     <div className="main-content-item">
-      <Container className="text-white">
+      <Container>
         <Row>
-          <Col className="p-3 my-1 border border-secondary rounded bg-dark">
-            <h1>Settings</h1>
+          <Col>
+            <h1 className="my-1">Settings</h1>
           </Col>
         </Row>
         <Row>
-          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
+          <Col sm={4} className="">
             <ChangeDetails />
           </Col>
-          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
+          <Col sm={4} className="">
             <ChangePassword />
           </Col>
-          <Col sm={4} className="p-3 border border-secondary rounded bg-dark">
+          <Col sm={4} className="">
           </Col>
         </Row>
       </Container>
