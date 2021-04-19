@@ -129,7 +129,6 @@ body {
   -webkit-align-self: center;
   -ms-flex-item-align: center;
   align-self: stretch;
-  background-color: #343a40!important;
 }
 
 .main-content-item:nth-child(2) {
