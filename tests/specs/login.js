@@ -22,7 +22,7 @@ module.exports = {
 
     // TODO - Setup User
     // login(browser, PROJECT_EMAIL, PROJECT_PASSWORD)
-    // browser.waitForElementVisible('.main-content', 5000)
+    // browser.waitForElementVisible('#root', 5000)
     
     browser.end()
   },
