@@ -29,7 +29,6 @@ function Login(props) {
   }
 
   return (
-    <div className="mt-5">
       <CentralContainer >
         <Form onSubmit={click} id="login_form">
           { error ? <Alert variant="danger">{error}</Alert> : <></> }
@@ -56,7 +55,6 @@ function Login(props) {
           <Link to="/forgot_password">Forgot Password</Link>
         </div>
       </CentralContainer>
-    </div>
   );
 }
 

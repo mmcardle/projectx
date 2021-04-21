@@ -12,6 +12,7 @@ function SideBar() {
         <Nav.Link as={Link} to="/">Dashboard</Nav.Link>
         <Nav.Link as={Link} to="/settings">Settings</Nav.Link>
         <Nav.Link as={Link} to="/account">Account</Nav.Link>
+        <Nav.Link as={Link} to="/example">Example</Nav.Link>
       </Nav>
     </div>
   );

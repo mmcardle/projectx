@@ -23,9 +23,11 @@ import { getUserData } from './api/requests';
 import { withNamedStores } from './store/state';
 
 import './App.css';
+import './theme_1618955931948.css'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Example from './pages/Example';
 
 
 const App = function (props) {
@@ -83,6 +85,7 @@ const App = function (props) {
                     <Route path="/activate/:activation_key"><Activate /></Route>
                     <Route path="/login"><Redirect push to="/" /></Route>
                     <Route exact path="/"><Main /></Route>
+                    <Route path="/example"><Example /></Route>
                     <Route exact path="/settings"><Settings /></Route>
                     <Route path="*"><NotFound /></Route>
                   </Switch>

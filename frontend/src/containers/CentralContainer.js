@@ -6,7 +6,7 @@ import Card from 'react-bootstrap/Card';
 
 function CentralContainer(props) {
   return (
-    <Container fluid className="m-auto">
+    <Container fluid className="mx-auto mt-5">
       <Row noGutters className="justify-content-center">
         <Col xs={12} sm={10} md={6} lg={6} xl={4} style={{maxWidth: "400px"}}>
           <Card bg="transparent" border="none" className="central-card">
