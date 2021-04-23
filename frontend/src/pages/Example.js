@@ -92,7 +92,7 @@ function Example() {
     <Container>
       <Container>
         
-        <h2>Breadcrumb</h2>
+        <h2 className="mt-3">Breadcrumb</h2>
         <Breadcrumb>
           <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
           <Breadcrumb.Item href="#">Library</Breadcrumb.Item>

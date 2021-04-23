@@ -17,7 +17,7 @@ function TopNav(props) {
   }
 
   return (
-    <Navbar className="sticky-top flex-md-nowrap p-0" bg="dark" variant="dark">
+    <Navbar className="p-0" fixed="top" bg="dark" variant="dark" >
       <Navbar.Brand className="col-sm-3 col-md-2 mr-0">
         <Nav.Link to="/" className="text-white p-0">{process.env.REACT_APP_PROJECT_TITLE}</Nav.Link>
       </Navbar.Brand>

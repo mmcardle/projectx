@@ -9,7 +9,7 @@ import CentralContainer from '../containers/CentralContainer'
 
 import Alert from 'react-bootstrap/Alert';
 
-function PasswordReset(props) {
+function Activate(props) {
   console.debug('PasswordReset', props)
 
   const [complete, setComplete] = useState(false)
@@ -47,4 +47,4 @@ function PasswordReset(props) {
   }
 }
 
-export default withNamedStores(PasswordReset, ['dispatch']);
+export default withNamedStores(Activate, ['dispatch']);
