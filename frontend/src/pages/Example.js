@@ -6,7 +6,7 @@ import {
   Breadcrumb, Badge, Button, ButtonGroup,
   Card, Col, CardDeck, Container, Dropdown, DropdownButton,
   Form, InputGroup, FormControl, ListGroup,
-  Modal, ProgressBar,
+  Modal, ProgressBar, Table, Tabs, Tab
 } from 'react-bootstrap';
 
 function Example() {
@@ -179,6 +179,77 @@ function Example() {
             </Card.Footer>
           </Card>
         </CardDeck>
+        <h2 className="mt-5">Table</h2>
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Username</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Mark</td>
+              <td>Otto</td>
+              <td>@mdo</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Jacob</td>
+              <td>Thornton</td>
+              <td>@fat</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td colSpan="2">Larry the Bird</td>
+              <td>@twitter</td>
+            </tr>
+          </tbody>
+        </Table>
+        <Table striped bordered hover variant="dark">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Username</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Mark</td>
+              <td>Otto</td>
+              <td>@mdo</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Jacob</td>
+              <td>Thornton</td>
+              <td>@fat</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td colSpan="2">Larry the Bird</td>
+              <td>@twitter</td>
+            </tr>
+          </tbody>
+        </Table>
+        <h2 className="mt-5">Tabs</h2>
+        <Tabs defaultActiveKey="profile" id="uncontrolled-tab-example">
+          <Tab eventKey="home" title="Home">
+            <p className="m-3">Some other text in Tab Home</p>
+          </Tab>
+          <Tab eventKey="profile" title="Profile">
+            <p className="m-3">Some text in Tab Profile</p>
+          </Tab>
+          <Tab eventKey="contact" title="Contact" disabled>
+            <p className="m-3">Cannot see this disabled text</p>
+          </Tab>
+        </Tabs>
         <h2 className="mt-5">Form</h2>
         <Form>
           <Form.Row>
