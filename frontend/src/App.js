@@ -18,16 +18,16 @@ import PasswordReset from './pages/PasswordReset';
 import SideBar from './pages/SideBar';
 import Settings from './pages/Settings';
 import TopNav from './pages/TopNav';
-
-import { getUserData } from './api/requests';
-import { withNamedStores } from './store/state';
-
-import './App.css';
-import './theme_1618955931948.css'
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Example from './pages/Example';
+
+import { getUserData } from './api/requests';
+import { withNamedStores } from './store/state';
+
+import './theme_1618955931948.css'
+import './App.css';
 
 
 const App = function (props) {

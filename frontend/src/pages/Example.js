@@ -1,13 +1,20 @@
 import React from 'react';
+import { useState } from 'react';
 
 import {
   Alert,
   Breadcrumb, Badge, Button, ButtonGroup,
   Card, Col, CardDeck, Container, Dropdown, DropdownButton,
-  Form, InputGroup, FormControl
+  Form, InputGroup, FormControl, ListGroup,
+  Modal, ProgressBar,
 } from 'react-bootstrap';
 
 function Example() {
+
+  const [show_modal, setShowModal] = useState(false);
+
+  const handleCloseModal = () => setShowModal(false);
+  const handleShowModal = () => setShowModal(true);
 
   const alerts = [
     'primary',
@@ -84,27 +91,52 @@ function Example() {
   return (
     <Container>
       <Container>
+        
         <h2>Breadcrumb</h2>
         <Breadcrumb>
           <Breadcrumb.Item href="#">Home</Breadcrumb.Item>
           <Breadcrumb.Item href="#">Library</Breadcrumb.Item>
           <Breadcrumb.Item active>Data</Breadcrumb.Item>
         </Breadcrumb>
-        <h2 className="mt-3">Buttons</h2>
+        <h2 className="mt-5">Headings</h2>
+        <h1 class="display-1">Display 1</h1>
+        <h1 class="display-2">Display 2</h1>
+        <h1 class="display-3">Display 3</h1>
+        <h1 class="display-4">Display 4</h1>
+
+        <p class="h1">h1. Bootstrap heading</p>
+        <p class="h2">h2. Bootstrap heading</p>
+        <p class="h3">h3. Bootstrap heading</p>
+        <p class="h4">h4. Bootstrap heading</p>
+        <p class="h5">h5. Bootstrap heading</p>
+        <p class="h6">h6. Bootstrap heading</p>
+        <h3 className="mt-5">
+          Fancy display heading
+          <small class="text-muted">With faded secondary text</small>
+        </h3>
+        <p>You can use the mark tag to <mark>highlight</mark> text.</p>
+        <p><del>This line of text is meant to be treated as deleted text.</del></p>
+        <p><s>This line of text is meant to be treated as no longer accurate.</s></p>
+        <p><ins>This line of text is meant to be treated as an addition to the document.</ins></p>
+        <p><u>This line of text will render as underlined</u></p>
+        <p><small>This line of text is meant to be treated as fine print.</small></p>
+        <p><strong>This line rendered as bold text.</strong></p>
+        <p><em>This line rendered as italicized text.</em></p>
+        <h2 className="mt-5">Buttons</h2>
         {buttons}
-        <h3 className="mt-3">Button Groups</h3>
+        <h3 className="mt-5">Button Groups</h3>
         <ButtonGroup aria-label="Basic example">
           <Button variant="secondary">Left</Button>
           <Button variant="secondary">Middle</Button>
           <Button variant="secondary">Right</Button>
         </ButtonGroup>
-        <h3 className="mt-3">Dropdowns</h3>
+        <h3 className="mt-5">Dropdowns</h3>
         {dropdowns}
-        <h2 className="mt-3">Badges</h2>
+        <h2 className="mt-5">Badges</h2>
         {badges}
-        <h2 className="mt-3">Alerts</h2>
+        <h2 className="mt-5">Alerts</h2>
         {alerts}
-        <h2>Cards</h2>
+        <h2 className="mt-5">Cards</h2>
         <CardDeck>
           <Card>
             <Card.Img variant="top" src="logo.svg" className="w-50 mx-auto mt-2" />
@@ -147,7 +179,7 @@ function Example() {
             </Card.Footer>
           </Card>
         </CardDeck>
-        <h2>Form</h2>
+        <h2 className="mt-5">Form</h2>
         <Form>
           <Form.Row>
             <Form.Group as={Col} controlId="formGridEmail">
@@ -199,7 +231,7 @@ function Example() {
             Submit
           </Button>
         </Form>
-        <h2>Input Group</h2>
+        <h2 className="mt-5">Input Group</h2>
         <div>
           <InputGroup className="mb-3">
             <InputGroup.Prepend>
@@ -250,6 +282,68 @@ function Example() {
             <FormControl as="textarea" aria-label="With textarea" />
           </InputGroup>
         </div>
+        <h2 className="mt-5">List Group</h2>
+        <ListGroup>
+          <ListGroup.Item active>Cras justo odio</ListGroup.Item>
+          <ListGroup.Item>Dapibus ac facilisis in</ListGroup.Item>
+          <ListGroup.Item>Morbi leo risus</ListGroup.Item>
+          <ListGroup.Item>Porta ac consectetur ac</ListGroup.Item>
+          <ListGroup.Item disabled>Vestibulum at eros</ListGroup.Item>
+        </ListGroup>
+        <ListGroup className="mt-4">
+          <ListGroup.Item>No style</ListGroup.Item>
+          <ListGroup.Item variant="primary">Primary</ListGroup.Item>
+          <ListGroup.Item variant="secondary">Secondary</ListGroup.Item>
+          <ListGroup.Item variant="success">Success</ListGroup.Item>
+          <ListGroup.Item variant="danger">Danger</ListGroup.Item>
+          <ListGroup.Item variant="warning">Warning</ListGroup.Item>
+          <ListGroup.Item variant="info">Info</ListGroup.Item>
+          <ListGroup.Item variant="light">Light</ListGroup.Item>
+          <ListGroup.Item variant="dark">Dark</ListGroup.Item>
+        </ListGroup>
+        <h2 className="mt-5">Modals</h2>
+        <Modal.Dialog>
+          <Modal.Header closeButton>
+            <Modal.Title>Modal title</Modal.Title>
+          </Modal.Header>
+
+          <Modal.Body>
+            <p>Modal body text goes here.</p>
+          </Modal.Body>
+
+          <Modal.Footer>
+            <Button variant="secondary">Close</Button>
+            <Button variant="primary">Save changes</Button>
+          </Modal.Footer>
+        </Modal.Dialog>
+
+        <Button variant="primary" onClick={handleShowModal}>
+          Launch demo modal
+        </Button>
+
+        <Modal show={show_modal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Modal heading</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Woohoo, you're reading this text in a modal!</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleShowModal}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <h2 className="mt-5">Progress</h2>
+        <div>
+          <ProgressBar striped variant="success" now={40} />
+          <ProgressBar striped variant="info" now={20} />
+          <ProgressBar striped variant="warning" now={60} />
+          <ProgressBar striped variant="danger" now={80} />
+        </div>
+
       </Container>
     </Container>
   );
