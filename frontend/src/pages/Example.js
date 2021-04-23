@@ -99,20 +99,20 @@ function Example() {
           <Breadcrumb.Item active>Data</Breadcrumb.Item>
         </Breadcrumb>
         <h2 className="mt-5">Headings</h2>
-        <h1 class="display-1">Display 1</h1>
-        <h1 class="display-2">Display 2</h1>
-        <h1 class="display-3">Display 3</h1>
-        <h1 class="display-4">Display 4</h1>
+        <h1 className="display-1">Display 1</h1>
+        <h1 className="display-2">Display 2</h1>
+        <h1 className="display-3">Display 3</h1>
+        <h1 className="display-4">Display 4</h1>
 
-        <p class="h1">h1. Bootstrap heading</p>
-        <p class="h2">h2. Bootstrap heading</p>
-        <p class="h3">h3. Bootstrap heading</p>
-        <p class="h4">h4. Bootstrap heading</p>
-        <p class="h5">h5. Bootstrap heading</p>
-        <p class="h6">h6. Bootstrap heading</p>
+        <p className="h1">h1. Bootstrap heading</p>
+        <p className="h2">h2. Bootstrap heading</p>
+        <p className="h3">h3. Bootstrap heading</p>
+        <p className="h4">h4. Bootstrap heading</p>
+        <p className="h5">h5. Bootstrap heading</p>
+        <p className="h6">h6. Bootstrap heading</p>
         <h3 className="mt-5">
           Fancy display heading
-          <small class="text-muted">With faded secondary text</small>
+          <small className="text-muted">With faded secondary text</small>
         </h3>
         <p>You can use the mark tag to <mark>highlight</mark> text.</p>
         <p><del>This line of text is meant to be treated as deleted text.</del></p>

@@ -26,6 +26,8 @@ import Example from './pages/Example';
 import { getUserData } from './api/requests';
 import { withNamedStores } from './store/state';
 
+import config from './project/config'
+
 import './theme_1618955931948.css'
 import './App.css';
 
@@ -44,18 +46,18 @@ const App = function (props) {
 
   if (!props.loaded) {
     return (
-      <Router>
-          <div className="text-center">
-            <div style={{marginTop: "50vh"}} className="h1">
-              Loading...
-            </div>
+      config.LoadingComponent ? <config.LoadingComponent />:
+      <div className="text-center">
+        <div style={{marginTop: "50vh"}} className="h1">
+          Loading...
         </div>
-      </Router>
+      </div>
     )
   }
 
   if (props.user === undefined) {
     return (
+      config.UnAuthedComponent ? <config.UnAuthedComponent />:
       <Router>
         <Switch>
           <Route exact path="/"><Login /></Route>
@@ -71,6 +73,7 @@ const App = function (props) {
   }
 
   return (
+    config.AuthedComponent ? <config.AuthedComponent />:
     <Router>
         <TopNav />
 
@@ -80,7 +83,7 @@ const App = function (props) {
                 <SideBar />
               </Col>
               <main role="main" className="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
+                <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3">
                   <Switch>
                     <Route path="/activate/:activation_key"><Activate /></Route>
                     <Route path="/login"><Redirect push to="/" /></Route>
