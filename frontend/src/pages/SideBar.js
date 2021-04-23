@@ -7,11 +7,12 @@ import Nav from 'react-bootstrap/Nav';
 
 function SideBar() {
   return (
-    <div className="main-sidebar p-2">
+    <div className="sidebar-sticky">
       <Nav defaultActiveKey="/home" className="flex-column" >
         <Nav.Link as={Link} to="/">Dashboard</Nav.Link>
         <Nav.Link as={Link} to="/settings">Settings</Nav.Link>
         <Nav.Link as={Link} to="/account">Account</Nav.Link>
+        <Nav.Link as={Link} to="/example">Example</Nav.Link>
       </Nav>
     </div>
   );

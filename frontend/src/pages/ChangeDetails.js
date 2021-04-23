@@ -33,7 +33,7 @@ function ChangeDetails(props) {
   }
 
   return (
-    <Form onSubmit={click} className="d-flex flex-column h-100">
+    <Form onSubmit={click} className="d-flex flex-column h-100 p-3 border rounded">
       <h3>Change Details</h3>
       { complete ? <Alert variant="success">Details have been updated.</Alert> : <></> }
       { error ? <Alert variant="danger">{error}</Alert> : <></> }

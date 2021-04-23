@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 
 function Dashboard(props) {
   return (
-    <div className="p-4">
-      <img src="logo.svg" className="p-2 w-25 h-50 m-auto" alt="Logo" />
+    <div className="p-4 m-auto">
+      <img src="logo.svg" alt="Logo" />
       <div className="display-3">
         Welcome {props.user.display_name}
       </div>
