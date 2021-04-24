@@ -16,23 +16,6 @@ const App = function (props) {
   console.debug('APP props', props)
 
   const [loadingUser, setLoadingUser] = useState(null);
-  const [projectConfigLoaded, setProjectConfigLoaded] = useState(false);
-  const [projectConfig, setProjectConfig] = useState({
-    LoadingComponent: undefined,
-    UnAuthedComponent: undefined,
-    AuthedComponent: undefined,
-  });
-
-  useEffect(() => {
-    if (!projectConfigLoaded) {
-      import('./project/config').then(
-        (projectConfigModule) => {
-          setProjectConfig(projectConfigModule.default);
-          setProjectConfigLoaded(true);
-        }
-      )
-    }
-  }, [projectConfigLoaded, projectConfig]);
 
   useEffect(() => {
     if (!loadingUser) {
@@ -42,20 +25,14 @@ const App = function (props) {
   }, [loadingUser, props.dispatch]);
 
   if (!props.loaded) {
-    return (
-      projectConfig.LoadingComponent ? projectConfig.LoadingComponent() : <Loading />
-    )
+    return <Loading />;
   }
 
   if (props.user === undefined) {
-    return (
-      projectConfig.UnAuthedComponent ? projectConfig.UnAuthedComponent(): <UnAuthed />
-    )
+    return <UnAuthed />
   }
 
-  return (
-    projectConfig?.AuthedComponent ? projectConfig.AuthedComponent(): <Authed />
-  );
+  return <Authed />;
 }
 
 App.propTypes = {
