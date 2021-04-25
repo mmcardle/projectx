@@ -10,7 +10,7 @@
     "test": "nightwatch",
     "test:ci_chrome": "nightwatch --headless -e chrome",
     "test:ci_firefox": "nightwatch --headless -e firefox",
-    "pretest:ci": "wait-on http://localhost:8000",
+    "pretest:ci": "wait-on --timeout 30000 http://localhost:8000",
     "test:ci": "yarn test:ci_chrome && yarn test:ci_firefox",
     "build:frontend": "yarn --cwd ../frontend install && yarn --cwd ../frontend bic",
     "build:backend": "docker-compose build projectx",
