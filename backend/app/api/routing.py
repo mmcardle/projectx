@@ -3,7 +3,7 @@ from fastapi import APIRouter, Body, Depends
 from users.models import User
 
 # The API model for one object.
-from .models import APIUser, MultipleAPIUsers, SingleAPIUser
+from .fastapi import APIUser, MultipleAPIUsers, SingleAPIUser
 from .utils import check_api_key, get_user
 
 router = APIRouter()
