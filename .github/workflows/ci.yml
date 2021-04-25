@@ -89,6 +89,7 @@ jobs:
 
       - run: pip install --upgrade pip
       - run: pip install pipenv && pipenv install --dev
+      - run: pip freeze
 
   python-unittests:
     needs: python-setup
