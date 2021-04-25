@@ -57,7 +57,7 @@ uWSGI = "==2.0.19.1"
 
 [dev-packages]
 isort = "*"
-pylint = "*"
+pylint = "2.8.1" # Greater than 2.8.1 makes pylint_django fail with error: TypeError: '>=' not supported between instances of 'list' and 'tuple'
 pylint_django = "*"
 pytest = "*"
 pytest-asyncio = "*"
