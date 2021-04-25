@@ -88,6 +88,7 @@ jobs:
             ${{ runner.os }}-pip-   
 
       - run: pip install --upgrade pip
+      - run: cat Pipfile
       - run: pip install pipenv && pipenv install --dev
       - run: pipenv run pip freeze
 
