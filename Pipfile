@@ -56,19 +56,19 @@ Twisted = {version = "==20.3.0", extras = ["http2", "tls"]}
 uWSGI = "==2.0.19.1"
 
 [dev-packages]
-isort = "*"
-pylint = "==2.7.4" # Greater than 2.7.4 makes pylint_django fail with error: TypeError: '>=' not supported between instances of 'list' and 'tuple'
-pylint_django = "*"
-pytest = "*"
-pytest-asyncio = "*"
-pytest-coverage = "*"
-pytest-django = "*"
-pytest-env = "*"
-pytest-mock = "*"
-pytest-pythonpath = "*"
-requests = "*"
-unify = "*"
-black = "*"
+isort = "==5.8.0"
+pylint = "==2.8.2"
+pylint_django = "==2.4.4"
+pytest = "==6.2.3"
+pytest-asyncio = "==0.15.1"
+pytest-coverage = "==0.0"
+pytest-django = "==4.2.0"
+pytest-env = "==0.6.2"
+pytest-mock = "==3.6.0"
+pytest-pythonpath = "==0.7.3"
+requests = "==2.25.1"
+unify = "==0.5"
+black = "==21.4b0"
 
 [requires]
 python_version = "3.9"
