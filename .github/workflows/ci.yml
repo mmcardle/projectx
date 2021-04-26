@@ -167,10 +167,11 @@ jobs:
       matrix:
         python-version: ['3.9']
         lint-command: 
-          - black --check backend/app/ backend/tests/
-          - isort --check-only --diff backend/app/ backend/tests/
-          - unify --check-only --recursive --quote \" backend/app/ backend/tests/
-          - pylint backend/app/
+          - pipenv run python -m black --check backend/app/ backend/tests/
+          - pipenv run python -m isort --check-only --diff backend/app/ backend/tests/
+          - pipenv run python -m unify --check-only --recursive --quote \" backend/app/ backend/tests/
+          - pipenv run python -m pylint backend/app/
+          - pipenv update --outdated
 
     name: python ${{ matrix.python-version }} lint - ${{ matrix.lint-command }}
 
@@ -191,7 +192,7 @@ jobs:
             ${{ runner.os }}-pip-
       
       - run: pip install pipenv && pipenv install --dev
-      - run: pipenv run python -m ${{ matrix.lint-command }}
+      - run: ${{ matrix.lint-command }}
 
   system-tests:
     needs: docker-setup
