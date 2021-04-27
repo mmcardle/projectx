@@ -1,7 +1,9 @@
+from urllib import parse
 from uuid import UUID
-from pydantic import BaseModel
+
 from django.db import models
-from fastapi import APIRouter, Header, HTTPException, Path, Depends, Body
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Path
+from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from users.models import User
 
@@ -33,97 +35,105 @@ def get_user(
     return instance
 
 
+class RouteBuilder:
+    def __init__(
+        self,
+        django_model: models.Model,
+        django_model_identifier: str,
+        fast_api_model: BaseModel,
+        fast_api_single_model: BaseModel,
+        fast_api_multiple_model: BaseModel,
+        config: dict = None,
+    ) -> None:
+        self.django_model = django_model
+        self.django_model_identifier = django_model_identifier
+        self.fast_api_model = fast_api_model
+        self.fast_api_single_model = fast_api_single_model
+        self.fast_api_multiple_model = fast_api_multiple_model
+        self.config = config if config else {}
+        self.name = config.get("name", self.django_model.__name__)
+        self.name_plural = f"{self.name}s"
+        self.name_lower = config.get("name", self.django_model.__name__).lower()
+        self.name_lower_plural = f"{self.name_lower}s"
+        self.path_prefix = f"/{parse.quote(self.name_lower_plural)}/"
+        self.path_for_list_and_post = self.path_prefix
+        self.path_for_identifer = self.path_prefix + "{" + django_model_identifier + "}/"
 
-def get_config_for_model(model, defaults):
-    # TODO - slugify name for urls
-    name = defaults.get("name", model.__name__)
-    name_plural = f"{name}s"
-    name_lower = defaults.get("name", model.__name__).lower()
-    name_lower_plural = f"{name_lower}s"
-    return name, name_plural, name_lower, name_lower_plural
+    def add_list_route_to_router(self, router):
+        @router.get(
+            self.path_for_list_and_post,
+            summary=f"Retrieve a list of all the {self.name_plural}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.fast_api_multiple_model,
+            name=f"{self.name_lower_plural}-get",
+        )
+        def _get(_: User = Depends(check_api_key)) -> self.fast_api_multiple_model:
+            all_models = self.django_model.objects.all()
+            return self.fast_api_multiple_model.from_qs(all_models)
 
+        return _get
 
-def add_list_route(router: APIRouter, model: models.Model, response_model: BaseModel, config: dict = {}):
+    def add_get_route_to_router(self, router, get_function):
+        @router.get(
+            self.path_for_identifer,
+            summary=f"Get a {self.name}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.fast_api_single_model,
+            name=f"{self.name_lower}-get",
+        )
+        def _get(
+            instance: self.django_model = Depends(get_function),
+            _: User = Depends(check_api_key),
+        ) -> self.fast_api_single_model:
+            return self.fast_api_single_model.from_model(instance)
 
-    name, name_plural, name_lower, name_lower_plural = get_config_for_model(model, config)
+        return _get
 
-    @router.get(
-        f"/{name_lower_plural}/",
-        summary=f"Retrieve a list of all the {name_plural}.",
-        tags=[f"{name_plural}"],
-        response_model=response_model,
-        name=f"{name_lower_plural}-get",
-    )
-    def _get(_: model = Depends(check_api_key)) -> response_model:
-        all_models = model.objects.all()
-        return response_model.from_qs(all_models)
+    def add_create_route_to_router(self, router):
+        @router.post(
+            self.path_for_list_and_post,
+            summary=f"Create a new {self.name}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.fast_api_single_model,
+            name=f"{self.name_lower_plural}-post",
+        )
+        def _post(api_instance: self.fast_api_model, _: User = Depends(check_api_key)) -> self.fast_api_single_model:
+            instance = api_instance.create_new()
+            return self.fast_api_single_model.from_model(instance)
 
+        return _post
 
-def add_get_route(router: APIRouter, model: models.Model, response_model: BaseModel, get_function, config: dict = {}):
+    def add_update_route_to_router(self, router, get_function):
+        @router.put(
+            self.path_for_identifer,
+            summary=f"Update a {self.name}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.fast_api_single_model,
+            name=f"{self.name_lower}-put",
+        )
+        def _put(
+            instance: self.django_model = Depends(get_function),
+            api_instance: self.fast_api_model = Body(...),
+            _: User = Depends(check_api_key),
+        ) -> self.fast_api_single_model:
+            return api_instance.update(instance)
 
-    name, name_plural, name_lower, name_lower_plural = get_config_for_model(model, config)
+        return _put
 
-    @router.get(
-        f"/{name_lower_plural}/{{uuid}}/",
-        summary=f"Get a {name}.",
-        tags=[f"{name_plural}"],
-        response_model=response_model,
-        name=f"{name_lower}-get",
-    )
-    def _get(
-        instance: response_model = Depends(get_function),
-        _: User = Depends(check_api_key),
-    ) -> response_model:
-        return response_model.from_model(instance)
+    def add_delete_route_to_router(self, router, get_function):
+        @router.delete(
+            self.path_for_identifer,
+            # "/users/{user_uuid}/",
+            summary=f"Delete a {self.name}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.fast_api_single_model,
+            name=f"{self.name_lower}-delete",
+        )
+        def _delete(
+            instance: self.django_model = Depends(get_function), _: User = Depends(check_api_key)
+        ) -> self.fast_api_single_model:
+            api_instance = self.fast_api_single_model.from_model(instance)
+            instance.delete()
+            return api_instance
 
-
-def add_create_route(router: APIRouter, model: models.Model, request_model: BaseModel, response_model: BaseModel, config: dict = {}):
-
-    name, name_plural, name_lower, name_lower_plural = get_config_for_model(model, config)
-
-    @router.post(
-        f"/{name_lower_plural}/{{uuid}}/",
-        summary=f"Create a new {name}.",
-        tags=[f"{name_plural}"],
-        response_model=response_model,
-        name=f"{name_lower_plural}-post",
-    )
-    def _post(api_instance: request_model, _: User = Depends(check_api_key)) -> response_model:
-        instance = api_instance.new_project()
-        return response_model.from_model(instance)
-
-
-def add_update_route(router: APIRouter, model: models.Model, response_model: BaseModel, get_function, config: dict = {}):
-
-    name, name_plural, name_lower, name_lower_plural = get_config_for_model(model, config)
-
-    @router.put(
-        f"/{name_lower_plural}/{{uuid}}/",
-        summary=f"Update a {name}.",
-        tags=[f"{name_plural}"],
-        response_model=response_model,
-        name=f"{name_lower}-put",
-    )
-    def _put(
-        instance: model = Depends(get_function),
-        api_instance: response_model = Body(...),
-        _: User = Depends(check_api_key),
-    ) -> response_model:
-        return response_model.update_project(instance)
-
-
-def add_delete_route(router: APIRouter, model: models.Model, response_model: BaseModel, get_function, config: dict = {}):
-
-    name, name_plural, name_lower, name_lower_plural = get_config_for_model(model, config)
-
-    @router.delete(
-        f"/{name_lower_plural}/{{uuid}}/",
-        summary=f"Delete a {name}.",
-        tags=[f"{name_plural}"],
-        response_model=response_model,
-        name=f"{name_lower}-delete",
-    )
-    def _delete(instance: model = Depends(get_function), _: User = Depends(check_api_key)) -> response_model:
-        api_instance = response_model.from_model(instance)
-        instance.delete()
-        return api_project
+        return _delete

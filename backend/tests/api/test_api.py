@@ -1,9 +1,7 @@
 import pytest
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from api.wsgi import application
-from users.models import User
 
 client = TestClient(application)
 
@@ -14,14 +12,14 @@ API_KEY = "api_key"
 @pytest.mark.django_db
 def test_bad_api_key():
     response = client.get("/api/users/", headers={"X-API-Key": "BAD_API_KEY"})
-    assert response.status_code == 400
+    assert response.status_code == 400, response.content.decode("utf-8")
     assert response.json() == {"detail": "X-API-Key header invalid."}
 
 
 @pytest.mark.django_db
 def test_no_api_key():
     response = client.get("/api/users/")
-    assert response.status_code == 422
+    assert response.status_code == 422, response.content.decode("utf-8")
     assert response.json() == {
         "detail": [{"loc": ["header", "x-api-key"], "msg": "field required", "type": "value_error.missing"}],
     }
@@ -44,7 +42,7 @@ def test_users_create_update_and_get(mocker):
         headers={"X-API-Key": API_KEY},
         json={"email": email, "first_name": "first_name", "last_name": "last_name"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name",
@@ -53,7 +51,7 @@ def test_users_create_update_and_get(mocker):
     }
 
     response = client.get("/api/users/", headers={"X-API-Key": API_KEY})
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "items": [{"email": email, "first_name": "first_name", "last_name": "last_name", "public_uuid": mocker.ANY}]
     }
@@ -61,7 +59,7 @@ def test_users_create_update_and_get(mocker):
     public_uuid = response.json()["items"][0]["public_uuid"]
 
     response = client.get(f"/api/users/{public_uuid}/", headers={"X-API-Key": API_KEY})
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name",
@@ -80,7 +78,7 @@ def test_users_create_and_update(mocker):
         headers={"X-API-Key": API_KEY},
         json={"email": email, "first_name": "first_name", "last_name": "last_name"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name",
@@ -88,14 +86,14 @@ def test_users_create_and_update(mocker):
         "public_uuid": mocker.ANY,
     }
 
-    user_uuid = response.json()["public_uuid"]
+    public_uuid = response.json()["public_uuid"]
 
     response = client.put(
-        f"/api/users/{user_uuid}/",
+        f"/api/users/{public_uuid}/",
         headers={"X-API-Key": API_KEY},
         json={"email": email, "first_name": "first_name2", "last_name": "last_name2"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name2",
@@ -114,7 +112,7 @@ def test_users_create_and_delete(mocker):
         headers={"X-API-Key": API_KEY},
         json={"email": email, "first_name": "first_name", "last_name": "last_name"},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name",
@@ -128,7 +126,7 @@ def test_users_create_and_delete(mocker):
         f"/api/users/{user_uuid}/",
         headers={"X-API-Key": API_KEY},
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "email": email,
         "first_name": "first_name",
@@ -140,5 +138,5 @@ def test_users_create_and_delete(mocker):
         f"/api/users/{user_uuid}/",
         headers={"X-API-Key": API_KEY},
     )
-    assert response.status_code == 404
+    assert response.status_code == 404, response.content.decode("utf-8")
     assert response.json() == {"detail": f"Object {user_uuid} not found."}
