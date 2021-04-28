@@ -17,7 +17,7 @@ A devspace.yaml config for deployment to kubernetes
 
 # CI
 
-Github actions .github to run CI tasks
+Github actions are in `.github` and run the CI tasks
 
 # Structure
 
@@ -25,3 +25,31 @@ Github actions .github to run CI tasks
 * frontend/ - React app
 * Desktop/ - Electon app
 * tests/ - System tests
+
+# How to use Projectx in your own project
+
+Create a new bare project and clone
+
+    git clone git@github.com:<YOUR_USERNAME>/fork-repo.git
+
+Add an upstream remote pointing to original-repo
+    
+    cd fork-repo
+    git remote add upstream git@github.com:mmcardle/projectx.git
+    # OR with https
+    git remote add upstream https://github.com/mmcardle/projectx.git
+
+Pull from original-repo
+    
+    git pull upstream main
+
+Push to fork-repo
+
+    git push origin main
+
+Sync fork-repo
+    
+    cd fork-repo
+    git fetch upstream
+    git merge upstream/main
+    git push origin main
