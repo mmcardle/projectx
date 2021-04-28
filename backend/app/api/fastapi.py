@@ -11,9 +11,9 @@ class APIUser(BaseModel):
     first_name: Optional[str]  # pylint: disable=unsubscriptable-object
     last_name: Optional[str]  # pylint: disable=unsubscriptable-object
 
-    def new_user(self):
+    def create_new(self):
         """
-        Convert a Django User model instance to an APIUser instance.
+        Create a new Django User model instance.
         """
         return User.objects.create_user(
             email=self.email,
@@ -21,9 +21,9 @@ class APIUser(BaseModel):
             last_name=self.last_name,
         )
 
-    def update_user(self, instance: User):
+    def update(self, instance: User):
         """
-        Convert a Django User model instance to an APIUser instance.
+        Update a Django User model instance and return an APIUser instance.
         """
         instance.email = self.email or instance.email
         instance.first_name = self.first_name or instance.first_name
@@ -54,6 +54,6 @@ class MultipleAPIUsers(BaseModel):  # pylint: disable=too-few-public-methods
     @classmethod
     def from_qs(cls, qs):
         """
-        Convert a Django User queryset to SingleAPIUser instances.
+        Convert a Django User queryset to a MultipleAPIUsers instance.
         """
         return cls(items=[SingleAPIUser.from_model(i) for i in qs])
