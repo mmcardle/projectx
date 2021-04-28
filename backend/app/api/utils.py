@@ -2,7 +2,7 @@ from urllib import parse
 from uuid import UUID
 
 from django.db import models
-from fastapi import APIRouter, Body, Depends, Header, HTTPException, Path
+from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from users.models import User
@@ -35,8 +35,8 @@ def get_user(
     return instance
 
 
-class RouteBuilder:
-    def __init__(
+class RouteBuilder:  # pylint: disable=too-many-instance-attributes
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         django_model: models.Model,
         django_model_identifier: str,

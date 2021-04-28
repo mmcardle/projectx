@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter
 
 from users.models import User
 
 # The API model for one object.
 from .fastapi import APIUser, MultipleAPIUsers, SingleAPIUser
-from .utils import RouteBuilder, check_api_key, get_user
+from .utils import RouteBuilder, get_user
 
 router = APIRouter()
 
