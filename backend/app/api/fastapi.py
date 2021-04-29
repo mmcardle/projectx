@@ -94,22 +94,6 @@ class RouteBuilder:
 
         self.get_function = self.get_identifier_function()
 
-    def get_identifier_function(self):
-        def _inner(
-            identifier: self.model_identifier_class = Path(..., description=f"The identifier of the {self.name}."),
-            x_api_key: str = Header(...),
-        ):
-            """
-            Retrieve the instance from the given model identifier.
-            """
-            _ = check_api_key(x_api_key)
-            instance = self.model.objects.filter(**{self.model_identifier: identifier}).first()
-            if not instance:
-                raise HTTPException(status_code=404, detail=f"Object {identifier} not found.")
-            return instance
-
-        return _inner
-
     @property
     def model_identifier_class(self):
         return self.config.get("identifier_class", str)
@@ -145,6 +129,20 @@ class RouteBuilder:
     @property
     def path_for_identifer(self):
         return self.path_prefix + "{identifier}/"
+
+    def get_identifier_function(self):
+        def func(
+            identifier: self.model_identifier_class = Path(..., description=f"The identifier of the {self.name}."),
+        ):
+            """
+            Retrieve the instance from the given model identifier.
+            """
+            instance = self.model.objects.filter(**{self.model_identifier: identifier}).first()
+            if not instance:
+                raise HTTPException(status_code=404, detail=f"Object {identifier} not found.")
+            return instance
+
+        return func
 
     def add_all_routes_to_router(self, router):
         self.add_list_route_to_router(router)
