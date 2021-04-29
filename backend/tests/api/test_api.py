@@ -9,9 +9,16 @@ client = TestClient(application)
 API_KEY = "api_key"
 
 
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/api/users/",
+        "/api/users/user-uuid/",
+    ],
+)
 @pytest.mark.django_db
-def test_bad_api_key():
-    response = client.get("/api/users/", headers={"X-API-Key": "BAD_API_KEY"})
+def test_bad_api_key(path):
+    response = client.get(path, headers={"X-API-Key": "BAD_API_KEY"})
     assert response.status_code == 400, response.content.decode("utf-8")
     assert response.json() == {"detail": "X-API-Key header invalid."}
 

@@ -1,19 +1,18 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 from users.models import User
 
 # The API model for one object.
-from .fastapi import APIUser, MultipleAPIUsers, SingleAPIUser
-from .utils import RouteBuilder, get_user
+from .fastapi import RouteBuilder
 
 router = APIRouter()
 
-config = {"name": "User"}
+request_fields = ["email", "first_name", "last_name"]
+response_fields = ["public_uuid", "email", "first_name", "last_name"]
+config = {"identifier": "public_uuid", "identifier_class": UUID}
 
-route_builder = RouteBuilder(User, "user_uuid", APIUser, SingleAPIUser, MultipleAPIUsers, config=config)
+route_builder = RouteBuilder(User, request_fields, response_fields, config)
 
-route_builder.add_list_route_to_router(router)
-route_builder.add_get_route_to_router(router, get_user)
-route_builder.add_create_route_to_router(router)
-route_builder.add_update_route_to_router(router, get_user)
-route_builder.add_delete_route_to_router(router, get_user)
+route_builder.add_all_routes_to_router(router)
