@@ -1,6 +1,5 @@
 from typing import List
 from urllib import parse
-from uuid import UUID
 
 from django.db import models
 from fastapi import Body, Depends, Header, HTTPException, Path
@@ -34,12 +33,7 @@ def schema_for_instance(django_model, fields):
             """
             Convert a Django model instance to an SingleSchema instance.
             """
-            return cls(
-                public_uuid=instance.public_uuid,
-                email=instance.email,
-                first_name=instance.first_name,
-                last_name=instance.last_name,
-            )
+            return cls(**{field: getattr(instance, field) for field in fields})
 
     return SingleSchema
 
@@ -54,19 +48,15 @@ def schema_for_new_model(django_model, SingleSchema, fields):  # pylint: disable
             """
             Create a new Django model instance.
             """
-            return django_model.create_new(
-                email=self.email,
-                first_name=self.first_name,
-                last_name=self.last_name,
-            )
+            return django_model.create_new(**{field: getattr(self, field) for field in fields})
 
         def update(self, instance: django_model):
             """
             Update a Django model instance and return an SingleSchema instance.
             """
-            instance.email = self.email or instance.email
-            instance.first_name = self.first_name or instance.first_name
-            instance.last_name = self.last_name or instance.last_name
+            for field in fields:
+                current_field_value = getattr(self, field)
+                setattr(instance, getattr(instance, field), current_field_value)
             instance.save()
             return SingleSchema.from_model(instance)
 
@@ -106,19 +96,27 @@ class RouteBuilder:
 
     def get_identifier_function(self):
         def _inner(
-            identifier: UUID = Path(..., description=f"The identifier of the {self.name}."),
+            identifier: self.model_identifier_class = Path(..., description=f"The identifier of the {self.name}."),
             x_api_key: str = Header(...),
         ):
             """
             Retrieve the instance from the given model identifier.
             """
             _ = check_api_key(x_api_key)
-            instance = self.model.objects.filter(public_uuid=identifier).first()
+            instance = self.model.objects.filter(**{self.model_identifier: identifier}).first()
             if not instance:
                 raise HTTPException(status_code=404, detail=f"Object {identifier} not found.")
             return instance
 
         return _inner
+
+    @property
+    def model_identifier_class(self):
+        return self.config.get("identifier_class", str)
+
+    @property
+    def model_identifier(self):
+        return self.config.get("identifier", "id")
 
     @property
     def name(self):
@@ -147,6 +145,13 @@ class RouteBuilder:
     @property
     def path_for_identifer(self):
         return self.path_prefix + "{identifier}/"
+
+    def add_all_routes_to_router(self, router):
+        self.add_list_route_to_router(router)
+        self.add_get_route_to_router(router)
+        self.add_create_route_to_router(router)
+        self.add_update_route_to_router(router)
+        self.add_delete_route_to_router(router)
 
     def add_list_route_to_router(self, router):
         @router.get(
