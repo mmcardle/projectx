@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c30c932075fee3601edd5231b72119dfe423021eb3716f2fb4a641d9c842b547"
+            "sha256": "8570107d5c2c3c5ffb7a7a4a2c8e4a8d3e7534c456006e7f46a8df51c64ce906"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -495,6 +495,13 @@
             ],
             "index": "pypi",
             "version": "==1.7.3"
+        },
+        "pydantic-django": {
+            "hashes": [
+                "sha256:85604bb250ee2f90456a83bf241f8f7815ef74be9a0fe6fc3234faa72bbdd8c0"
+            ],
+            "index": "pypi",
+            "version": "==0.0.7"
         },
         "pyhamcrest": {
             "hashes": [
