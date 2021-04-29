@@ -2,9 +2,9 @@ from typing import List
 from urllib import parse
 
 from django.db import models
+from djantic import ModelSchema
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
-from pydantic_django import ModelSchema
 
 from users.models import User
 
