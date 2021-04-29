@@ -56,7 +56,7 @@ def schema_for_new_model(django_model, SingleSchema, fields):  # pylint: disable
             """
             for field in fields:
                 current_field_value = getattr(self, field)
-                setattr(instance, getattr(instance, field), current_field_value)
+                setattr(instance, field, current_field_value)
             instance.save()
             return SingleSchema.from_model(instance)
 
