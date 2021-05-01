@@ -253,7 +253,7 @@ def test_change_details_schema_bad_data():
     }
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_ActivateSchema_valid_key(mocker):
 
     user = User.objects.create(username="user")
@@ -267,7 +267,7 @@ def test_ActivateSchema_valid_key(mocker):
     assert check_activation_key.mock_calls == [mocker.call("activate_key")]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_ActivateSchema_bad_key(mocker):
 
     User.objects.create(username="user")
@@ -283,7 +283,7 @@ def test_ActivateSchema_bad_key(mocker):
     assert check_activation_key.mock_calls == [mocker.call("activate_key"), mocker.call("activate_key", max_age=None)]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_ActivateSchema_expired_key(mocker):
 
     user = User.objects.create(username="user", email="user@example.com")

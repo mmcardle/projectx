@@ -1,8 +1,7 @@
 [run]
 omit =
-    app/projectx/wsgi.py
-    app/manage.py
-    app/**/migrations/**
+    backend/app/manage.py
+    backend/app/**/migrations/**
 
 [report]
 exclude_lines =

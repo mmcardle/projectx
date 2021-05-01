@@ -1,5 +1,5 @@
-from projectx.asgi import application
+from projectx.wsgi import application
 
 
-def test_asgi():
+def test_wsgi():
     assert application is not None

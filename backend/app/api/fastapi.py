@@ -6,7 +6,7 @@ from djantic import ModelSchema
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
-from users.models import User
+from users.models import ApiKey, User
 
 # This is to avoid typing it once every object.
 API_KEY_HEADER = Header(..., description="The user's API key.")
@@ -16,10 +16,10 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
     """
     Retrieve the user by the given API key.
     """
-    user = User.objects.filter().first()
-    if x_api_key != "api_key":
-        raise HTTPException(status_code=400, detail="X-API-Key header invalid.")
-    return user
+    api_keys = ApiKey.objects.filter(key=x_api_key)
+    if api_keys.exists():
+        return api_keys.first().user
+    raise HTTPException(status_code=400, detail="X-API-Key header invalid.")
 
 
 def schema_for_instance(django_model, fields):
@@ -143,13 +143,6 @@ class RouteBuilder:
             return instance
 
         return func
-
-    def add_all_routes_to_router(self, router):
-        self.add_list_route_to_router(router)
-        self.add_get_route_to_router(router)
-        self.add_create_route_to_router(router)
-        self.add_update_route_to_router(router)
-        self.add_delete_route_to_router(router)
 
     def add_list_route_to_router(self, router):
         @router.get(
