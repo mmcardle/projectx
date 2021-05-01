@@ -1,6 +1,7 @@
 import calendar
 import json
 import logging
+import secrets
 import uuid
 
 from asgiref.sync import AsyncToSync
@@ -208,3 +209,25 @@ class User(AbstractUser, IndexedTimeStampedModel):
             last_name=user_data["last_name"],
             is_active=False,
         )
+
+
+class ApiKey(IndexedTimeStampedModel):
+    KEY_LENGTH = 64
+    key = models.CharField(max_length=KEY_LENGTH, primary_key=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="api_keys",
+        on_delete=models.PROTECT,
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_key(cls):
+        return secrets.token_hex(cls.KEY_LENGTH)[0 : cls.KEY_LENGTH]
+
+    def __str__(self):
+        return "AuthKey for %s" % self.user

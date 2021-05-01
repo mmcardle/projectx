@@ -7,10 +7,23 @@ from django.core.signing import BadSignature
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
-from users.models import REDIS_ACCOUNT_ACTIVATION_KEY, REDIS_PASSWORD_RESET_KEY, User
+from users.models import (
+    REDIS_ACCOUNT_ACTIVATION_KEY,
+    REDIS_PASSWORD_RESET_KEY,
+    ApiKey,
+    User,
+)
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
+def test_ApiKey():
+    user = User.objects.create_user(email="none@tempurl.com", password="pass")
+    api_key = ApiKey.objects.create(user=user)
+    assert str(api_key) == "AuthKey for "
+    assert api_key.key
+
+
+@pytest.mark.django_db()
 def test_UserManager():
 
     user = User.objects.create_user("none@tempurl.com", password="pass")
@@ -27,14 +40,14 @@ def test_UserManager():
     assert user_with_username.username == "username"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_model_email_unique_case_insensitive():
     User.objects.create(email="none@tempurl.com")
     with pytest.raises(IntegrityError):
         User.objects.create(email="NONE@tempurl.com")
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_model_create_inactive_user():
     data = {
         "email": "none@none.com",
@@ -48,7 +61,7 @@ def test_user_model_create_inactive_user():
     assert inactive_user.last_name == "last_name"
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_model_email_exists_case_insensitive():
     User.objects.create(email="none@tempurl.com")
     assert User.email_exists("none@tempurl.com")
@@ -248,7 +261,7 @@ def test_user_check_activation_key(mocker):
     ]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_reset_email(mocker):
 
     email = "none@tempurl.com"
@@ -261,7 +274,7 @@ def test_user_reset_email(mocker):
     assert send_reset_password_email.mock_calls == [mock.call(request)]
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_reset_email_no_such_user(mocker):
 
     send_reset_password_email = mocker.patch.object(User, "send_reset_password_email")
@@ -271,7 +284,7 @@ def test_user_reset_email_no_such_user(mocker):
     assert send_reset_password_email.mock_calls == []
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db()
 def test_user_send_account_activation_email(mocker):
 
     get_redis_connection = mocker.patch("users.models.get_redis_connection")

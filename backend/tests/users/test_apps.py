@@ -1,5 +1,5 @@
-from users.apps import UsersConfig
+from users.app import UsersConfig
 
 
-def test_apps():
+def test_app():
     assert UsersConfig.name == "users"
