@@ -3,6 +3,7 @@ version: '2.3'
 x-environment:
   &environment
   SECRET_KEY: "DEV_SECRET_KEY"
+  JWT_SECRET: "DEV_JWT_SECRET"
   DEBUG: "True"
   PYTHONASYNCIODEBUG: "True"
   PUBLIC_IP: ${PUBLIC_IP-127.0.0.1}

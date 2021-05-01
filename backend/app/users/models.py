@@ -62,8 +62,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     objects = UserManager()
 
-    create_new = objects.create_user
-
     def display_name(self):
         return self.get_full_name()
 

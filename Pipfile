@@ -55,6 +55,8 @@ service_identity = "==18.1.0"
 Twisted = {version = "==21.2.0", extras = ["http2", "tls"], platform_system = "!='Windows'" }
 uWSGI = {version = "==2.0.19.1", platform_system = "!='Windows'" }
 djantic = "==0.2.0"
+python-jose = "*"
+python-multipart = "*"
 
 [dev-packages]
 isort = "==5.8.0"
