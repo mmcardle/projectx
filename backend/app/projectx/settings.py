@@ -17,6 +17,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, "SECRET_KEY"),
+    JWT_SECRET=(str, "JWT_SECRET"),
     PUBLIC_IP=(str, "localhost"),
     DATABASE_URL=(str, "psql://postgres:mysecretpassword@localhost:5432/postgres"),
     CACHE_URL=(str, "redis://@localhost:6379/0"),
@@ -24,6 +25,7 @@ env = environ.Env(
 )
 
 SECRET_KEY = env.str("SECRET_KEY")
+JWT_SECRET = env.str("JWT_SECRET")
 DEBUG = env("DEBUG")
 PUBLIC_IP = env.str("PUBLIC_IP")
 

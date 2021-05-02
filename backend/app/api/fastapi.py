@@ -8,7 +8,6 @@ from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from users.models import ApiKey, User
 
-# This is to avoid typing it once every object.
 API_KEY_HEADER = Header(..., description="The user's API key.")
 
 
@@ -38,7 +37,7 @@ def schema_for_instance(django_model, fields):
     return SingleSchema
 
 
-def schema_for_new_model(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
+def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
     class NewSchema(ModelSchema):
         class Config:  # pylint: disable=too-few-public-methods
             model = django_model
@@ -48,7 +47,7 @@ def schema_for_new_model(django_model, SingleSchema, fields):  # pylint: disable
             """
             Create a new Django model instance.
             """
-            return django_model.create_new(**{field: getattr(self, field) for field in fields})
+            return django_model.objects.create(**{field: getattr(self, field) for field in fields})
 
         def update(self, instance: django_model):
             """
@@ -78,19 +77,20 @@ def schema_for_multiple_models(SingleSchema):  # pylint: disable=invalid-name
 
 
 class RouteBuilder:
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         model: models.Model,
         request_fields: List[str],
         response_fields: List[str],
+        read_only_fields: List[str],
         config: dict = None,
     ) -> None:
         self.model = model
         self.config = config if config else {}
 
-        self.new_instance_schema = schema_for_instance(model, response_fields)
-        self.multiple_instance_schema = schema_for_multiple_models(self.new_instance_schema)
-        self.instance_schema = schema_for_new_model(model, self.new_instance_schema, request_fields)
+        self.instance_schema = schema_for_instance(model, response_fields + read_only_fields)
+        self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, request_fields)
+        self.multiple_instance_schema = schema_for_multiple_models(self.instance_schema)
 
         self.get_function = self.get_identifier_function()
 
@@ -163,14 +163,14 @@ class RouteBuilder:
             self.path_for_identifer,
             summary=f"Get a {self.name}.",
             tags=[f"{self.name_plural}"],
-            response_model=self.new_instance_schema,
+            response_model=self.instance_schema,
             name=f"{self.name_lower}-get",
         )
         def _get(
             instance: self.model = Depends(self.get_function),
             _: User = Depends(check_api_key),
-        ) -> self.new_instance_schema:
-            return self.new_instance_schema.from_model(instance)
+        ) -> self.instance_schema:
+            return self.instance_schema.from_model(instance)
 
         return _get
 
@@ -179,12 +179,12 @@ class RouteBuilder:
             self.path_for_list_and_post,
             summary=f"Create a new {self.name}.",
             tags=[f"{self.name_plural}"],
-            response_model=self.new_instance_schema,
+            response_model=self.instance_schema,
             name=f"{self.name_lower_plural}-post",
         )
-        def _post(api_instance: self.instance_schema, _: User = Depends(check_api_key)) -> self.new_instance_schema:
+        def _post(api_instance: self.new_instance_schema, _: User = Depends(check_api_key)) -> self.instance_schema:
             instance = api_instance.create_new()
-            return self.new_instance_schema.from_model(instance)
+            return self.instance_schema.from_model(instance)
 
         return _post
 
@@ -193,14 +193,14 @@ class RouteBuilder:
             self.path_for_identifer,
             summary=f"Update a {self.name}.",
             tags=[f"{self.name_plural}"],
-            response_model=self.new_instance_schema,
+            response_model=self.instance_schema,
             name=f"{self.name_lower}-put",
         )
         def _put(
             instance: self.model = Depends(self.get_function),
-            api_instance: self.instance_schema = Body(...),
+            api_instance: self.new_instance_schema = Body(...),
             _: User = Depends(check_api_key),
-        ) -> self.new_instance_schema:
+        ) -> self.instance_schema:
             return api_instance.update(instance)
 
         return _put
@@ -210,13 +210,13 @@ class RouteBuilder:
             self.path_for_identifer,
             summary=f"Delete a {self.name}.",
             tags=[f"{self.name_plural}"],
-            response_model=self.new_instance_schema,
+            response_model=self.instance_schema,
             name=f"{self.name_lower}-delete",
         )
         def _delete(
             instance: self.model = Depends(self.get_function), _: User = Depends(check_api_key)
-        ) -> self.new_instance_schema:
-            api_instance = self.new_instance_schema.from_model(instance)
+        ) -> self.instance_schema:
+            api_instance = self.instance_schema.from_model(instance)
             instance.delete()
             return api_instance
 
