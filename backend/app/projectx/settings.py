@@ -7,9 +7,14 @@ https://docs.djangoproject.com/
 """
 
 import os
+import warnings
 from pathlib import Path
 
 import environ
+
+# See https://github.com/mpdavis/python-jose/issues/221
+warnings.filterwarnings(action="ignore", module="jose.backends.cryptography_backend")
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

@@ -14,7 +14,7 @@ from api.routing import router
 
 JWT_SECRET = settings.JWT_SECRET
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 24 * 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
