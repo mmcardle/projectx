@@ -53,3 +53,8 @@ Sync fork-repo
     git fetch upstream
     git merge upstream/main
     git push origin main
+
+# Fix line endings windows
+
+    $path = "backend/tests/test_app/models.py"
+    (Get-Content $path -Raw).Replace("`r`n","`n") | Set-Content $path -Force

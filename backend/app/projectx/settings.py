@@ -6,7 +6,6 @@ https://docs.djangoproject.com/
 
 """
 
-import os
 import warnings
 from pathlib import Path
 
@@ -14,10 +13,6 @@ import environ
 
 # See https://github.com/mpdavis/python-jose/issues/221
 warnings.filterwarnings(action="ignore", module="jose.backends.cryptography_backend")
-
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 env = environ.Env(
     DEBUG=(bool, False),
@@ -33,9 +28,6 @@ SECRET_KEY = env.str("SECRET_KEY")
 JWT_SECRET = env.str("JWT_SECRET")
 DEBUG = env("DEBUG")
 PUBLIC_IP = env.str("PUBLIC_IP")
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = [PUBLIC_IP]
 
