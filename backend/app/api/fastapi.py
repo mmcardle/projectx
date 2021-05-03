@@ -1,4 +1,5 @@
-from typing import List
+import logging
+from typing import Callable, List, Optional
 from urllib import parse
 
 from django.db import models
@@ -9,6 +10,9 @@ from pydantic import BaseModel  # pylint: disable=no-name-in-module
 from users.models import ApiKey, User
 
 API_KEY_HEADER = Header(..., description="The user's API key.")
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
@@ -43,11 +47,14 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             model = django_model
             include = fields
 
-        def create_new(self):
+        def create_new(self, extra=None):
             """
             Create a new Django model instance.
             """
-            return django_model.objects.create(**{field: getattr(self, field) for field in fields})
+            data_fields = {field: getattr(self, field) for field in fields}
+            if extra:
+                data_fields.update(extra)
+            return django_model.objects.create(**data_fields)
 
         def update(self, instance: django_model):
             """
@@ -76,7 +83,7 @@ def schema_for_multiple_models(SingleSchema):  # pylint: disable=invalid-name
     return MultipleSchema
 
 
-class RouteBuilder:
+class RouteBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         model: models.Model,
@@ -84,15 +91,26 @@ class RouteBuilder:
         response_fields: List[str],
         read_only_fields: List[str],
         config: dict = None,
+        owner_field: str = None,
+        current_user_function: Optional[Callable] = None,
     ) -> None:
         self.model = model
+        self.owner_field = owner_field
+
         self.config = config if config else {}
 
         self.instance_schema = schema_for_instance(model, response_fields + read_only_fields)
-        self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, request_fields)
+
+        fields_for_new = request_fields
+        self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
         self.multiple_instance_schema = schema_for_multiple_models(self.instance_schema)
 
         self.get_function = self.get_identifier_function()
+
+        if current_user_function is None:
+            self.current_user_function = check_api_key
+        else:
+            self.current_user_function = current_user_function
 
     @property
     def model_identifier_class(self):
@@ -130,6 +148,9 @@ class RouteBuilder:
     def path_for_identifer(self):
         return self.path_prefix + "{identifier}/"
 
+    def check_ownership(self, instance, user):
+        return user == getattr(instance, self.owner_field)
+
     def get_identifier_function(self):
         def func(
             identifier: self.model_identifier_class = Path(..., description=f"The identifier of the {self.name}."),
@@ -152,8 +173,11 @@ class RouteBuilder:
             response_model=self.multiple_instance_schema,
             name=f"{self.name_lower_plural}-get",
         )
-        def _get(_: User = Depends(check_api_key)) -> self.multiple_instance_schema:
-            all_models = self.model.objects.all()
+        def _get(user: User = Depends(self.current_user_function)) -> self.multiple_instance_schema:
+            if self.owner_field:
+                all_models = self.model.objects.filter(**{self.owner_field: user})
+            else:
+                all_models = self.model.objects.all()
             return self.multiple_instance_schema.from_qs(all_models)
 
         return _get
@@ -168,8 +192,12 @@ class RouteBuilder:
         )
         def _get(
             instance: self.model = Depends(self.get_function),
-            _: User = Depends(check_api_key),
+            user: User = Depends(self.current_user_function),
         ) -> self.instance_schema:
+            if self.owner_field and not self.check_ownership(instance, user):
+                owner = getattr(instance, self.owner_field)
+                logger.warning("User %s tried to get %s and is not the owner, owner is %s.", user, instance, owner)
+                raise HTTPException(status_code=404, detail="Object not found.")
             return self.instance_schema.from_model(instance)
 
         return _get
@@ -182,8 +210,11 @@ class RouteBuilder:
             response_model=self.instance_schema,
             name=f"{self.name_lower_plural}-post",
         )
-        def _post(api_instance: self.new_instance_schema, _: User = Depends(check_api_key)) -> self.instance_schema:
-            instance = api_instance.create_new()
+        def _post(
+            api_instance: self.new_instance_schema, user: User = Depends(self.current_user_function)
+        ) -> self.instance_schema:
+            extra = {self.owner_field: user} if self.owner_field else None
+            instance = api_instance.create_new(extra=extra)
             return self.instance_schema.from_model(instance)
 
         return _post
@@ -199,8 +230,12 @@ class RouteBuilder:
         def _put(
             instance: self.model = Depends(self.get_function),
             api_instance: self.new_instance_schema = Body(...),
-            _: User = Depends(check_api_key),
+            user: User = Depends(self.current_user_function),
         ) -> self.instance_schema:
+            if self.owner_field and not self.check_ownership(instance, user):
+                owner = getattr(instance, self.owner_field)
+                logger.warning("User %s tried to update %s and is not the owner, owner is %s.", user, instance, owner)
+                raise HTTPException(status_code=404, detail="Object not found.")
             return api_instance.update(instance)
 
         return _put
@@ -214,8 +249,12 @@ class RouteBuilder:
             name=f"{self.name_lower}-delete",
         )
         def _delete(
-            instance: self.model = Depends(self.get_function), _: User = Depends(check_api_key)
+            instance: self.model = Depends(self.get_function), user: User = Depends(self.current_user_function)
         ) -> self.instance_schema:
+            if self.owner_field and not self.check_ownership(instance, user):
+                owner = getattr(instance, self.owner_field)
+                logger.warning("User %s tried to update %s and is not the owner, owner is %s.", user, instance, owner)
+                raise HTTPException(status_code=404, detail="Object not found.")
             api_instance = self.instance_schema.from_model(instance)
             instance.delete()
             return api_instance
