@@ -8,7 +8,8 @@ from users.models import ApiKey, User
 
 client = TestClient(application)
 
-jwt_user_password = "jwtpassword"
+BASE_PATH = "/api/testmodels/"
+JWT_USER_PASSWORD = "jwtpassword"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -22,19 +23,8 @@ def api_key_user_fixture():
 @pytest.fixture(name="jwt_user")
 def jwt_user_fixture():
     return User.objects.create_user(
-        email="jwt_user@tempurl.com", first_name="JWT", last_name="Test User", password=jwt_user_password
+        email="jwt_user@tempurl.com", first_name="JWT", last_name="Test User", password=JWT_USER_PASSWORD
     )
-
-
-def test_route_builder_adds_routes():
-    router = APIRouter()
-    route_builder = RouteBuilder(User, [], [], [])
-    route_builder.add_list_route_to_router(router)
-    route_builder.add_get_route_to_router(router)
-    route_builder.add_create_route_to_router(router)
-    route_builder.add_update_route_to_router(router)
-    route_builder.add_delete_route_to_router(router)
-    assert len(router.routes) == 5
 
 
 @pytest.mark.django_db()
@@ -46,9 +36,8 @@ def test_bad_api_key():
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_testmodel_create_list_and_get(api_key_user, mocker):
-
     response = client.post(
-        "/api/testmodels/",
+        BASE_PATH,
         headers={"X-API-Key": api_key_user.key},
         json={"name": "name"},
     )
@@ -61,7 +50,7 @@ def test_testapp_testmodel_create_list_and_get(api_key_user, mocker):
         "config": {},
     }
 
-    response = client.get("/api/testmodels/", headers={"X-API-Key": api_key_user.key})
+    response = client.get(BASE_PATH, headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
         "items": [{"uuid": mocker.ANY, "name": "name", "created": mocker.ANY, "last_updated": mocker.ANY, "config": {}}]
@@ -84,7 +73,7 @@ def test_testapp_testmodel_create_list_and_get(api_key_user, mocker):
 def test_testapp_testmodel_create_update_and_get(api_key_user, mocker):
 
     response = client.post(
-        "/api/testmodels/",
+        BASE_PATH,
         headers={"X-API-Key": api_key_user.key},
         json={"name": "name"},
     )
@@ -114,7 +103,7 @@ def test_testapp_testmodel_create_update_and_get(api_key_user, mocker):
 def test_testapp_testmodel_create_and_update(api_key_user, mocker):
 
     response = client.post(
-        "/api/testmodels/",
+        BASE_PATH,
         headers={"X-API-Key": api_key_user.key},
         json={"name": "name"},
     )
@@ -148,7 +137,7 @@ def test_testapp_testmodel_create_and_update(api_key_user, mocker):
 def test_testapp_testmodel_create_and_delete(api_key_user, mocker):
 
     response = client.post(
-        "/api/testmodels/",
+        BASE_PATH,
         headers={"X-API-Key": api_key_user.key},
         json={"name": "name"},
     )
@@ -301,7 +290,7 @@ def test_testapp_testmodelwithjwt_create_get_and_delete(jwt_user, mocker):
 
     response = client.post(
         "/api/auth/token/",
-        data={"username": jwt_user.username, "password": jwt_user_password},
+        data={"username": jwt_user.username, "password": JWT_USER_PASSWORD},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {

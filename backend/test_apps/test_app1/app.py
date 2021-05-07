@@ -7,15 +7,17 @@ from api.routing import router
 from users.app import get_current_user_func, schema_for_django_user
 
 
-class TestAppConfig(AppConfig):
-    name = "test_app"
+class TestApp1Config(AppConfig):
+    name = "test_app1"
+    verbose_name = "The test App 1"
 
     def ready(self):
-        from api.fastapi import RouteBuilder
+        from api.fastapi import RouteBuilder  # pylint: disable=import-outside-toplevel
 
         self.add_test_model_routes(RouteBuilder)
         self.add_test_model_with_owner_routes(RouteBuilder)
         self.add_test_model_with_jwt_user(RouteBuilder)
+        self.add_test_related_model(RouteBuilder)
 
         for route in router.routes:
             print(f"Added test route: {route.path}")
@@ -30,6 +32,25 @@ class TestAppConfig(AppConfig):
         config = {"identifier": "uuid", "identifier_class": UUID}
 
         simple_route_builder = route_builder_class(TestModel, request_fields, response_fields, read_only_fields, config)
+
+        simple_route_builder.add_list_route_to_router(router)
+        simple_route_builder.add_get_route_to_router(router)
+        simple_route_builder.add_create_route_to_router(router)
+        simple_route_builder.add_update_route_to_router(router)
+        simple_route_builder.add_delete_route_to_router(router)
+
+    def add_test_related_model(self, route_builder_class):
+
+        TestModelWithRelationship = self.get_model("TestModelWithRelationship")  # pylint: disable=invalid-name
+
+        request_fields = ["name", "related_model"]
+        read_only_fields = []
+        response_fields = ["uuid"] + request_fields + read_only_fields
+        config = {"identifier": "uuid", "identifier_class": UUID}
+
+        simple_route_builder = route_builder_class(
+            TestModelWithRelationship, request_fields, response_fields, read_only_fields, config
+        )
 
         simple_route_builder.add_list_route_to_router(router)
         simple_route_builder.add_get_route_to_router(router)

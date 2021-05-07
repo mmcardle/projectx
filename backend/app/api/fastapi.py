@@ -3,6 +3,7 @@ from typing import Callable, List, Optional
 from urllib import parse
 
 from django.db import models
+from django.db.models.fields.related import ForeignKey
 from djantic import ModelSchema
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
@@ -13,6 +14,18 @@ API_KEY_HEADER = Header(..., description="The user's API key.")
 
 
 logger = logging.getLogger(__name__)
+
+
+class RouteBuilderException(Exception):
+    pass
+
+
+class InvalidFieldsException(RouteBuilderException):
+    pass
+
+
+class InvalidForeignKeyException(RouteBuilderException):
+    pass
 
 
 def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
@@ -36,7 +49,14 @@ def schema_for_instance(django_model, fields):
             """
             Convert a Django model instance to an SingleSchema instance.
             """
-            return cls(**{field: getattr(instance, field) for field in fields})
+            field_data = {}
+            for field in fields:
+                django_field = django_model._meta.get_field(field)
+                if isinstance(django_field, ForeignKey):
+                    field_data[field] = getattr(instance, field).id
+                else:
+                    field_data[field] = getattr(instance, field)
+            return cls(**field_data)
 
     return SingleSchema
 
@@ -51,17 +71,31 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             """
             Create a new Django model instance.
             """
-            data_fields = {field: getattr(self, field) for field in fields}
+            field_data = {}
+
+            for field in fields:
+                django_field = django_model._meta.get_field(field)
+                if isinstance(django_field, ForeignKey):
+                    related_model = django_field.related_model
+                    field_data[field] = related_model.objects.get(id=getattr(self, field))
+                else:
+                    field_data[field] = getattr(self, field)
+
             if extra:
-                data_fields.update(extra)
-            return django_model.objects.create(**data_fields)
+                field_data.update(extra)
+            return django_model.objects.create(**field_data)
 
         def update(self, instance: django_model):
             """
             Update a Django model instance and return an SingleSchema instance.
             """
             for field in fields:
-                current_field_value = getattr(self, field)
+                django_field = django_model._meta.get_field(field)
+                if isinstance(django_field, ForeignKey):
+                    related_model = django_field.related_model
+                    current_field_value = related_model.objects.get(id=getattr(self, field))
+                else:
+                    current_field_value = getattr(self, field)
                 setattr(instance, field, current_field_value)
             instance.save()
             return SingleSchema.from_model(instance)
@@ -96,6 +130,19 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
     ) -> None:
         self.model = model
         self.owner_field = owner_field
+
+        model_fields = model._meta.get_fields()
+        valid_fields_names = [field.name for field in model_fields]
+
+        user_fields = set(request_fields + response_fields + read_only_fields)
+
+        invalid_fields = set()
+        for field in user_fields:
+            if field not in valid_fields_names:
+                invalid_fields.add(field)
+
+        if invalid_fields:
+            raise InvalidFieldsException(f"{invalid_fields} not in {valid_fields_names}")
 
         self.config = config if config else {}
 
