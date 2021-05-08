@@ -83,14 +83,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
+          key: ${{ runner.os }}-pip-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-   
+            ${{ runner.os }}-pip-v2-
 
       - run: pip install --upgrade pip
       - run: cat Pipfile
       - run: pip install pipenv && pipenv install --dev
-      - run: pipenv run pip freeze
+      - run: pipenv graph
 
   python-unittests:
     needs: python-setup

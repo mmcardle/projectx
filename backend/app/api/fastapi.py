@@ -20,6 +20,10 @@ class RouteBuilderException(Exception):
     pass
 
 
+class InvalidAuthenticationException(RouteBuilderException):
+    pass
+
+
 class InvalidFieldsException(RouteBuilderException):
     pass
 
@@ -126,23 +130,18 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         read_only_fields: List[str],
         config: dict = None,
         owner_field: str = None,
-        current_user_function: Optional[Callable] = None,
+        authentication: Optional[Callable] = None,
     ) -> None:
         self.model = model
         self.owner_field = owner_field
 
-        model_fields = model._meta.get_fields()
-        valid_fields_names = [field.name for field in model_fields]
+        if owner_field and not authentication:
+            raise InvalidAuthenticationException(
+                "If you specify an owner field, you must have set the authentication function."
+            )
 
         user_fields = set(request_fields + response_fields + read_only_fields)
-
-        invalid_fields = set()
-        for field in user_fields:
-            if field not in valid_fields_names:
-                invalid_fields.add(field)
-
-        if invalid_fields:
-            raise InvalidFieldsException(f"{invalid_fields} not in {valid_fields_names}")
+        self.validate_field_names(user_fields)
 
         self.config = config if config else {}
 
@@ -154,10 +153,17 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
 
         self.get_function = self.get_identifier_function()
 
-        if current_user_function is None:
-            self.current_user_function = check_api_key
+        if authentication is None:
+            self.authentication = lambda: None
         else:
-            self.current_user_function = current_user_function
+            self.authentication = authentication
+
+    def validate_field_names(self, user_fields):
+        model_fields = self.model._meta.get_fields()
+        valid_fields_names = sorted({field.name for field in model_fields})
+        invalid_fields = sorted(user_fields.difference(valid_fields_names))
+        if invalid_fields:
+            raise InvalidFieldsException(f"{invalid_fields} not in {valid_fields_names}")
 
     @property
     def model_identifier_class(self):
@@ -212,6 +218,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
 
         return func
 
+    def add_all_routes(self, router):
+        self.add_list_route_to_router(router)
+        self.add_get_route_to_router(router)
+        self.add_create_route_to_router(router)
+        self.add_update_route_to_router(router)
+        self.add_delete_route_to_router(router)
+
     def add_list_route_to_router(self, router):
         @router.get(
             self.path_for_list_and_post,
@@ -220,7 +233,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             response_model=self.multiple_instance_schema,
             name=f"{self.name_lower_plural}-get",
         )
-        def _get(user: User = Depends(self.current_user_function)) -> self.multiple_instance_schema:
+        def _get(user: User = Depends(self.authentication)) -> self.multiple_instance_schema:
             if self.owner_field:
                 all_models = self.model.objects.filter(**{self.owner_field: user})
             else:
@@ -239,7 +252,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         )
         def _get(
             instance: self.model = Depends(self.get_function),
-            user: User = Depends(self.current_user_function),
+            user: User = Depends(self.authentication),
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)
@@ -258,7 +271,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             name=f"{self.name_lower_plural}-post",
         )
         def _post(
-            api_instance: self.new_instance_schema, user: User = Depends(self.current_user_function)
+            api_instance: self.new_instance_schema, user: User = Depends(self.authentication)
         ) -> self.instance_schema:
             extra = {self.owner_field: user} if self.owner_field else None
             instance = api_instance.create_new(extra=extra)
@@ -277,7 +290,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         def _put(
             instance: self.model = Depends(self.get_function),
             api_instance: self.new_instance_schema = Body(...),
-            user: User = Depends(self.current_user_function),
+            user: User = Depends(self.authentication),
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)
@@ -296,7 +309,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             name=f"{self.name_lower}-delete",
         )
         def _delete(
-            instance: self.model = Depends(self.get_function), user: User = Depends(self.current_user_function)
+            instance: self.model = Depends(self.get_function), user: User = Depends(self.authentication)
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)

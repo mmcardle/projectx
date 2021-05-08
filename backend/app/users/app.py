@@ -80,25 +80,37 @@ def get_current_user_func(get_user):
     return inner
 
 
+def get_user_schema():
+    return schema_for_django_user(["public_uuid", "email", "first_name", "last_name", "is_active"])
+
+
+def get_user_func(User, UserSchema):  # pylint: disable=invalid-name
+    def get_user(username: str):
+        try:
+            user = User.objects.get(username=username)
+            return UserSchema.from_model(user)
+        except User.DoesNotExist:
+            return None
+
+    return get_user
+
+
+def get_user_authentication(user_model=None):
+    if user_model is None:
+        user_model = get_user_model()
+    UserSchema = get_user_schema()
+    get_user = get_user_func(user_model, UserSchema)
+    return get_current_user_func(get_user), UserSchema
+
+
 class UsersConfig(AppConfig):
     name = "users"
 
     def ready(self):
 
-        User = self.get_model("User")  # pylint: disable=invalid-name
+        authentication, UserSchema = get_user_authentication()
 
-        DjangoUserSchema = schema_for_django_user(["public_uuid", "email", "first_name", "last_name", "is_active"])
-
-        def get_user(username: str):
-            try:
-                user = User.objects.get(username=username)
-                return DjangoUserSchema.from_model(user)
-            except User.DoesNotExist:
-                return None
-
-        get_current_user = get_current_user_func(get_user)
-
-        def get_current_active_user(current_user: DjangoUserSchema = Depends(get_current_user)):
+        def get_current_active_user(current_user: UserSchema = Depends(authentication)):
             if not current_user.is_active:
                 raise HTTPException(status_code=400, detail="Inactive user")
             return current_user
@@ -123,7 +135,7 @@ class UsersConfig(AppConfig):
             summary="Get Auth token.",
             tags=["auth"],
             name="auth-self",
-            response_model=DjangoUserSchema,
+            response_model=UserSchema,
         )
-        async def auth_self(current_user: DjangoUserSchema = Depends(get_current_active_user)):
+        async def auth_self(current_user: UserSchema = Depends(get_current_active_user)):
             return current_user
