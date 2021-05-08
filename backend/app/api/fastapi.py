@@ -1,9 +1,9 @@
 import logging
+from collections import defaultdict
 from typing import Callable, List, Optional
 from urllib import parse
 
 from django.db import models
-from django.db.models.fields.related import ForeignKey
 from djantic import ModelSchema
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
@@ -56,8 +56,15 @@ def schema_for_instance(django_model, fields):
             field_data = {}
             for field in fields:
                 django_field = django_model._meta.get_field(field)
-                if isinstance(django_field, ForeignKey):
-                    field_data[field] = getattr(instance, field).id
+                if django_field.is_relation:
+                    if django_field.many_to_many:
+                        many_to_many_data = []
+                        related_fields = getattr(instance, field)
+                        for related_field in related_fields.all():
+                            many_to_many_data.append({"id": related_field.id})
+                        field_data[field] = many_to_many_data
+                    else:
+                        field_data[field] = getattr(instance, field).id
                 else:
                     field_data[field] = getattr(instance, field)
             return cls(**field_data)
@@ -76,32 +83,59 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             Create a new Django model instance.
             """
             field_data = {}
-
+            many_to_many_fields = defaultdict(list)
             for field in fields:
                 django_field = django_model._meta.get_field(field)
-                if isinstance(django_field, ForeignKey):
+                if django_field.is_relation:
                     related_model = django_field.related_model
-                    field_data[field] = related_model.objects.get(id=getattr(self, field))
+                    if django_field.many_to_many:
+                        for related_data in getattr(self, field):
+                            related_object = related_model.objects.get(id=related_data["id"])
+                            many_to_many_fields[field].append(related_object)
+                    else:
+                        field_data[field] = related_model.objects.get(id=getattr(self, field))
                 else:
                     field_data[field] = getattr(self, field)
 
             if extra:
                 field_data.update(extra)
-            return django_model.objects.create(**field_data)
+            new_object = django_model.objects.create(**field_data)
+
+            for many_to_many_field in many_to_many_fields:
+                ref_field = getattr(new_object, many_to_many_field)
+                for related_value in many_to_many_fields[many_to_many_field]:
+                    ref_field.add(related_value)
+
+            return new_object
 
         def update(self, instance: django_model):
             """
             Update a Django model instance and return an SingleSchema instance.
             """
+            many_to_many_fields = defaultdict(list)
             for field in fields:
                 django_field = django_model._meta.get_field(field)
-                if isinstance(django_field, ForeignKey):
+                if django_field.is_relation:
                     related_model = django_field.related_model
-                    current_field_value = related_model.objects.get(id=getattr(self, field))
+                    if django_field.many_to_many:
+                        for related_data in getattr(self, field):
+                            related_object = related_model.objects.get(id=related_data["id"])
+                            many_to_many_fields[field].append(related_object)
+                    else:
+                        current_field_value = related_model.objects.get(id=getattr(self, field))
+                        setattr(instance, field, current_field_value)
                 else:
                     current_field_value = getattr(self, field)
-                setattr(instance, field, current_field_value)
+                    setattr(instance, field, current_field_value)
+
             instance.save()
+
+            for many_to_many_field in many_to_many_fields:
+                ref_field = getattr(instance, many_to_many_field)
+                ref_field.clear()
+                for related_value in many_to_many_fields[many_to_many_field]:
+                    ref_field.add(related_value)
+
             return SingleSchema.from_model(instance)
 
     return NewSchema
@@ -150,6 +184,10 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         fields_for_new = request_fields
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
         self.multiple_instance_schema = schema_for_multiple_models(self.instance_schema)
+
+        #  print(json.dumps(self.instance_schema.schema(), indent=4))
+        #  print(json.dumps(self.new_instance_schema.schema(), indent=4))
+        #  print(json.dumps(self.multiple_instance_schema.schema(), indent=4))
 
         self.get_function = self.get_identifier_function()
 

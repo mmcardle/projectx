@@ -20,3 +20,13 @@ class TestModelWithRelationship(models.Model):
 
     def __str__(self):
         return str(self.name)
+
+
+class TestModelWithManyToManyRelationship(models.Model):
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    name = models.CharField(max_length=50)
+    related_models = models.ManyToManyField(RelatedModel)
+
+    def __str__(self):
+        return str(self.name)

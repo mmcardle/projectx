@@ -28,3 +28,17 @@ class TestAppWithRelatedModelConfig(AppConfig):
         )
 
         route_builder.add_all_routes(router)
+
+        TestModelWithManyToManyRelationship = self.get_model(  # pylint: disable=invalid-name
+            "TestModelWithManyToManyRelationship"
+        )
+
+        route_builder_many_to_many = RouteBuilder(
+            TestModelWithManyToManyRelationship,
+            ["name", "related_models"],
+            ["uuid", "name", "related_models"],
+            [],
+            config,
+        )
+
+        route_builder_many_to_many.add_all_routes(router)
