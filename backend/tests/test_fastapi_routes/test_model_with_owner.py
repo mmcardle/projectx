@@ -1,12 +1,37 @@
-import pytest
-from fastapi.testclient import TestClient
+from uuid import UUID
 
+import pytest
+from fastapi import APIRouter, FastAPI
+from fastapi.testclient import TestClient
+from test_app.models import TestModelWithOwner
+
+from api.fastapi import RouteBuilder, check_api_key
 from api.wsgi import application
 from users.models import ApiKey, User
 
-client = TestClient(application)
+BASE_PATH = "/testmodelwithowners/"
 
-BASE_PATH = "/api/testmodelwithowners/"
+
+@pytest.mark.django_db(transaction=True)
+@pytest.fixture(name="client")
+def get_client():
+    app = FastAPI()
+    router = APIRouter()
+    request_fields = ["name"]
+    response_fields = ["uuid"] + request_fields
+    config = {"identifier": "uuid", "identifier_class": UUID}
+    route_builder = RouteBuilder(
+        TestModelWithOwner,
+        request_fields=request_fields,
+        response_fields=response_fields,
+        config=config,
+        owner_field="owner",
+        authentication=check_api_key,
+    )
+
+    route_builder.add_all_routes(router)
+    app.include_router(router)
+    return TestClient(app)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -17,7 +42,7 @@ def api_key_user_fixture():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodelwithowner_create_list_and_get(api_key_user, mocker):
+def test_testapp_testmodelwithowner_create_list_and_get(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,
@@ -69,7 +94,7 @@ def test_testapp_testmodelwithowner_create_list_and_get(api_key_user, mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodelwithowner_other_user_cannot_get(api_key_user, mocker):
+def test_testapp_testmodelwithowner_other_user_cannot_get(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,

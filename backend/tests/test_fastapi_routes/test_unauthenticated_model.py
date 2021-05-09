@@ -1,15 +1,33 @@
-import pytest
-from fastapi.testclient import TestClient
+from uuid import UUID
 
+import pytest
+from fastapi import APIRouter, FastAPI
+from fastapi.testclient import TestClient
+from test_app.models import UnauthenticatedTestModel
+
+from api.fastapi import RouteBuilder
 from api.wsgi import application
 
-client = TestClient(application)
-
-BASE_PATH = "/api/unauthenticatedtestmodels/"
+BASE_PATH = "/unauthenticatedtestmodels/"
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_list_and_get(mocker):
+@pytest.fixture(name="client")
+def get_client():
+    app = FastAPI()
+    router = APIRouter()
+    config = {"identifier": "uuid", "identifier_class": UUID}
+    route_builder = RouteBuilder(
+        UnauthenticatedTestModel,
+        config=config,
+    )
+    route_builder.add_all_routes(router)
+    app.include_router(router)
+    return TestClient(app)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_testapp_testmodel_create_list_and_get(client, mocker):
     response = client.post(BASE_PATH, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
@@ -32,7 +50,7 @@ def test_testapp_testmodel_create_list_and_get(mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_update_and_get(mocker):
+def test_testapp_testmodel_create_update_and_get(client, mocker):
 
     response = client.post(BASE_PATH, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -52,7 +70,7 @@ def test_testapp_testmodel_create_update_and_get(mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_update(mocker):
+def test_testapp_testmodel_create_and_update(client, mocker):
 
     response = client.post(BASE_PATH, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -72,7 +90,7 @@ def test_testapp_testmodel_create_and_update(mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_delete(mocker):
+def test_testapp_testmodel_create_and_delete(client, mocker):
 
     response = client.post(BASE_PATH, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")

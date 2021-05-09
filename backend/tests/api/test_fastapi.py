@@ -1,7 +1,7 @@
 import pytest
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
-from test_app_with_api_key import models
+from test_app import models
 
 from api.fastapi import (
     InvalidAuthenticationException,

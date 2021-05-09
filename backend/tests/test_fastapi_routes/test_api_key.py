@@ -1,14 +1,32 @@
-import pytest
-from fastapi import APIRouter
-from fastapi.testclient import TestClient
+from uuid import UUID
 
-from api.fastapi import RouteBuilder
-from api.wsgi import application
+import pytest
+from fastapi import APIRouter, FastAPI
+from fastapi.testclient import TestClient
+from test_app.models import TestModel
+
+from api.fastapi import RouteBuilder, check_api_key
 from users.models import ApiKey, User
 
-client = TestClient(application)
+BASE_PATH = "/testmodels/"
 
-BASE_PATH = "/api/testmodels/"
+
+@pytest.mark.django_db(transaction=True)
+@pytest.fixture(name="client")
+def get_client():
+    app = FastAPI()
+    router = APIRouter()
+    route_builder = RouteBuilder(
+        TestModel,
+        request_fields=["name", "config"],
+        response_fields=["name", "config", "uuid", "last_updated", "created"],
+        config={"identifier": "uuid", "identifier_class": UUID},
+        authentication=check_api_key,
+    )
+
+    route_builder.add_all_routes(router)
+    app.include_router(router)
+    return TestClient(app)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -19,14 +37,15 @@ def api_key_user_fixture():
 
 
 @pytest.mark.django_db()
-def test_bad_api_key():
+def test_bad_api_key(client):
     response = client.get(f"{BASE_PATH}uuid/", headers={"X-API-Key": "BAD_API_KEY"})
     assert response.status_code == 400, response.content.decode("utf-8")
     assert response.json() == {"detail": "X-API-Key header invalid."}
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_list_and_get(api_key_user, mocker):
+def test_testapp_testmodel_create_list_and_get(client, api_key_user, mocker):
+
     response = client.post(
         BASE_PATH,
         headers={"X-API-Key": api_key_user.key},
@@ -61,7 +80,7 @@ def test_testapp_testmodel_create_list_and_get(api_key_user, mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_update_and_get(api_key_user, mocker):
+def test_testapp_testmodel_create_update_and_get(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,
@@ -91,7 +110,7 @@ def test_testapp_testmodel_create_update_and_get(api_key_user, mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_update(api_key_user, mocker):
+def test_testapp_testmodel_create_and_update(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,
@@ -125,7 +144,7 @@ def test_testapp_testmodel_create_and_update(api_key_user, mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_delete(api_key_user, mocker):
+def test_testapp_testmodel_create_and_delete(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,
