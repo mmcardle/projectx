@@ -1,6 +1,6 @@
 from common.validation import create_payload_decorator
 
-from . import validation
+from users import validation
 
 
 def activate_payload(func):

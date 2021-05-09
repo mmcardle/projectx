@@ -1,10 +1,8 @@
 from uuid import UUID
 
 import pytest
-from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from test_app import models
-
 from api.fastapi import RouteBuilder
 
 BASE_PATH = "/pizzas/"
@@ -12,9 +10,7 @@ BASE_PATH = "/pizzas/"
 
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
-def get_client():
-    app = FastAPI()
-    router = APIRouter()
+def get_client(app, router):
     config = {"identifier": "uuid", "identifier_class": UUID}
     route_builder1 = RouteBuilder(models.Pizza, config=config)
     route_builder1.add_all_routes(router)

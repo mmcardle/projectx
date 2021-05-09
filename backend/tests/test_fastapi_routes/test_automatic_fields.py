@@ -1,20 +1,18 @@
 from uuid import UUID
 
 import pytest
-from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from test_app.models import SimpleModel
 
 from api.fastapi import RouteBuilder
+
 
 BASE_PATH = "/simplemodels/"
 
 
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
-def get_client():
-    app = FastAPI()
-    router = APIRouter()
+def get_client(app, router):
     route_builder = RouteBuilder(
         SimpleModel,
         config={"identifier": "uuid", "identifier_class": UUID},

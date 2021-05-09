@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import api
+from users import api
 
 urlpatterns = (
     path("user/", api.user_details, name="user_api_user"),

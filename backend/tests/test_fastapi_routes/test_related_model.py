@@ -1,7 +1,6 @@
 from uuid import UUID
 
 import pytest
-from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from test_app import models
 
@@ -13,9 +12,7 @@ BASE_PATH_RELATED = "/questions/"
 
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
-def get_client():
-    app = FastAPI()
-    router = APIRouter()
+def get_client(app, router):
     route_builder1 = RouteBuilder(models.Question, config={"identifier": "uuid", "identifier_class": UUID})
     route_builder1.add_all_routes(router)
     route_builder2 = RouteBuilder(models.Choice, config={"identifier": "uuid", "identifier_class": UUID})
