@@ -1,11 +1,17 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth import get_user_model
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from api.wsgi import application
-from users.app import UsersConfig, create_access_token, get_current_user_func
+from users.app import (
+    UsersConfig,
+    create_access_token,
+    get_current_user_func,
+    get_user_authentication,
+)
 from users.models import User
 
 BASE_PATH = "/api/auth/"
@@ -15,6 +21,15 @@ client = TestClient(application)
 
 def test_app():
     assert UsersConfig.name == "users"
+
+
+def test_get_user_authentication():
+    assert get_user_authentication(user_model=None)
+
+
+def test_get_user_authentication_with_user_model():
+    user_model = get_user_model()
+    assert get_user_authentication(user_model=user_model)
 
 
 def test_create_access_token(mocker):

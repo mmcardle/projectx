@@ -4,13 +4,10 @@ import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from test_app import models
-from test_app.models import TestModelWithManyToManyRelationship
 
-from api.fastapi import RouteBuilder, check_api_key
-from api.wsgi import application
-from users.models import ApiKey, User
+from api.fastapi import RouteBuilder
 
-BASE_PATH = "/testmodelwithmanytomanyrelationships/"
+BASE_PATH = "/pizzas/"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -19,87 +16,50 @@ def get_client():
     app = FastAPI()
     router = APIRouter()
     config = {"identifier": "uuid", "identifier_class": UUID}
-    route_builder = RouteBuilder(
-        TestModelWithManyToManyRelationship,
-        config=config,
-    )
-    route_builder.add_all_routes(router)
+    route_builder1 = RouteBuilder(models.Pizza, config=config)
+    route_builder1.add_all_routes(router)
+    route_builder2 = RouteBuilder(models.Topping, config=config)
+    route_builder2.add_all_routes(router)
     app.include_router(router)
     return TestClient(app)
 
 
 @pytest.mark.django_db(transaction=True)
-@pytest.fixture(name="related_model")
-def create_related_model():
-    return models.RelatedModel.objects.create(name="related_model")
+@pytest.fixture(name="topping")
+def create_topping():
+    return models.Topping.objects.create(name="topping")
 
 
 @pytest.mark.django_db(transaction=True)
-@pytest.fixture(name="related_model2")
-def create_related_model2():
-    return models.RelatedModel.objects.create(name="related_model2")
+@pytest.fixture(name="topping2")
+def create_topping2():
+    return models.Topping.objects.create(name="topping2")
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_list_and_get(client, related_model, mocker):
+def test_related_model_with_m2m_create_list_update_get_and_delete(client, topping, topping2, mocker):
 
-    response = client.post(BASE_PATH, json={"name": "name", "related_models": [{"id": related_model.id}]})
+    response = client.post(BASE_PATH, json={"name": "name", "toppings": [{"uuid": str(topping.pk)}]})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": mocker.ANY, "name": "name", "related_models": [{"id": related_model.id}]}
+    assert response.json() == {"uuid": mocker.ANY, "name": "name", "toppings": [{"uuid": str(topping.pk)}]}
 
     response = client.get(f"{BASE_PATH}")
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "items": [{"uuid": mocker.ANY, "name": "name", "related_models": [{"id": related_model.id}]}]
-    }
+    assert response.json() == {"items": [{"uuid": mocker.ANY, "name": "name", "toppings": [{"uuid": str(topping.pk)}]}]}
 
     uuid = response.json()["items"][0]["uuid"]
 
     response = client.get(f"{BASE_PATH}{uuid}/")
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": uuid, "name": "name", "related_models": [{"id": related_model.id}]}
+    assert response.json() == {"uuid": uuid, "name": "name", "toppings": [{"uuid": str(topping.pk)}]}
 
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_update_and_get(client, related_model, mocker):
-
-    response = client.post(BASE_PATH, json={"name": "name", "related_models": [{"id": related_model.id}]})
+    response = client.put(f"{BASE_PATH}{uuid}/", json={"name": "name2", "toppings": [{"uuid": str(topping2.pk)}]})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": mocker.ANY, "name": "name", "related_models": [{"id": related_model.id}]}
-
-    uuid = response.json()["uuid"]
-
-    response = client.get(f"{BASE_PATH}{uuid}/")
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": uuid, "name": "name", "related_models": [{"id": related_model.id}]}
-
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_update(client, related_model, related_model2, mocker):
-
-    response = client.post(BASE_PATH, json={"name": "name", "related_models": [{"id": related_model.id}]})
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": mocker.ANY, "name": "name", "related_models": [{"id": related_model.id}]}
-
-    uuid = response.json()["uuid"]
-
-    response = client.put(f"{BASE_PATH}{uuid}/", json={"name": "name2", "related_models": [{"id": related_model2.id}]})
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name2", "uuid": uuid, "related_models": [{"id": related_model2.id}]}
-
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_delete(client, related_model, mocker):
-
-    response = client.post(BASE_PATH, json={"name": "name", "related_models": [{"id": related_model.id}]})
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name", "uuid": mocker.ANY, "related_models": [{"id": related_model.id}]}
-
-    uuid = response.json()["uuid"]
+    assert response.json() == {"name": "name2", "uuid": uuid, "toppings": [{"uuid": str(topping2.pk)}]}
 
     response = client.delete(f"{BASE_PATH}{uuid}/")
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name", "uuid": uuid, "related_models": [{"id": related_model.id}]}
+    assert response.json() == {"name": "name2", "uuid": uuid, "toppings": [{"uuid": str(topping2.pk)}]}
 
     response = client.delete(f"{BASE_PATH}{uuid}/")
     assert response.status_code == 404, response.content.decode("utf-8")

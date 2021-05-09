@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 
-class TestModel(models.Model):
+class SimpleModel(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
@@ -16,7 +16,7 @@ class TestModel(models.Model):
         return str(self.name)
 
 
-class TestModelWithJWT(models.Model):
+class SimpleJWTModel(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
@@ -25,7 +25,7 @@ class TestModelWithJWT(models.Model):
         return str(self.name)
 
 
-class UnauthenticatedTestModel(models.Model):
+class UnauthenticatedModel(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
@@ -34,7 +34,15 @@ class UnauthenticatedTestModel(models.Model):
         return str(self.name)
 
 
-class TestModelWithOwner(models.Model):
+class SimpleIDModel(models.Model):
+
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class SimpleModelWithOwner(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
@@ -44,30 +52,39 @@ class TestModelWithOwner(models.Model):
         return str(self.name)
 
 
-class RelatedModel(models.Model):
+class Question(models.Model):
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return str(self.name)
 
 
-class TestModelWithRelationship(models.Model):
+class Choice(models.Model):
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
-    related_model = models.ForeignKey(RelatedModel, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
 
     def __str__(self):
         return str(self.name)
 
 
-class TestModelWithManyToManyRelationship(models.Model):
+class Topping(models.Model):
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
-    related_models = models.ManyToManyField(RelatedModel)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class Pizza(models.Model):
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
+    name = models.CharField(max_length=50)
+    toppings = models.ManyToManyField(Topping)
 
     def __str__(self):
         return str(self.name)

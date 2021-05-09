@@ -45,7 +45,7 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
-            title = f"New{django_model}"
+            title = f"New{django_model.__name__}"
             model = django_model
             include = fields
 
@@ -58,14 +58,12 @@ def schema_for_instance(django_model, fields):
             for field in fields:
                 django_field = django_model._meta.get_field(field)
                 if django_field.is_relation:
-                    if django_field.many_to_many:
-                        many_to_many_data = []
-                        related_fields = getattr(instance, field)
-                        for related_field in related_fields.all():
-                            many_to_many_data.append({"id": related_field.id})
-                        field_data[field] = many_to_many_data
+                    if django_field.many_to_one:
+                        related_field = getattr(instance, field)
+                        field_data[field] = related_field.pk
                     else:
-                        field_data[field] = getattr(instance, field).id
+                        pk_name = django_field.related_model._meta.pk.name
+                        field_data[field] = [{pk_name: related.pk} for related in getattr(instance, field).all()]
                 else:
                     field_data[field] = getattr(instance, field)
             return cls(**field_data)
@@ -76,7 +74,7 @@ def schema_for_instance(django_model, fields):
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
     class NewSchema(ModelSchema):
         class Config:  # pylint: disable=too-few-public-methods
-            title = f"{django_model}"
+            title = f"{django_model.__name__}"
             model = django_model
             include = fields
 
@@ -92,10 +90,11 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                     related_model = django_field.related_model
                     if django_field.many_to_many:
                         for related_data in getattr(self, field):
-                            related_object = related_model.objects.get(id=related_data["id"])
+                            identifier = related_data[related_model._meta.pk.name]
+                            related_object = related_model.objects.get(pk=identifier)
                             many_to_many_fields[field].append(related_object)
                     else:
-                        field_data[field] = related_model.objects.get(id=getattr(self, field))
+                        field_data[field] = related_model.objects.get(pk=getattr(self, field))
                 else:
                     field_data[field] = getattr(self, field)
 
@@ -121,10 +120,11 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                     related_model = django_field.related_model
                     if django_field.many_to_many:
                         for related_data in getattr(self, field):
-                            related_object = related_model.objects.get(id=related_data["id"])
+                            identifier = related_data[related_model._meta.pk.name]
+                            related_object = related_model.objects.get(pk=identifier)
                             many_to_many_fields[field].append(related_object)
                     else:
-                        current_field_value = related_model.objects.get(id=getattr(self, field))
+                        current_field_value = related_model.objects.get(pk=getattr(self, field))
                         setattr(instance, field, current_field_value)
                 else:
                     current_field_value = getattr(self, field)
@@ -148,7 +148,7 @@ def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=i
         items: List[SingleSchema]
 
         class Config:  # pylint: disable=too-few-public-methods
-            title = f"{django_model}List"
+            title = f"{django_model.__name__}List"
 
         @classmethod
         def from_qs(cls, qs):
@@ -195,11 +195,6 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
         self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
 
-        #  import json
-        #  print(json.dumps(self.instance_schema.schema(), indent=4))
-        #  print(json.dumps(self.new_instance_schema.schema(), indent=4))
-        #  print(json.dumps(self.multiple_instance_schema.schema(), indent=4))
-
         self.get_function = self.get_identifier_function()
 
         if authentication is None:
@@ -216,14 +211,10 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             if field.concrete and (
                 not field.is_relation or field.one_to_one or (field.many_to_one and field.related_model)
             ):
-                if field.auto_created:
-                    pass
-                else:
+                if field.editable and not field.auto_created:
                     fields.append(field.name)
             else:
-                if field.auto_created:
-                    pass
-                else:
+                if field.editable and not field.auto_created:
                     fields.append(field.name)
         return fields
 
@@ -232,22 +223,9 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         model_fields = self.model._meta.get_fields()
         for field in model_fields:
             if field.name == "id":
-                if self.model_identifier == "id":
-                    pass
-                else:
+                if self.model_identifier != "id":
                     continue
-            if field.concrete and (
-                not field.is_relation or field.one_to_one or (field.many_to_one and field.related_model)
-            ):
-                if field.auto_created:
-                    response_fields.append(field.name)
-                else:
-                    response_fields.append(field.name)
-            else:
-                if field.auto_created:
-                    response_fields.append(field.name)
-                else:
-                    response_fields.append(field.name)
+            response_fields.append(field.name)
         return response_fields
 
     def validate_field_names(self, user_fields):

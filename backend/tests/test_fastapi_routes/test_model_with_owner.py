@@ -3,13 +3,12 @@ from uuid import UUID
 import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
-from test_app.models import TestModelWithOwner
+from test_app.models import SimpleModelWithOwner
 
 from api.fastapi import RouteBuilder, check_api_key
-from api.wsgi import application
 from users.models import ApiKey, User
 
-BASE_PATH = "/testmodelwithowners/"
+BASE_PATH = "/simplemodelwithowners/"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -21,7 +20,7 @@ def get_client():
     response_fields = ["uuid"] + request_fields
     config = {"identifier": "uuid", "identifier_class": UUID}
     route_builder = RouteBuilder(
-        TestModelWithOwner,
+        SimpleModelWithOwner,
         request_fields=request_fields,
         response_fields=response_fields,
         config=config,
@@ -42,53 +41,31 @@ def api_key_user_fixture():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodelwithowner_create_list_and_get(client, api_key_user, mocker):
+def test_model_with_owner_create_list_update_get_and_delete(client, api_key_user, mocker):
 
-    response = client.post(
-        BASE_PATH,
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name"},
-    )
+    response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": mocker.ANY,
-        "name": "name",
-    }
+    assert response.json() == {"uuid": mocker.ANY, "name": "name"}
 
     response = client.get(BASE_PATH, headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "items": [
-            {
-                "uuid": mocker.ANY,
-                "name": "name",
-            }
-        ]
-    }
+    assert response.json() == {"items": [{"uuid": mocker.ANY, "name": "name"}]}
 
     uuid = response.json()["items"][0]["uuid"]
 
     response = client.get(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": uuid,
-        "name": "name",
-    }
+    assert response.json() == {"uuid": uuid, "name": "name"}
 
-    response = client.delete(
-        f"{BASE_PATH}{uuid}/",
-        headers={"X-API-Key": api_key_user.key},
-    )
+    response = client.put(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key}, json={"name": "name2"})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name",
-        "uuid": uuid,
-    }
+    assert response.json() == {"name": "name2", "uuid": uuid}
 
-    response = client.delete(
-        f"{BASE_PATH}{uuid}/",
-        headers={"X-API-Key": api_key_user.key},
-    )
+    response = client.delete(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"name": "name2", "uuid": uuid}
+
+    response = client.delete(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 404, response.content.decode("utf-8")
     assert response.json() == {"detail": f"Object {uuid} not found."}
 
@@ -96,16 +73,9 @@ def test_testapp_testmodelwithowner_create_list_and_get(client, api_key_user, mo
 @pytest.mark.django_db(transaction=True)
 def test_testapp_testmodelwithowner_other_user_cannot_get(client, api_key_user, mocker):
 
-    response = client.post(
-        BASE_PATH,
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name"},
-    )
+    response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": mocker.ANY,
-        "name": "name",
-    }
+    assert response.json() == {"uuid": mocker.ANY, "name": "name"}
 
     uuid = response.json()["uuid"]
 
@@ -133,9 +103,6 @@ def test_testapp_testmodelwithowner_other_user_cannot_get(client, api_key_user, 
     assert response.status_code == 404, response.content.decode("utf-8")
     assert response.json() == {"detail": "Object not found."}
 
-    response = client.delete(
-        f"{BASE_PATH}{uuid}/",
-        headers={"X-API-Key": api_key_other_user.key},
-    )
+    response = client.delete(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_other_user.key})
     assert response.status_code == 404, response.content.decode("utf-8")
     assert response.json() == {"detail": "Object not found."}

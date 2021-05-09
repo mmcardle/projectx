@@ -1,16 +1,16 @@
 from uuid import UUID
 
 import pytest
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter
 from fastapi.testclient import TestClient
-from test_app.models import TestModelWithJWT
+from test_app.models import SimpleJWTModel
 
 from api.fastapi import RouteBuilder
-from api.wsgi import application as app
+from api.wsgi import application
 from users.app import get_user_authentication
 from users.models import User
 
-BASE_PATH = "/testmodelwithjwts/"
+BASE_PATH = "/simplejwtmodels/"
 JWT_PATH = "/api/auth/token/"
 JWT_USER_PASSWORD = "jwtpassword"
 
@@ -21,7 +21,7 @@ def get_client():
     router = APIRouter()
     authentication, _ = get_user_authentication()
     route_builder = RouteBuilder(
-        TestModelWithJWT,
+        SimpleJWTModel,
         request_fields=["name"],
         response_fields=["name", "uuid"],
         config={"identifier": "uuid", "identifier_class": UUID},
@@ -29,8 +29,8 @@ def get_client():
     )
 
     route_builder.add_all_routes(router)
-    app.include_router(router)
-    return TestClient(app)
+    application.include_router(router)
+    return TestClient(application)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -42,17 +42,14 @@ def jwt_user_fixture():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodelwithjwt_create_get_and_delete(client, jwt_user, mocker):
+def test_modelwithjwt_create_list_update_get_and_delete(client, jwt_user, mocker):
 
     response = client.post(
         JWT_PATH,
         data={"username": jwt_user.username, "password": JWT_USER_PASSWORD},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "access_token": mocker.ANY,
-        "token_type": "bearer",
-    }
+    assert response.json() == {"access_token": mocker.ANY, "token_type": "bearer"}
 
     access_token = response.json()["access_token"]
 
@@ -62,10 +59,7 @@ def test_testapp_testmodelwithjwt_create_get_and_delete(client, jwt_user, mocker
         json={"name": "name"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name",
-        "uuid": mocker.ANY,
-    }
+    assert response.json() == {"name": "name", "uuid": mocker.ANY}
 
     uuid = response.json()["uuid"]
 
@@ -74,20 +68,14 @@ def test_testapp_testmodelwithjwt_create_get_and_delete(client, jwt_user, mocker
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name",
-        "uuid": mocker.ANY,
-    }
+    assert response.json() == {"name": "name", "uuid": mocker.ANY}
 
     response = client.delete(
         f"{BASE_PATH}{uuid}/",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name",
-        "uuid": mocker.ANY,
-    }
+    assert response.json() == {"name": "name", "uuid": mocker.ANY}
 
     response = client.get(
         f"{BASE_PATH}{uuid}/",

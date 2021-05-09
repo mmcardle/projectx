@@ -3,12 +3,12 @@ from uuid import UUID
 import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
-from test_app.models import TestModel
+from test_app.models import SimpleModel
 
 from api.fastapi import RouteBuilder, check_api_key
 from users.models import ApiKey, User
 
-BASE_PATH = "/testmodels/"
+BASE_PATH = "/simplemodels/"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -17,7 +17,7 @@ def get_client():
     app = FastAPI()
     router = APIRouter()
     route_builder = RouteBuilder(
-        TestModel,
+        SimpleModel,
         request_fields=["name", "config"],
         response_fields=["name", "config", "uuid", "last_updated", "created"],
         config={"identifier": "uuid", "identifier_class": UUID},
@@ -44,7 +44,7 @@ def test_bad_api_key(client):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_list_and_get(client, api_key_user, mocker):
+def test_api_key_create_list_update_get_and_delete(client, api_key_user, mocker):
 
     response = client.post(
         BASE_PATH,
@@ -78,90 +78,6 @@ def test_testapp_testmodel_create_list_and_get(client, api_key_user, mocker):
         "config": {},
     }
 
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_update_and_get(client, api_key_user, mocker):
-
-    response = client.post(
-        BASE_PATH,
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name"},
-    )
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": mocker.ANY,
-        "name": "name",
-        "created": mocker.ANY,
-        "last_updated": mocker.ANY,
-        "config": {},
-    }
-
-    uuid = response.json()["uuid"]
-
-    response = client.get(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": uuid,
-        "name": "name",
-        "created": mocker.ANY,
-        "last_updated": mocker.ANY,
-        "config": {},
-    }
-
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_update(client, api_key_user, mocker):
-
-    response = client.post(
-        BASE_PATH,
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name"},
-    )
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "uuid": mocker.ANY,
-        "name": "name",
-        "created": mocker.ANY,
-        "last_updated": mocker.ANY,
-        "config": {},
-    }
-
-    uuid = response.json()["uuid"]
-
-    response = client.put(
-        f"{BASE_PATH}{uuid}/",
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name2"},
-    )
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name2",
-        "uuid": uuid,
-        "created": mocker.ANY,
-        "last_updated": mocker.ANY,
-        "config": {},
-    }
-
-
-@pytest.mark.django_db(transaction=True)
-def test_testapp_testmodel_create_and_delete(client, api_key_user, mocker):
-
-    response = client.post(
-        BASE_PATH,
-        headers={"X-API-Key": api_key_user.key},
-        json={"name": "name"},
-    )
-    assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {
-        "name": "name",
-        "uuid": mocker.ANY,
-        "created": mocker.ANY,
-        "last_updated": mocker.ANY,
-        "config": {},
-    }
-
-    uuid = response.json()["uuid"]
-
     response = client.delete(
         f"{BASE_PATH}{uuid}/",
         headers={"X-API-Key": api_key_user.key},
@@ -175,7 +91,7 @@ def test_testapp_testmodel_create_and_delete(client, api_key_user, mocker):
         "config": {},
     }
 
-    response = client.delete(
+    response = client.get(
         f"{BASE_PATH}{uuid}/",
         headers={"X-API-Key": api_key_user.key},
     )
