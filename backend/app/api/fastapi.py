@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from typing import Callable, List, Optional
 from urllib import parse
 
@@ -15,6 +16,22 @@ API_KEY_HEADER = Header(..., description="The user's API key.")
 logger = logging.getLogger(__name__)
 
 
+class RouteBuilderException(Exception):
+    pass
+
+
+class InvalidAuthenticationException(RouteBuilderException):
+    pass
+
+
+class InvalidFieldsException(RouteBuilderException):
+    pass
+
+
+class InvalidForeignKeyException(RouteBuilderException):
+    pass
+
+
 def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
     """
     Retrieve the user by the given API key.
@@ -28,6 +45,7 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
+            title = f"New{django_model.__name__}"
             model = django_model
             include = fields
 
@@ -36,7 +54,19 @@ def schema_for_instance(django_model, fields):
             """
             Convert a Django model instance to an SingleSchema instance.
             """
-            return cls(**{field: getattr(instance, field) for field in fields})
+            field_data = {}
+            for field in fields:
+                django_field = django_model._meta.get_field(field)
+                if django_field.is_relation:
+                    if django_field.many_to_one:
+                        related_field = getattr(instance, field)
+                        field_data[field] = related_field.pk
+                    else:
+                        pk_name = django_field.related_model._meta.pk.name
+                        field_data[field] = [{pk_name: related.pk} for related in getattr(instance, field).all()]
+                else:
+                    field_data[field] = getattr(instance, field)
+            return cls(**field_data)
 
     return SingleSchema
 
@@ -44,6 +74,7 @@ def schema_for_instance(django_model, fields):
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
     class NewSchema(ModelSchema):
         class Config:  # pylint: disable=too-few-public-methods
+            title = f"{django_model.__name__}"
             model = django_model
             include = fields
 
@@ -51,27 +82,73 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             """
             Create a new Django model instance.
             """
-            data_fields = {field: getattr(self, field) for field in fields}
+            field_data = {}
+            many_to_many_fields = defaultdict(list)
+            for field in fields:
+                django_field = django_model._meta.get_field(field)
+                if django_field.is_relation:
+                    related_model = django_field.related_model
+                    if django_field.many_to_many:
+                        for related_data in getattr(self, field):
+                            identifier = related_data[related_model._meta.pk.name]
+                            related_object = related_model.objects.get(pk=identifier)
+                            many_to_many_fields[field].append(related_object)
+                    else:
+                        field_data[field] = related_model.objects.get(pk=getattr(self, field))
+                else:
+                    field_data[field] = getattr(self, field)
+
             if extra:
-                data_fields.update(extra)
-            return django_model.objects.create(**data_fields)
+                field_data.update(extra)
+            new_object = django_model.objects.create(**field_data)
+
+            for many_to_many_field in many_to_many_fields:
+                ref_field = getattr(new_object, many_to_many_field)
+                for related_value in many_to_many_fields[many_to_many_field]:
+                    ref_field.add(related_value)
+
+            return new_object
 
         def update(self, instance: django_model):
             """
             Update a Django model instance and return an SingleSchema instance.
             """
+            many_to_many_fields = defaultdict(list)
             for field in fields:
-                current_field_value = getattr(self, field)
-                setattr(instance, field, current_field_value)
+                django_field = django_model._meta.get_field(field)
+                if django_field.is_relation:
+                    related_model = django_field.related_model
+                    if django_field.many_to_many:
+                        for related_data in getattr(self, field):
+                            identifier = related_data[related_model._meta.pk.name]
+                            related_object = related_model.objects.get(pk=identifier)
+                            many_to_many_fields[field].append(related_object)
+                    else:
+                        current_field_value = related_model.objects.get(pk=getattr(self, field))
+                        setattr(instance, field, current_field_value)
+                else:
+                    current_field_value = getattr(self, field)
+                    setattr(instance, field, current_field_value)
+
             instance.save()
+
+            for many_to_many_field in many_to_many_fields:
+                ref_field = getattr(instance, many_to_many_field)
+                ref_field.clear()
+                for related_value in many_to_many_fields[many_to_many_field]:
+                    ref_field.add(related_value)
+
             return SingleSchema.from_model(instance)
 
     return NewSchema
 
 
-def schema_for_multiple_models(SingleSchema):  # pylint: disable=invalid-name
+def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
     class MultipleSchema(BaseModel):  # pylint: disable=too-few-public-methods
         items: List[SingleSchema]
+
+        class Config:  # pylint: disable=too-few-public-methods
+            title = f"{django_model.__name__}List"
 
         @classmethod
         def from_qs(cls, qs):
@@ -87,30 +164,76 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         model: models.Model,
-        request_fields: List[str],
-        response_fields: List[str],
-        read_only_fields: List[str],
         config: dict = None,
+        request_fields: Optional[List[str]] = None,
+        response_fields: Optional[List[str]] = None,
         owner_field: str = None,
-        current_user_function: Optional[Callable] = None,
+        authentication: Optional[Callable] = None,
     ) -> None:
         self.model = model
         self.owner_field = owner_field
 
+        if owner_field and not authentication:
+            raise InvalidAuthenticationException(
+                "If you specify an owner field, you must have set the authentication function."
+            )
+
         self.config = config if config else {}
 
-        self.instance_schema = schema_for_instance(model, response_fields + read_only_fields)
+        if request_fields is None:
+            request_fields = self._get_request_fields()
+
+        if response_fields is None:
+            response_fields = self._get_response_fields()
+
+        user_fields = set(request_fields + response_fields)
+        self.validate_field_names(user_fields)
+
+        self.instance_schema = schema_for_instance(model, response_fields)
 
         fields_for_new = request_fields
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
-        self.multiple_instance_schema = schema_for_multiple_models(self.instance_schema)
+        self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
 
         self.get_function = self.get_identifier_function()
 
-        if current_user_function is None:
-            self.current_user_function = check_api_key
+        if authentication is None:
+            self.authentication = lambda: None
         else:
-            self.current_user_function = current_user_function
+            self.authentication = authentication
+
+    def _get_request_fields(self):
+        model_fields = self.model._meta.get_fields()
+        fields = []
+        for field in model_fields:
+            if field.name == self.model_identifier:
+                continue
+            if field.concrete and (
+                not field.is_relation or field.one_to_one or (field.many_to_one and field.related_model)
+            ):
+                if field.editable and not field.auto_created:
+                    fields.append(field.name)
+            else:
+                if field.editable and not field.auto_created:
+                    fields.append(field.name)
+        return fields
+
+    def _get_response_fields(self):
+        response_fields = []
+        model_fields = self.model._meta.get_fields()
+        for field in model_fields:
+            if field.name == "id":
+                if self.model_identifier != "id":
+                    continue
+            response_fields.append(field.name)
+        return response_fields
+
+    def validate_field_names(self, user_fields):
+        model_fields = self.model._meta.get_fields()
+        valid_fields_names = sorted({field.name for field in model_fields})
+        invalid_fields = sorted(user_fields.difference(valid_fields_names))
+        if invalid_fields:
+            raise InvalidFieldsException(f"{invalid_fields} not in {valid_fields_names}")
 
     @property
     def model_identifier_class(self):
@@ -165,6 +288,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
 
         return func
 
+    def add_all_routes(self, router):
+        self.add_list_route_to_router(router)
+        self.add_get_route_to_router(router)
+        self.add_create_route_to_router(router)
+        self.add_update_route_to_router(router)
+        self.add_delete_route_to_router(router)
+
     def add_list_route_to_router(self, router):
         @router.get(
             self.path_for_list_and_post,
@@ -173,7 +303,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             response_model=self.multiple_instance_schema,
             name=f"{self.name_lower_plural}-get",
         )
-        def _get(user: User = Depends(self.current_user_function)) -> self.multiple_instance_schema:
+        def _get(user: User = Depends(self.authentication)) -> self.multiple_instance_schema:
             if self.owner_field:
                 all_models = self.model.objects.filter(**{self.owner_field: user})
             else:
@@ -192,7 +322,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         )
         def _get(
             instance: self.model = Depends(self.get_function),
-            user: User = Depends(self.current_user_function),
+            user: User = Depends(self.authentication),
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)
@@ -211,7 +341,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             name=f"{self.name_lower_plural}-post",
         )
         def _post(
-            api_instance: self.new_instance_schema, user: User = Depends(self.current_user_function)
+            api_instance: self.new_instance_schema, user: User = Depends(self.authentication)
         ) -> self.instance_schema:
             extra = {self.owner_field: user} if self.owner_field else None
             instance = api_instance.create_new(extra=extra)
@@ -230,7 +360,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         def _put(
             instance: self.model = Depends(self.get_function),
             api_instance: self.new_instance_schema = Body(...),
-            user: User = Depends(self.current_user_function),
+            user: User = Depends(self.authentication),
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)
@@ -249,7 +379,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             name=f"{self.name_lower}-delete",
         )
         def _delete(
-            instance: self.model = Depends(self.get_function), user: User = Depends(self.current_user_function)
+            instance: self.model = Depends(self.get_function), user: User = Depends(self.authentication)
         ) -> self.instance_schema:
             if self.owner_field and not self.check_ownership(instance, user):
                 owner = getattr(instance, self.owner_field)

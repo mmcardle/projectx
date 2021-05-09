@@ -1,18 +1,35 @@
 from datetime import timedelta
 
 import pytest
+from django.contrib.auth import get_user_model
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from api.wsgi import application
-from users.app import UsersConfig, create_access_token, get_current_user_func
+from users.app import (
+    UsersConfig,
+    create_access_token,
+    get_current_user_func,
+    get_user_authentication,
+)
 from users.models import User
+
+BASE_PATH = "/api/auth/"
 
 client = TestClient(application)
 
 
 def test_app():
     assert UsersConfig.name == "users"
+
+
+def test_get_user_authentication():
+    assert get_user_authentication(user_model=None)
+
+
+def test_get_user_authentication_with_user_model():
+    user_model = get_user_model()
+    assert get_user_authentication(user_model=user_model)
 
 
 def test_create_access_token(mocker):
@@ -73,7 +90,7 @@ def user_fixture():
 def test_testapp_auth_and_get(user, mocker):
 
     response = client.post(
-        "/api/auth/token/",
+        f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -85,7 +102,7 @@ def test_testapp_auth_and_get(user, mocker):
     access_token = response.json()["access_token"]
 
     response = client.get(
-        "/api/auth/self/",
+        f"{BASE_PATH}self/",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -102,7 +119,7 @@ def test_testapp_auth_and_get(user, mocker):
 def test_testapp_auth__with_bad_password(user):
 
     response = client.post(
-        "/api/auth/token/",
+        f"{BASE_PATH}token/",
         data={"username": user.username, "password": "bad_password"},
     )
     assert response.status_code == 401, response.content.decode("utf-8")
@@ -115,7 +132,7 @@ def test_testapp_auth__with_bad_password(user):
 def test_testapp_auth_with_inactive_user(user, mocker):
 
     response = client.post(
-        "/api/auth/token/",
+        f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -130,7 +147,7 @@ def test_testapp_auth_with_inactive_user(user, mocker):
     access_token = response.json()["access_token"]
 
     response = client.get(
-        "/api/auth/self/",
+        f"{BASE_PATH}self/",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 400, response.content.decode("utf-8")
@@ -143,7 +160,7 @@ def test_testapp_auth_with_inactive_user(user, mocker):
 def test_testapp_auth_with_deleted_user(user, mocker):
 
     response = client.post(
-        "/api/auth/token/",
+        f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -157,7 +174,7 @@ def test_testapp_auth_with_deleted_user(user, mocker):
     access_token = response.json()["access_token"]
 
     response = client.get(
-        "/api/auth/self/",
+        f"{BASE_PATH}self/",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     assert response.status_code == 401, response.content.decode("utf-8")

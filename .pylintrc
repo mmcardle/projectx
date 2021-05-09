@@ -5,4 +5,4 @@ disable=
     missing-docstring,\
     missing-module-docstring
 max-line-length=120
-init-hook=sys.path.append("backend/app/")
+init-hook=sys.path.extend(["backend/app/", "backend/testing_apps/"])

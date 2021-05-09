@@ -15,12 +15,12 @@ build:
 	docker-compose build projectx
 
 lint:
-	black --check backend/app/ backend/tests/
-	pylint backend/app
-	isort --check-only --diff backend/app backend/tests
-	unify --check-only --recursive --quote \" backend/app backend/tests
+	black --check backend/
+	pylint backend/app backend/testing_apps/
+	isort --check-only --diff backend/
+	unify --check-only --recursive --quote \" backend/
 
 fix_lint:
-	black backend/app/ backend/tests/
-	isort backend/app backend/tests
-	unify --in-place --recursive --quote \" backend/app backend/tests
+	black backend/
+	isort backend/
+	unify --in-place --recursive --quote \" backend/
