@@ -15,16 +15,14 @@ class TestAppWithOwnerConfig(AppConfig):
         TestModelWithOwner = self.get_model("TestModelWithOwner")  # pylint: disable=invalid-name
 
         request_fields = ["name"]
-        read_only_fields = []
         response_fields = ["uuid"] + request_fields
         config = {"identifier": "uuid", "identifier_class": UUID}
 
         route_builder = RouteBuilder(
             TestModelWithOwner,
-            request_fields,
-            response_fields,
-            read_only_fields,
-            config,
+            request_fields=request_fields,
+            response_fields=response_fields,
+            config=config,
             owner_field="owner",
             authentication=check_api_key,
         )

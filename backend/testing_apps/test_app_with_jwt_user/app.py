@@ -14,22 +14,13 @@ class TestAppWithJWTUserConfig(AppConfig):
 
         TestModelWithJWT = self.get_model("TestModelWithJWT")  # pylint: disable=invalid-name
 
-        request_fields = ["name"]
-        read_only_fields = []
-        response_fields = ["uuid"] + request_fields
-        config = {
-            "identifier": "uuid",
-            "identifier_class": UUID,
-        }
-
         authentication, _ = get_user_authentication()
 
         route_builder = RouteBuilder(
             TestModelWithJWT,
-            request_fields,
-            response_fields,
-            read_only_fields,
-            config,
+            request_fields=["name"],
+            response_fields=["name", "uuid"],
+            config={"identifier": "uuid", "identifier_class": UUID},
             authentication=authentication,
         )
         route_builder.add_all_routes(router)

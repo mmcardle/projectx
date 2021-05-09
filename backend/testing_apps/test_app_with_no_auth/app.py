@@ -20,7 +20,11 @@ class TestAppWithNoAuthenticationConfig(AppConfig):
         config = {"identifier": "uuid", "identifier_class": UUID}
 
         route_builder = RouteBuilder(
-            TestModel, request_fields, response_fields, read_only_fields, config, authentication=None
+            TestModel,
+            request_fields=request_fields,
+            response_fields=response_fields,
+            config=config,
+            authentication=None,
         )
 
         route_builder.add_all_routes(router)

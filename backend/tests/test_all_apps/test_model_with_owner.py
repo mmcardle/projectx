@@ -1,8 +1,6 @@
 import pytest
-from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
-from api.fastapi import RouteBuilder
 from api.wsgi import application
 from users.models import ApiKey, User
 

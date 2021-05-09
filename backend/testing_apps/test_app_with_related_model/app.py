@@ -21,10 +21,9 @@ class TestAppWithRelatedModelConfig(AppConfig):
 
         route_builder = RouteBuilder(
             TestModelWithRelationship,
-            request_fields,
-            response_fields,
-            read_only_fields,
-            config,
+            request_fields=request_fields,
+            response_fields=response_fields,
+            config=config,
         )
 
         route_builder.add_all_routes(router)
@@ -35,10 +34,7 @@ class TestAppWithRelatedModelConfig(AppConfig):
 
         route_builder_many_to_many = RouteBuilder(
             TestModelWithManyToManyRelationship,
-            ["name", "related_models"],
-            ["uuid", "name", "related_models"],
-            [],
-            config,
+            config=config,
         )
 
         route_builder_many_to_many.add_all_routes(router)

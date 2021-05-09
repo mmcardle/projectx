@@ -45,6 +45,7 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
+            title = f"New{django_model}"
             model = django_model
             include = fields
 
@@ -75,6 +76,7 @@ def schema_for_instance(django_model, fields):
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
     class NewSchema(ModelSchema):
         class Config:  # pylint: disable=too-few-public-methods
+            title = f"{django_model}"
             model = django_model
             include = fields
 
@@ -141,9 +143,12 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
     return NewSchema
 
 
-def schema_for_multiple_models(SingleSchema):  # pylint: disable=invalid-name
+def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
     class MultipleSchema(BaseModel):  # pylint: disable=too-few-public-methods
         items: List[SingleSchema]
+
+        class Config:  # pylint: disable=too-few-public-methods
+            title = f"{django_model}List"
 
         @classmethod
         def from_qs(cls, qs):
@@ -159,10 +164,9 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
     def __init__(  # pylint: disable=too-many-arguments
         self,
         model: models.Model,
-        request_fields: List[str],
-        response_fields: List[str],
-        read_only_fields: List[str],
         config: dict = None,
+        request_fields: Optional[List[str]] = None,
+        response_fields: Optional[List[str]] = None,
         owner_field: str = None,
         authentication: Optional[Callable] = None,
     ) -> None:
@@ -174,17 +178,24 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
                 "If you specify an owner field, you must have set the authentication function."
             )
 
-        user_fields = set(request_fields + response_fields + read_only_fields)
-        self.validate_field_names(user_fields)
-
         self.config = config if config else {}
 
-        self.instance_schema = schema_for_instance(model, response_fields + read_only_fields)
+        if request_fields is None:
+            request_fields = self._get_request_fields()
+
+        if response_fields is None:
+            response_fields = self._get_response_fields()
+
+        user_fields = set(request_fields + response_fields)
+        self.validate_field_names(user_fields)
+
+        self.instance_schema = schema_for_instance(model, response_fields)
 
         fields_for_new = request_fields
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
-        self.multiple_instance_schema = schema_for_multiple_models(self.instance_schema)
+        self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
 
+        #  import json
         #  print(json.dumps(self.instance_schema.schema(), indent=4))
         #  print(json.dumps(self.new_instance_schema.schema(), indent=4))
         #  print(json.dumps(self.multiple_instance_schema.schema(), indent=4))
@@ -195,6 +206,49 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             self.authentication = lambda: None
         else:
             self.authentication = authentication
+
+    def _get_request_fields(self):
+        model_fields = self.model._meta.get_fields()
+        fields = []
+        for field in model_fields:
+            if field.name == self.model_identifier:
+                continue
+            if field.concrete and (
+                not field.is_relation or field.one_to_one or (field.many_to_one and field.related_model)
+            ):
+                if field.auto_created:
+                    pass
+                else:
+                    fields.append(field.name)
+            else:
+                if field.auto_created:
+                    pass
+                else:
+                    fields.append(field.name)
+        return fields
+
+    def _get_response_fields(self):
+        response_fields = []
+        model_fields = self.model._meta.get_fields()
+        for field in model_fields:
+            if field.name == "id":
+                if self.model_identifier == "id":
+                    pass
+                else:
+                    continue
+            if field.concrete and (
+                not field.is_relation or field.one_to_one or (field.many_to_one and field.related_model)
+            ):
+                if field.auto_created:
+                    response_fields.append(field.name)
+                else:
+                    response_fields.append(field.name)
+            else:
+                if field.auto_created:
+                    response_fields.append(field.name)
+                else:
+                    response_fields.append(field.name)
+        return response_fields
 
     def validate_field_names(self, user_fields):
         model_fields = self.model._meta.get_fields()

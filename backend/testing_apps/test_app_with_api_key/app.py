@@ -15,13 +15,12 @@ class TestAppWithAPIKeyConfig(AppConfig):
 
         TestModel = self.get_model("TestModel")  # pylint: disable=invalid-name
 
-        request_fields = ["name", "config"]
-        read_only_fields = ["last_updated", "created"]
-        response_fields = ["uuid"] + request_fields + read_only_fields
-        config = {"identifier": "uuid", "identifier_class": UUID}
-
         route_builder = RouteBuilder(
-            TestModel, request_fields, response_fields, read_only_fields, config, authentication=check_api_key
+            TestModel,
+            request_fields=["name", "config"],
+            response_fields=["name", "config", "uuid", "last_updated", "created"],
+            config={"identifier": "uuid", "identifier_class": UUID},
+            authentication=check_api_key,
         )
 
         route_builder.add_all_routes(router)
