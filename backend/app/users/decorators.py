@@ -1,5 +1,4 @@
 from common.validation import create_payload_decorator
-
 from users import validation
 
 

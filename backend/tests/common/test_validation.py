@@ -1,7 +1,7 @@
 # pylint: disable=invalid-name
 import json
-import pytest
 
+import pytest
 from marshmallow import Schema, fields
 
 from common import validation

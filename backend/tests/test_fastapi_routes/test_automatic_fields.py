@@ -6,7 +6,6 @@ from test_app.models import SimpleModel
 
 from api.fastapi import RouteBuilder
 
-
 BASE_PATH = "/simplemodels/"
 
 

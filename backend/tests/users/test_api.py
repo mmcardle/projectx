@@ -75,13 +75,12 @@ def test_login_GET(mocker):
     assert JsonResponse.mock_calls[0] == mock.call({"token": "token"})
 
 
-
 def test_login_POST_rate_limited(settings, mocker):
 
     settings.CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
         }
     }
 

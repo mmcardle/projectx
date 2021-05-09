@@ -80,6 +80,7 @@ jobs:
           architecture: x64
 
       - name: pip cache
+        id: cache-pipenv
         uses: actions/cache@v2
         with:
           path: ~/.local/share/virtualenvs
@@ -87,9 +88,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-v2-
 
-      - run: pip install --upgrade pip
+      - run: pip install --upgrade pipenv wheel
       - run: cat Pipfile
-      - run: pip install pipenv && pipenv install --dev
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --deploy --dev
       - run: pipenv graph
 
   python-unittests:
@@ -167,10 +171,10 @@ jobs:
       matrix:
         python-version: ['3.9']
         lint-command: 
-          - pipenv run python -m black --check backend/app/ backend/tests/
-          - pipenv run python -m isort --check-only --diff backend/app/ backend/tests/
-          - pipenv run python -m unify --check-only --recursive --quote \" backend/app/ backend/tests/
-          - pipenv run python -m pylint backend/app/
+          - pipenv run python -m black --check backend/
+          - pipenv run python -m isort --check-only --diff backend/
+          - pipenv run python -m unify --check-only --recursive --quote \" backend/
+          - pipenv run python -m pylint backend/
           - pipenv update --outdated
 
     name: python ${{ matrix.python-version }} lint - ${{ matrix.lint-command }}
