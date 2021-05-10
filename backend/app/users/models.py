@@ -16,8 +16,7 @@ from django_redis import get_redis_connection
 
 from common.models import IndexedTimeStampedModel
 from users import emails
-
-from .fields import LowercaseEmailField
+from users.fields import LowercaseEmailField
 
 logger = logging.getLogger(__name__)
 

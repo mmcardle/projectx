@@ -125,7 +125,7 @@ Regards
 ProjectX
 """
         % request.build_absolute_uri.return_value
-    )  # noqa
+    )
 
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
@@ -305,7 +305,7 @@ Regards
 ProjectX
 """
         % request.build_absolute_uri.return_value
-    )  # noqa
+    )
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
         mock.call(
