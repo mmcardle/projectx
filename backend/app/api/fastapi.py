@@ -61,9 +61,12 @@ def schema_for_instance(django_model, fields):
                     if django_field.many_to_one:
                         related_field = getattr(instance, field)
                         field_data[field] = related_field.pk
-                    else:
+                    elif django_field.many_to_many:
                         pk_name = django_field.related_model._meta.pk.name
                         field_data[field] = [{pk_name: related.pk} for related in getattr(instance, field).all()]
+                    else:
+                        pk_name = django_field.related_model._meta.pk.name
+                        field_data[field] = [{pk_name: related.pk} for related in django_field.related_model.objects.filter(pk=instance.pk)]
                 else:
                     field_data[field] = getattr(instance, field)
             return cls(**field_data)
