@@ -3,7 +3,7 @@ import logging
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin
 
-from . import models
+from users import models
 
 logger = logging.getLogger(__name__)
 

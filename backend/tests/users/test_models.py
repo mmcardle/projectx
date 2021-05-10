@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 import json
 from datetime import datetime
 from unittest import mock
@@ -5,7 +6,6 @@ from unittest import mock
 import pytest
 from django.core.signing import BadSignature
 from django.db.utils import IntegrityError
-from django.utils.timezone import make_aware
 
 from users.models import (
     REDIS_ACCOUNT_ACTIVATION_KEY,
@@ -16,7 +16,7 @@ from users.models import (
 
 
 @pytest.mark.django_db()
-def test_ApiKey():
+def test_apikey():
     user = User.objects.create_user(email="none@tempurl.com", password="pass")
     api_key = ApiKey.objects.create(user=user)
     assert str(api_key) == "AuthKey for "
@@ -24,7 +24,7 @@ def test_ApiKey():
 
 
 @pytest.mark.django_db()
-def test_UserManager():
+def test_usermanager():
 
     user = User.objects.create_user("none@tempurl.com", password="pass")
     superuser = User.objects.create_superuser(email="super@tempurl.com", password="pass")
@@ -125,7 +125,7 @@ Regards
 ProjectX
 """
         % request.build_absolute_uri.return_value
-    )  # noqa
+    )
 
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
@@ -305,7 +305,7 @@ Regards
 ProjectX
 """
         % request.build_absolute_uri.return_value
-    )  # noqa
+    )
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
         mock.call(

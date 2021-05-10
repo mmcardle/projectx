@@ -1,7 +1,8 @@
+# pylint: disable=invalid-name
 import json
 
 import pytest
-from marshmallow import Schema, ValidationError, fields, post_load, validates
+from marshmallow import Schema, fields
 
 from common import validation
 
@@ -10,7 +11,7 @@ class DummySchema(Schema):
     email = fields.Email(required=True)
 
 
-def test_create_payload_decorator_OK(mocker):
+def test_create_payload_decorator_ok(mocker):
     func = mocker.Mock(__name__="name")
     decorator = validation.create_payload_decorator(func, DummySchema)
 

@@ -9,6 +9,9 @@ on:
   pull_request:
     branches: ["*"]
 
+env:
+  PIPENV_VENV_IN_PROJECT: 1
+
 jobs:
   
   frontend-setup:
@@ -80,16 +83,20 @@ jobs:
           architecture: x64
 
       - name: pip cache
+        id: cache-pipenv
         uses: actions/cache@v2
         with:
-          path: ~/.local/share/virtualenvs
+          path: .venv/
           key: ${{ runner.os }}-pip-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-v2-
 
-      - run: pip install --upgrade pip
+      - run: pip install --upgrade pipenv wheel
       - run: cat Pipfile
-      - run: pip install pipenv && pipenv install --dev
+      - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
+        run: |
+          pipenv install --deploy --dev
       - run: pipenv graph
 
   python-unittests:
@@ -149,15 +156,43 @@ jobs:
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ~/.local/share/virtualenvs
+          path: .venv/
           key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       
-      - run: pip install pipenv && pipenv install --dev
-      - run: pipenv run python -m pytest
-      # TODO - make 100
-      - run: pipenv run coverage report --fail-under=99
+      - run: .venv/bin/python -m pytest
+      - run: .venv/bin/python -m coverage report --fail-under=100
+
+  pyenv-outdated-packages:
+    needs: python-setup
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: ['3.9']
+
+    name: pyenv check outdated
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: .venv/
+          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - run: pip install pipenv
+      - run: pipenv install --dev --deploy
+      - run: pipenv update --outdated
 
   python-lint:
     needs: python-setup
@@ -167,11 +202,10 @@ jobs:
       matrix:
         python-version: ['3.9']
         lint-command: 
-          - pipenv run python -m black --check backend/app/ backend/tests/
-          - pipenv run python -m isort --check-only --diff backend/app/ backend/tests/
-          - pipenv run python -m unify --check-only --recursive --quote \" backend/app/ backend/tests/
-          - pipenv run python -m pylint backend/app/
-          - pipenv update --outdated
+          - .venv/bin/python -m black --check backend/
+          - .venv/bin/python -m isort --check-only --diff backend/
+          - .venv/bin/python -m unify --check-only --recursive --quote \" backend/
+          - .venv/bin/pylint backend/
 
     name: python ${{ matrix.python-version }} lint - ${{ matrix.lint-command }}
 
@@ -186,12 +220,11 @@ jobs:
       - name: pip cache
         uses: actions/cache@v2
         with:
-          path: ~/.local/share/virtualenvs
+          path: .venv/
           key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       
-      - run: pip install pipenv && pipenv install --dev
       - run: ${{ matrix.lint-command }}
 
   system-tests:

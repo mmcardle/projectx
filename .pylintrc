@@ -2,7 +2,8 @@
 load-plugins=pylint_django
 django-settings-module=projectx.settings
 disable=
-    missing-docstring,\
-    missing-module-docstring
+    missing-docstring,
+    missing-module-docstring,
+    duplicate-code
 max-line-length=120
 init-hook=sys.path.extend(["backend/app/", "backend/testing_apps/"])

@@ -1,5 +1,4 @@
 import pytest
-from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 from test_app.models import SimpleIDModel
 
@@ -12,9 +11,7 @@ PRIMARY_KEY = SimpleIDModel._meta.pk.name
 
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
-def get_client():
-    app = FastAPI()
-    router = APIRouter()
+def get_client(app, router):
     route_builder = RouteBuilder(SimpleIDModel)
     route_builder.add_all_routes(router)
     app.include_router(router)

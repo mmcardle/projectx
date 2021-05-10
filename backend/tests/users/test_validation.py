@@ -7,64 +7,64 @@ from users import validation
 from users.models import User
 
 
-def test_NumberValidator():
+def test_numbervalidator():
     validation.NumberValidator(minimum=1).validate("1")
 
 
-def test_UppercaseValidator():
+def test_uppercasevalidator():
     validation.UppercaseValidator(minimum=1).validate("A")
 
 
-def test_LowercaseValidator():
+def test_lowercasevalidator():
     validation.LowercaseValidator(minimum=1).validate("a")
 
 
-def test_SymbolValidator():
+def test_symbolvalidator():
     validation.SymbolValidator(minimum=1).validate("$")
 
 
-def test_NumberValidator_zero():
+def test_numbervalidator_zero():
     validation.NumberValidator(minimum=0).validate("")
 
 
-def test_UppercaseValidator_zero():
+def test_uppercasevalidator_zero():
     validation.UppercaseValidator(minimum=0).validate("")
 
 
-def test_LowercaseValidator_zero():
+def test_lowercasevalidator_zero():
     validation.LowercaseValidator(minimum=0).validate("")
 
 
-def test_SymbolValidator_zero():
+def test_symbolvalidator_zero():
     validation.SymbolValidator(minimum=0).validate("")
 
 
-def test_NumberValidator_not_enough():
+def test_numbervalidator_not_enough():
     with pytest.raises(DjangoValidationError):
         validation.NumberValidator(minimum=2).validate("1")
 
 
-def test_UppercaseValidator_not_enough():
+def test_uppercasevalidator_not_enough():
     with pytest.raises(DjangoValidationError):
         validation.UppercaseValidator(minimum=2).validate("A")
 
 
-def test_LowercaseValidator_not_enough():
+def test_lowercasevalidator_not_enough():
     with pytest.raises(DjangoValidationError):
         validation.LowercaseValidator(minimum=2).validate("a")
 
 
-def test_SymbolValidator_not_enough():
+def test_symbolvalidator_not_enough():
     with pytest.raises(DjangoValidationError):
         validation.SymbolValidator(minimum=2).validate("$")
 
 
 @pytest.mark.parametrize("symbol", validation.SymbolValidator.symbols)
-def test_SymbolValidator_all_valid_chars(symbol):
+def test_symbolvalidator_all_valid_chars(symbol):
     validation.SymbolValidator(minimum=1).validate(symbol)
 
 
-def test_NumberValidator_help_text():
+def test_numbervalidator_help_text():
     assert validation.NumberValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 digit(s), 0-9."
     )
@@ -73,7 +73,7 @@ def test_NumberValidator_help_text():
     )
 
 
-def test_UppercaseValidator_help_text():
+def test_uppercasevalidator_help_text():
     assert validation.UppercaseValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 uppercase letter, A-Z."
     )
@@ -82,7 +82,7 @@ def test_UppercaseValidator_help_text():
     )
 
 
-def test_LowercaseValidator_help_text():
+def test_lowercasevalidator_help_text():
     assert validation.LowercaseValidator(minimum=1).get_help_text() == (
         "This password must contain at least 1 lowercase letter, a-z."
     )
@@ -91,7 +91,7 @@ def test_LowercaseValidator_help_text():
     )
 
 
-def test_SymbolValidator_help_text():
+def test_symbolvalidator_help_text():
     assert validation.SymbolValidator(minimum=1).get_help_text() == (
         r"This password must contain at least 1 symbol: ()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
     )
@@ -125,9 +125,9 @@ def test_register_schema_non_matching_passwords():
         "password1": "Password_!1",
         "password2": "Password_!2",
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.RegisterSchema(), data)
-    assert e.value.errors == {"password2": ["Passwords must match."]}
+    assert exception.value.errors == {"password2": ["Passwords must match."]}
 
 
 def test_register_schema_bad_data():
@@ -138,9 +138,9 @@ def test_register_schema_bad_data():
         "password1": "P1",
         "password2": "P2",
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.RegisterSchema(), data)
-    assert e.value.errors == {
+    assert exception.value.errors == {
         "email": ["Not a valid email address."],
         "first_name": ["First Name must be less than 40 characters."],
         "last_name": ["Last Name must be less than 40 characters."],
@@ -175,9 +175,9 @@ def test_reset_password_load_data_from_schema_invalid():
         "password1": "pass",
         "password2": "pass",
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.ResetPasswordCompleteSchema(), data)
-    assert e.value.errors["password1"] == [
+    assert exception.value.errors["password1"] == [
         "This password is too short. It must contain at least 8 characters.",
         "This password is too common.",
         "This password must contain at least 1 digit(s), 0-9.",
@@ -194,9 +194,9 @@ def test_reset_password_complete_load_data_from_schema_passwords_dont_match():
         "password1": password1,
         "password2": password2,
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.ResetPasswordCompleteSchema(), data)
-    assert e.value.errors["password2"] == ["Passwords must match."]
+    assert exception.value.errors["password2"] == ["Passwords must match."]
 
 
 def test_change_password_schema():
@@ -215,9 +215,9 @@ def test_change_password_non_matching_passwords():
         "password1": "Password_!1",
         "password2": "Password_!2",
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.ChangePasswordSchema(), data)
-    assert e.value.errors == {"password2": ["Passwords must match."]}
+    assert exception.value.errors == {"password2": ["Passwords must match."]}
 
 
 def test_change_password_bad_data():
@@ -226,9 +226,9 @@ def test_change_password_bad_data():
         "password1": "P1",
         "password2": "P2",
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.ChangePasswordSchema(), data)
-    assert e.value.errors == {"password1": ["Password must be greater than 8 characters."]}
+    assert exception.value.errors == {"password1": ["Password must be greater than 8 characters."]}
 
 
 def test_change_details_schema():
@@ -245,16 +245,16 @@ def test_change_details_schema_bad_data():
         "first_name": "X" * 50,
         "last_name": "X" * 50,
     }
-    with pytest.raises(SchemaError) as e:
+    with pytest.raises(SchemaError) as exception:
         load_data_from_schema(validation.ChangeDetailsSchema(), data)
-    assert e.value.errors == {
+    assert exception.value.errors == {
         "first_name": ["First Name must be less than 40 characters."],
         "last_name": ["Last Name must be less than 40 characters."],
     }
 
 
 @pytest.mark.django_db(transaction=True)
-def test_ActivateSchema_valid_key(mocker):
+def test_activateschema_valid_key(mocker):
 
     user = User.objects.create(username="user")
     check_activation_key = mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
@@ -268,7 +268,7 @@ def test_ActivateSchema_valid_key(mocker):
 
 
 @pytest.mark.django_db(transaction=True)
-def test_ActivateSchema_bad_key(mocker):
+def test_activateschema_bad_key(mocker):
 
     User.objects.create(username="user")
     check_activation_key = mocker.patch(
@@ -276,15 +276,15 @@ def test_ActivateSchema_bad_key(mocker):
     )
 
     schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
+    with pytest.raises(ValidationError) as exception:
         schema.load({"activate_key": "activate_key"})
 
-    assert ve.value.messages["activate_key"] == ["Sorry that activation key is not valid."]
+    assert exception.value.messages["activate_key"] == ["Sorry that activation key is not valid."]
     assert check_activation_key.mock_calls == [mocker.call("activate_key"), mocker.call("activate_key", max_age=None)]
 
 
 @pytest.mark.django_db(transaction=True)
-def test_ActivateSchema_expired_key(mocker):
+def test_activateschema_expired_key(mocker):
 
     user = User.objects.create(username="user", email="user@example.com")
     check_activation_key = mocker.patch(
@@ -293,11 +293,12 @@ def test_ActivateSchema_expired_key(mocker):
     send_account_activation_email = mocker.patch("users.validation.User.send_account_activation_email")
 
     schema = validation.ActivateSchema()
-    with pytest.raises(ValidationError) as ve:
+    with pytest.raises(ValidationError) as exception:
         schema.load({"activate_key": "activate_key"})
 
-    assert ve.value.messages["activate_key"] == [
-        "That token has expired. A new email has been sent to your address. Please click on the new link in the email."
+    assert exception.value.messages["activate_key"] == [
+        "That token has expired. A new email has been sent to your address. "
+        "Please click on the new link in the email."
     ]
     assert check_activation_key.mock_calls == [mocker.call("activate_key"), mocker.call("activate_key", max_age=None)]
     assert send_account_activation_email.mock_calls == [mocker.call()]

@@ -13,11 +13,11 @@ import sys
 import django
 from fastapi import FastAPI
 
-sys.path.append("app/")  # noqa
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projectx.settings")  # noqa
-django.setup()  # noqa
+sys.path.append("app/")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projectx.settings")
+django.setup()
 
-from .routing import router  # pylint: disable=wrong-import-position
+from api.routing import router  # pylint: disable=wrong-import-position
 
 application = FastAPI(
     title="ProjectX",

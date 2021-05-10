@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
-from . import decorators, models
+from users import decorators, models
 
 logger = logging.getLogger(__name__)
 

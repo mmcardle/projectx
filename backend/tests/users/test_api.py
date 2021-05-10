@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name disable=protected-access
 import json
 from unittest import mock
 
@@ -6,9 +7,7 @@ from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from ratelimit.exceptions import Ratelimited
 
-from users import api, models
-
-counter = 0
+from users import api
 
 
 def make_request(**kwargs):
@@ -18,9 +17,7 @@ def make_request(**kwargs):
     if "REMOTE_ADDR" not in kwargs["META"]:
         # In order to not get hit by rate limits during tests we
         # have to make each request unique by adding a counter
-        global counter
-        kwargs["META"]["REMOTE_ADDR"] = "127.0.0.%s" % counter
-        counter = counter + 1
+        kwargs["META"]["REMOTE_ADDR"] = "127.0.0.1"
 
     if "session" not in kwargs:
         kwargs["session"] = mock.Mock(get=mock.Mock(return_value=[]))
@@ -78,7 +75,14 @@ def test_login_GET(mocker):
     assert JsonResponse.mock_calls[0] == mock.call({"token": "token"})
 
 
-def test_login_POST_rate_limited(mocker):
+def test_login_POST_rate_limited(settings, mocker):
+
+    settings.CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
+        }
+    }
 
     mocker.patch("users.api.JsonResponse")
     mocker.patch("users.api.authenticate")
@@ -93,7 +97,7 @@ def test_login_POST_rate_limited(mocker):
         session=mock.MagicMock(),
     )
     with pytest.raises(Ratelimited) as rate_limit_ex:
-        for i in range(0, 6):
+        for _ in range(0, 6):
             api.login(request)
 
     assert str(rate_limit_ex.value) == ""
@@ -426,8 +430,8 @@ def test_activate_api(mocker):
 def test_admin_su_logout_good_request(mocker):
 
     JsonResponse = mocker.patch("users.api.JsonResponse")
-    su_logout = mocker.patch("users.api.su_logout", return_value=mock.Mock(url="/redirect_url", status_code=200))
-    response = api.admin_su_logout(make_request())
+    mocker.patch("users.api.su_logout", return_value=mock.Mock(url="/redirect_url", status_code=200))
+    api.admin_su_logout(make_request())
 
     assert JsonResponse.mock_calls == [mock.call({"redirect_url": "/redirect_url"})]
 
@@ -435,7 +439,7 @@ def test_admin_su_logout_good_request(mocker):
 def test_admin_su_logout_bad_request(mocker):
 
     JsonResponse = mocker.patch("users.api.JsonResponse")
-    su_logout = mocker.patch("users.api.su_logout", return_value=mock.Mock(content="content", status_code=403))
-    response = api.admin_su_logout(make_request())
+    mocker.patch("users.api.su_logout", return_value=mock.Mock(content="content", status_code=403))
+    api.admin_su_logout(make_request())
 
     assert JsonResponse.mock_calls == [mock.call({"error": "content"}, status=403)]

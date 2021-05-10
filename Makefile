@@ -16,7 +16,7 @@ build:
 
 lint:
 	black --check backend/
-	pylint backend/app backend/testing_apps/
+	pylint backend/
 	isort --check-only --diff backend/
 	unify --check-only --recursive --quote \" backend/
 

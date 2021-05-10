@@ -1,7 +1,6 @@
 from uuid import UUID
 
 import pytest
-from fastapi import APIRouter
 from fastapi.testclient import TestClient
 from test_app.models import SimpleJWTModel
 
@@ -17,8 +16,7 @@ JWT_USER_PASSWORD = "jwtpassword"
 
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
-def get_client():
-    router = APIRouter()
+def get_client(router):
     authentication, _ = get_user_authentication()
     route_builder = RouteBuilder(
         SimpleJWTModel,
