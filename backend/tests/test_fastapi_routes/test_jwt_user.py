@@ -17,7 +17,7 @@ JWT_USER_PASSWORD = "jwtpassword"
 @pytest.mark.django_db(transaction=True)
 @pytest.fixture(name="client")
 def get_client(router):
-    authentication, _ = get_user_authentication()
+    authentication = get_user_authentication()
     route_builder = RouteBuilder(
         SimpleJWTModel,
         request_fields=["name"],

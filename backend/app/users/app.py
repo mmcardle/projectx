@@ -84,33 +84,26 @@ def get_user_schema():
     return schema_for_django_user(["public_uuid", "email", "first_name", "last_name", "is_active"])
 
 
-def get_user_func(User, UserSchema):  # pylint: disable=invalid-name
-    def get_user(username: str):
+def get_user_authentication():
+    def get_user_func(username: str):
+        User = get_user_model()  # pylint: disable=invalid-name
         try:
-            user = User.objects.get(username=username)
-            return UserSchema.from_model(user)
+            return User.objects.get(username=username)
         except User.DoesNotExist:
             return None
 
-    return get_user
-
-
-def get_user_authentication(user_model=None):
-    if user_model is None:
-        user_model = get_user_model()
-    UserSchema = get_user_schema()
-    get_user = get_user_func(user_model, UserSchema)
-    return get_current_user_func(get_user), UserSchema
+    return get_current_user_func(get_user_func)
 
 
 class UsersConfig(AppConfig):
     name = "users"
 
     def ready(self):
+        UserSchema = get_user_schema()
+        User = get_user_model()  # pylint: disable=invalid-name
+        authentication = get_user_authentication()
 
-        authentication, UserSchema = get_user_authentication()
-
-        def get_current_active_user(current_user: UserSchema = Depends(authentication)):
+        def get_current_active_user(current_user: User = Depends(authentication)):
             if not current_user.is_active:
                 raise HTTPException(status_code=400, detail="Inactive user")
             return current_user
@@ -137,5 +130,5 @@ class UsersConfig(AppConfig):
             name="auth-self",
             response_model=UserSchema,
         )
-        async def auth_self(current_user: UserSchema = Depends(get_current_active_user)):
-            return current_user
+        async def auth_self(current_user: User = Depends(get_current_active_user)):
+            return UserSchema.from_model(current_user)

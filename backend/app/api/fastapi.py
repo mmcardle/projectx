@@ -195,6 +195,12 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         user_fields = set(request_fields + response_fields)
         self.validate_field_names(user_fields)
 
+        if owner_field in request_fields:
+            request_fields.remove(owner_field)
+
+        if owner_field in response_fields:
+            response_fields.remove(owner_field)
+
         self.instance_schema = schema_for_instance(model, response_fields)
 
         fields_for_new = request_fields
