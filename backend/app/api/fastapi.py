@@ -74,7 +74,7 @@ def schema_for_instance(django_model, fields):
                     field_data[field] = getattr(instance, field)
             return cls(**field_data)
 
-    return SingleSchema
+    return type(f"{django_model.__name__}", (SingleSchema,), {})
 
 
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
@@ -146,7 +146,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
 
             return SingleSchema.from_model(instance)
 
-    return NewSchema
+    return type(f"New{django_model.__name__}", (NewSchema,), {})
 
 
 def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
@@ -163,7 +163,7 @@ def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=i
             """
             return cls(items=[SingleSchema.from_model(i) for i in qs])
 
-    return MultipleSchema
+    return type(f"{django_model.__name__}List", (MultipleSchema,), {})
 
 
 class RouteBuilder:  # pylint: disable=too-many-instance-attributes
