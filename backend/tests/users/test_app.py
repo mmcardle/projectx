@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import pytest
-from django.contrib.auth import get_user_model
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
@@ -24,12 +23,7 @@ def test_app():
 
 
 def test_get_user_authentication():
-    assert get_user_authentication(user_model=None)
-
-
-def test_get_user_authentication_with_user_model():
-    user_model = get_user_model()
-    assert get_user_authentication(user_model=user_model)
+    assert get_user_authentication()
 
 
 def test_create_access_token(mocker):
