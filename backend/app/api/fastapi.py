@@ -4,6 +4,7 @@ from typing import Callable, List, Optional
 from urllib import parse
 
 from django.db import models
+from django.db.models import Q
 from djantic import ModelSchema
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
@@ -21,6 +22,10 @@ class RouteBuilderException(Exception):
 
 
 class InvalidAuthenticationException(RouteBuilderException):
+    pass
+
+
+class InvalidIdentifierException(RouteBuilderException):
     pass
 
 
@@ -106,6 +111,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
 
             if extra:
                 field_data.update(extra)
+
             new_object = django_model.objects.create(**field_data)
 
             for many_to_many_field in many_to_many_fields:
@@ -174,10 +180,12 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         request_fields: Optional[List[str]] = None,
         response_fields: Optional[List[str]] = None,
         owner_field: str = None,
+        query_filter: Callable[[User], Q] = None,
         authentication: Optional[Callable] = None,
     ) -> None:
         self.model = model
         self.owner_field = owner_field
+        self.query_filter = query_filter
 
         if owner_field and not authentication:
             raise InvalidAuthenticationException(
@@ -185,6 +193,11 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             )
 
         self.config = config if config else {}
+
+        model_fields_names = [field.name for field in self.model._meta.get_fields()]
+
+        if self.model_identifier not in model_fields_names:
+            raise InvalidIdentifierException(f"{self.model_identifier} not in {model_fields_names}.")
 
         if request_fields is None:
             request_fields = self._get_request_fields()
@@ -207,12 +220,12 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
         self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
 
-        self.get_function = self.get_identifier_function()
-
         if authentication is None:
             self.authentication = lambda: None
         else:
             self.authentication = authentication
+
+        self.get_function = self.get_identifier_function()
 
     def _get_request_fields(self):
         model_fields = self.model._meta.get_fields()
@@ -283,8 +296,16 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
     def path_for_identifer(self):
         return self.path_prefix + "{identifier}/"
 
+    def check_query_filter(self, instance, user):
+        if not self.model.objects.filter(self.query_filter(user)).filter(pk=instance.pk).exists():
+            logger.warning("User %s tried to get %s and it is not allowed.", user, instance)
+            raise HTTPException(status_code=404, detail="Object not found.")
+
     def check_ownership(self, instance, user):
-        return user == getattr(instance, self.owner_field)
+        if not user == getattr(instance, self.owner_field):
+            owner = getattr(instance, self.owner_field)
+            logger.warning("User %s tried to update %s and is not the owner, owner is %s.", user, instance, owner)
+            raise HTTPException(status_code=404, detail="Object not found.")
 
     def get_identifier_function(self):
         def func(
@@ -316,11 +337,15 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             name=f"{self.name_lower_plural}-get",
         )
         def _get(user: User = Depends(self.authentication)) -> self.multiple_instance_schema:
+            filter_models = self.model.objects.all()
+
+            if self.query_filter:
+                filter_models = filter_models.filter(self.query_filter(user))
+
             if self.owner_field:
-                all_models = self.model.objects.filter(**{self.owner_field: user})
-            else:
-                all_models = self.model.objects.all()
-            return self.multiple_instance_schema.from_qs(all_models)
+                filter_models = filter_models.filter(**{self.owner_field: user})
+
+            return self.multiple_instance_schema.from_qs(filter_models)
 
         return _get
 
@@ -336,10 +361,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             instance: self.model = Depends(self.get_function),
             user: User = Depends(self.authentication),
         ) -> self.instance_schema:
-            if self.owner_field and not self.check_ownership(instance, user):
-                owner = getattr(instance, self.owner_field)
-                logger.warning("User %s tried to get %s and is not the owner, owner is %s.", user, instance, owner)
-                raise HTTPException(status_code=404, detail="Object not found.")
+
+            if self.query_filter:
+                self.check_query_filter(instance, user)
+
+            if self.owner_field:
+                self.check_ownership(instance, user)
+
             return self.instance_schema.from_model(instance)
 
         return _get
@@ -374,10 +402,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             api_instance: self.new_instance_schema = Body(...),
             user: User = Depends(self.authentication),
         ) -> self.instance_schema:
-            if self.owner_field and not self.check_ownership(instance, user):
-                owner = getattr(instance, self.owner_field)
-                logger.warning("User %s tried to update %s and is not the owner, owner is %s.", user, instance, owner)
-                raise HTTPException(status_code=404, detail="Object not found.")
+
+            if self.query_filter:
+                self.check_query_filter(instance, user)
+
+            if self.owner_field:
+                self.check_ownership(instance, user)
+
             return api_instance.update(instance)
 
         return _put
@@ -393,10 +424,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         def _delete(
             instance: self.model = Depends(self.get_function), user: User = Depends(self.authentication)
         ) -> self.instance_schema:
-            if self.owner_field and not self.check_ownership(instance, user):
-                owner = getattr(instance, self.owner_field)
-                logger.warning("User %s tried to update %s and is not the owner, owner is %s.", user, instance, owner)
-                raise HTTPException(status_code=404, detail="Object not found.")
+
+            if self.query_filter:
+                self.check_query_filter(instance, user)
+
+            if self.owner_field:
+                self.check_ownership(instance, user)
+
             api_instance = self.instance_schema.from_model(instance)
             instance.delete()
             return api_instance
