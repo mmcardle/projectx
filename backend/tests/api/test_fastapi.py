@@ -6,6 +6,7 @@ from test_app import models
 from api.fastapi import (
     InvalidAuthenticationException,
     InvalidFieldsException,
+    InvalidIdentifierException,
     RouteBuilder,
 )
 from api.wsgi import application
@@ -20,6 +21,17 @@ def test_route_builder_adds_routes():
     assert len(router.routes) == 5
 
 
+@pytest.mark.django_db(transaction=True)
+def test_route_builder_get_identifier_function():
+
+    simple_model = models.SimpleModel.objects.create(name="SimpleModel")
+
+    route_builder = RouteBuilder(models.SimpleModel)
+    identifier_function = route_builder.get_identifier_function()
+
+    assert identifier_function(simple_model.id) == simple_model
+
+
 def test_route_builder_with_owner_removes_owner_field():
     router = APIRouter()
     route_builder = RouteBuilder(models.SimpleModelWithOwner, owner_field="owner", authentication=lambda: None)
@@ -28,6 +40,13 @@ def test_route_builder_with_owner_removes_owner_field():
     assert "owner" not in route_builder.new_instance_schema.schema().keys()
     assert "title" in route_builder.instance_schema.schema().keys()
     assert "owner" not in route_builder.instance_schema.schema().keys()
+
+
+def test_route_builder_bad_identifier_field():
+    with pytest.raises(InvalidIdentifierException) as invalid_ex:
+        RouteBuilder(models.SimpleModel, config={"identifier": "BAD_FIELD"})
+
+    assert str(invalid_ex.value) == "BAD_FIELD not in ['id', 'uuid', 'name', 'last_updated', 'created', 'config']."
 
 
 def test_route_builder_owner_field_but_no_auth():
