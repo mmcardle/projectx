@@ -6,6 +6,7 @@ from urllib import parse
 from django.db import models
 from django.db.models import Q
 from djantic import ModelSchema
+from djantic.fields import ModelSchemaField
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
@@ -121,12 +122,16 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
 
             return new_object
 
-        def update(self, instance: django_model):
+        def update(self, instance: django_model, fields_to_update=None):
             """
             Update a Django model instance and return an SingleSchema instance.
             """
             many_to_many_fields = defaultdict(list)
-            for field in fields:
+
+            if fields_to_update is None:
+                fields_to_update = fields
+
+            for field in fields_to_update:
                 django_field = django_model._meta.get_field(field)
                 if django_field.is_relation:
                     related_model = django_field.related_model
@@ -153,6 +158,18 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             return SingleSchema.from_model(instance)
 
     return type(f"New{django_model.__name__}", (NewSchema,), {})
+
+
+def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # pylint: disable=invalid-name
+    class UpdatingSchema(NewSchema):  # pylint: disable=too-few-public-methods
+        class Config:  # pylint: disable=too-few-public-methods
+            title = f"{django_model.__name__}"
+            model = django_model
+            include = ["name", "config"]
+
+        __annotations__ = optional_fields
+
+    return type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
 
 
 def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
@@ -219,6 +236,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         fields_for_new = request_fields
         self.new_instance_schema = schema_for_new_instance(model, self.instance_schema, fields_for_new)
         self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
+
+        optional_fields = {
+            field_name: Optional[ModelSchemaField(self.model._meta.get_field(field_name))[0]]
+            for field_name in fields_for_new
+        }
+
+        self.updating_schema = schema_for_updating_instance(model, self.new_instance_schema, optional_fields)
 
         if authentication is None:
             self.authentication = lambda: None
@@ -326,6 +350,7 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
         self.add_get_route_to_router(router)
         self.add_create_route_to_router(router)
         self.add_update_route_to_router(router)
+        self.add_patch_route_to_router(router)
         self.add_delete_route_to_router(router)
 
     def add_list_route_to_router(self, router):
@@ -388,6 +413,31 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             return self.instance_schema.from_model(instance)
 
         return _post
+
+    def add_patch_route_to_router(self, router):
+        @router.patch(
+            self.path_for_identifer,
+            summary=f"Partially update a {self.name}.",
+            tags=[f"{self.name_plural}"],
+            response_model=self.instance_schema,
+            name=f"{self.name_lower}-patch",
+        )
+        def _patch(
+            instance: self.model = Depends(self.get_function),
+            api_instance: self.updating_schema = Body(...),
+            user: User = Depends(self.authentication),
+        ) -> self.instance_schema:
+
+            if self.query_filter:
+                self.check_query_filter(instance, user)
+
+            if self.owner_field:
+                self.check_ownership(instance, user)
+
+            fields_to_update = api_instance.dict(exclude_unset=True)
+            return api_instance.update(instance, fields_to_update=fields_to_update)
+
+        return _patch
 
     def add_update_route_to_router(self, router):
         @router.put(

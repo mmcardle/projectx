@@ -57,6 +57,18 @@ def test_filtering_with_get(client, simple_model1, simple_model2):
 
 
 @pytest.mark.django_db(transaction=True)
+def test_filtering_with_patch(client, simple_model1, simple_model2):
+
+    response = client.patch(f"{BASE_PATH}{simple_model1.pk}/", json={"name": "new_name - Should appear in response"})
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"name": "new_name - Should appear in response"}
+
+    response = client.patch(f"{BASE_PATH}{simple_model2.pk}/", json={"name": "new_name"})
+    assert response.status_code == 404, response.content.decode("utf-8")
+    assert response.json() == {"detail": "Object not found."}
+
+
+@pytest.mark.django_db(transaction=True)
 def test_filtering_with_put(client, simple_model1, simple_model2):
 
     response = client.put(f"{BASE_PATH}{simple_model1.pk}/", json={"name": "new_name - Should appear in response"})
