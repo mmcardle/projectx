@@ -35,7 +35,7 @@ def api_key_user_fixture():
 
 
 @pytest.mark.django_db(transaction=True)
-def test_model_with_owner_create_list_update_get_and_delete(client, api_key_user, mocker):
+def test_model_with_owner_create_list_update_patch_get_and_delete(client, api_key_user, mocker):
 
     response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -55,9 +55,13 @@ def test_model_with_owner_create_list_update_get_and_delete(client, api_key_user
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"name": "name2", "uuid": uuid}
 
+    response = client.patch(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key}, json={"name": "name3"})
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"name": "name3", "uuid": uuid}
+
     response = client.delete(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name2", "uuid": uuid}
+    assert response.json() == {"name": "name3", "uuid": uuid}
 
     response = client.delete(f"{BASE_PATH}{uuid}/", headers={"X-API-Key": api_key_user.key})
     assert response.status_code == 404, response.content.decode("utf-8")
@@ -65,7 +69,7 @@ def test_model_with_owner_create_list_update_get_and_delete(client, api_key_user
 
 
 @pytest.mark.django_db(transaction=True)
-def test_testapp_testmodelwithowner_other_user_cannot_get(client, api_key_user, mocker):
+def test_testapp_testmodelwithowner_other_user_cannot_access(client, api_key_user, mocker):
 
     response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
@@ -90,6 +94,14 @@ def test_testapp_testmodelwithowner_other_user_cannot_get(client, api_key_user, 
     assert response.json() == {"detail": "Object not found."}
 
     response = client.put(
+        f"{BASE_PATH}{uuid}/",
+        headers={"X-API-Key": api_key_other_user.key},
+        json={"name": "Should not be able to set this!"},
+    )
+    assert response.status_code == 404, response.content.decode("utf-8")
+    assert response.json() == {"detail": "Object not found."}
+
+    response = client.patch(
         f"{BASE_PATH}{uuid}/",
         headers={"X-API-Key": api_key_other_user.key},
         json={"name": "Should not be able to set this!"},

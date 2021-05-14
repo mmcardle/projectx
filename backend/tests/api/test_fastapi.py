@@ -18,7 +18,19 @@ def test_route_builder_adds_routes():
     router = APIRouter()
     route_builder = RouteBuilder(models.SimpleModel)
     route_builder.add_all_routes(router)
-    assert len(router.routes) == 5
+    assert len(router.routes) == 6
+    assert router.routes[0].path == "/simplemodels/"
+    assert router.routes[1].path == "/simplemodels/{identifier}/"
+    assert router.routes[2].path == "/simplemodels/"
+    assert router.routes[3].path == "/simplemodels/{identifier}/"
+    assert router.routes[4].path == "/simplemodels/{identifier}/"
+    assert router.routes[5].path == "/simplemodels/{identifier}/"
+    assert router.routes[0].methods == {"GET"}
+    assert router.routes[1].methods == {"GET"}
+    assert router.routes[2].methods == {"POST"}
+    assert router.routes[3].methods == {"PUT"}
+    assert router.routes[4].methods == {"PATCH"}
+    assert router.routes[5].methods == {"DELETE"}
 
 
 @pytest.mark.django_db(transaction=True)

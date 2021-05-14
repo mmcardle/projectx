@@ -72,13 +72,41 @@ def test_api_key_create_list_update_get_and_delete(client, api_key_user, mocker)
         "config": {},
     }
 
+    response = client.put(
+        f"{BASE_PATH}{uuid}/",
+        headers={"X-API-Key": api_key_user.key},
+        json={"name": "name2"},
+    )
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {
+        "name": "name2",
+        "uuid": uuid,
+        "created": mocker.ANY,
+        "last_updated": mocker.ANY,
+        "config": {},
+    }
+
+    response = client.patch(
+        f"{BASE_PATH}{uuid}/",
+        headers={"X-API-Key": api_key_user.key},
+        json={"name": "name3"},
+    )
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {
+        "name": "name3",
+        "uuid": uuid,
+        "created": mocker.ANY,
+        "last_updated": mocker.ANY,
+        "config": {},
+    }
+
     response = client.delete(
         f"{BASE_PATH}{uuid}/",
         headers={"X-API-Key": api_key_user.key},
     )
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
-        "name": "name",
+        "name": "name3",
         "uuid": uuid,
         "created": mocker.ANY,
         "last_updated": mocker.ANY,
