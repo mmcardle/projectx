@@ -6,7 +6,7 @@ from test_app.models import SimpleJWTModel
 
 from api.fastapi import RouteBuilder
 from api.wsgi import application
-from users.app import get_user_authentication
+from users.apps import get_user_authentication
 from users.models import User
 
 BASE_PATH = "/simplejwtmodels/"
