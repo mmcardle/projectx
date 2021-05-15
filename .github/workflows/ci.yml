@@ -87,9 +87,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv/
-          key: ${{ runner.os }}-pip-v2-${{ hashFiles('Pipfile.lock') }}
+          key: ${{ runner.os }}-pipenv-v1-${{ hashFiles('Pipfile.lock') }}-${{ hashFiles('Pipfile') }}
           restore-keys: |
-            ${{ runner.os }}-pip-v2-
+            ${{ runner.os }}-pipenv-v1-
 
       - run: pip install --upgrade pipenv wheel
       - run: cat Pipfile
