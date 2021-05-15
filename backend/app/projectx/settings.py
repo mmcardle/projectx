@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "channels",
     "common",
-    "users.app.UsersConfig",
+    "users.apps.UsersConfig",
 ]
 
 MIDDLEWARE = [
@@ -79,6 +79,8 @@ TEMPLATES = [
 WSGI_APPLICATION = "projectx.wsgi.application"
 
 AUTH_USER_MODEL = "users.User"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases

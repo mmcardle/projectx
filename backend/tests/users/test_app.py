@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from api.wsgi import application
-from users.app import (
+from users.apps import (
     UsersConfig,
     create_access_token,
     get_current_user_func,
