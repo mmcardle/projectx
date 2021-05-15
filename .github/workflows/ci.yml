@@ -87,15 +87,16 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv/
-          key: ${{ runner.os }}-pipenv-v1-${{ hashFiles('Pipfile.lock') }}-${{ hashFiles('Pipfile') }}
+          key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-v1-
+            ${{ runner.os }}-pipenv-v2-
 
       - run: pip install --upgrade pipenv wheel
       - run: cat Pipfile
       - name: Install dependencies
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
+          pipenv uninstall --all
           pipenv install --deploy --dev
       - run: pipenv graph
 
@@ -137,7 +138,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9', '3.8']
+        python-version: ['3.9']
     
     name: python ${{ matrix.python-version }} unittest
     
@@ -157,14 +158,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv/
-          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
+          key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pipenv-v1-
       
       - run: .venv/bin/python -m pytest
       - run: .venv/bin/python -m coverage report --fail-under=100
 
-  pyenv-outdated-packages:
+  pipenv-outdated-packages:
     needs: python-setup
     runs-on: ubuntu-20.04
 
@@ -172,7 +173,7 @@ jobs:
       matrix:
         python-version: ['3.9']
 
-    name: pyenv check outdated
+    name: pipenv check outdated
 
     steps:
       - uses: actions/checkout@v2
