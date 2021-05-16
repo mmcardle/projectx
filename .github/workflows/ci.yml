@@ -97,6 +97,7 @@ jobs:
         if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           pipenv uninstall --all
+          pipenv lock
           pipenv install --deploy --dev
       - run: pipenv graph
 
@@ -160,7 +161,7 @@ jobs:
           path: .venv/
           key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pipenv-v1-
+            ${{ runner.os }}-pipenv-v2-
       
       - run: .venv/bin/python -m pytest
       - run: .venv/bin/python -m coverage report --fail-under=100
@@ -187,9 +188,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv/
-          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
+          key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pipenv-v2-
 
       - run: pip install pipenv
       - run: pipenv install --dev --deploy
@@ -222,9 +223,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv/
-          key: ${{ runner.os }}-pip-${{ hashFiles('Pipfile.lock') }}
+          key: ${{ runner.os }}-pipenv-v2-${{ hashFiles('Pipfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pipenv-v2-
       
       - run: ${{ matrix.lint-command }}
 

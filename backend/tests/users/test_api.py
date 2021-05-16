@@ -20,9 +20,46 @@ def make_request(**kwargs):
         kwargs["META"]["REMOTE_ADDR"] = "127.0.0.1"
 
     if "session" not in kwargs:
-        kwargs["session"] = mock.Mock(get=mock.Mock(return_value=[]))
+        kwargs["session"] = mock.MagicMock(get=mock.Mock(return_value=[]))
 
     return mock.Mock(spec=HttpRequest, **kwargs)
+
+
+def test_new_jwt_token(mocker):
+    user = mocker.Mock(username="user")
+    jwt_token = api.new_jwt_token(user)
+    prefix = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+    assert jwt_token.startswith(prefix)
+
+
+def test_jwt_token_for_session_creates_new_jwt_token(mocker):
+
+    new_jwt_token = mocker.patch("users.api.new_jwt_token")
+
+    session = {}
+    user = mocker.Mock(username="user")
+    request = make_request(user=user, session=session)
+
+    api.jwt_token_for_session(request)
+
+    assert session == {api.JWT_SESSION_KEY: new_jwt_token.return_value}
+
+    assert new_jwt_token.mock_calls == [mocker.call(user)]
+
+
+def test_jwt_token_for_session_keeps_existing_jwt_token(mocker):
+
+    new_jwt_token = mocker.patch("users.api.new_jwt_token")
+
+    session = {api.JWT_SESSION_KEY: "Existing"}
+    user = mocker.Mock(username="user")
+    request = make_request(user=user, session=session)
+
+    api.jwt_token_for_session(request)
+
+    assert session == {api.JWT_SESSION_KEY: "Existing"}
+
+    assert new_jwt_token.mock_calls == []
 
 
 def test_request_is_sudo():
@@ -43,13 +80,14 @@ def test_user_details_authenticated(mocker):
 
     JsonResponse = mocker.patch("users.api.JsonResponse")
     mocker.patch("users.api._get_token", return_value="token")
+    mocker.patch("users.api.jwt_token_for_session", return_value="jwt")
 
     user = mock.Mock()
     request = make_request(user=user)
     api.user_details(request)
 
     assert JsonResponse.mock_calls == [
-        mock.call({"user": user.to_json(), "token": "token", "logout_url": "/app/users/logout/"})
+        mock.call({"user": user.to_json(), "token": "token", "jwt": "jwt", "logout_url": "/app/users/logout/"})
     ]
 
 
@@ -87,6 +125,7 @@ def test_login_POST_rate_limited(settings, mocker):
     mocker.patch("users.api.JsonResponse")
     mocker.patch("users.api.authenticate")
     mocker.patch("users.api.django_login")
+    mocker.patch("users.api.new_jwt_token")
 
     user = mock.Mock(is_authenticated=False)
     request = make_request(
@@ -118,6 +157,7 @@ def test_login_POST(mocker):
     JsonResponse = mocker.patch("users.api.JsonResponse")
     authenticate = mocker.patch("users.api.authenticate")
     django_login = mocker.patch("users.api.django_login")
+    mocker.patch("users.api.new_jwt_token", return_value="jwt")
 
     body = json.dumps(dict(email="email@none.com", password="password"))
     user = mock.Mock(is_authenticated=False)
@@ -134,7 +174,13 @@ def test_login_POST(mocker):
     ]
     assert JsonResponse.call_args_list[0:1] == [
         mock.call(
-            {"success": True, "user": authenticate().to_json(), "token": mock.ANY, "logout_url": "/app/users/logout/"}
+            {
+                "success": True,
+                "user": authenticate().to_json(),
+                "jwt": "jwt",
+                "token": mock.ANY,
+                "logout_url": "/app/users/logout/",
+            }
         )
     ]
     assert django_login.mock_calls == [mock.call(request, authenticate())]
@@ -183,6 +229,20 @@ def test_logout(mocker):
     api.logout(request)
     assert JsonResponse.mock_calls == [mock.call({"success": True})]
     assert django_logout.mock_calls == [mock.call(request)]
+
+
+def test_logout_deletes_jwt(mocker):
+
+    django_logout = mocker.patch("users.api.django_logout")
+    JsonResponse = mocker.patch("users.api.JsonResponse")
+
+    user = mock.Mock(is_authenticated=True)
+    session = {api.JWT_SESSION_KEY: "token"}
+    request = make_request(method="GET", user=user, path="http://127.0.0.1/path", session=session)
+    api.logout(request)
+    assert JsonResponse.mock_calls == [mock.call({"success": True})]
+    assert django_logout.mock_calls == [mock.call(request)]
+    assert session == {}
 
 
 def test_register(mocker):

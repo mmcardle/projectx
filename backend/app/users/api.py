@@ -1,6 +1,8 @@
 import json
 import logging
+from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as django_login
 from django.contrib.auth import logout as django_logout
@@ -14,8 +16,12 @@ from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
 from users import decorators, models
+from users.apps import create_access_token
 
 logger = logging.getLogger(__name__)
+
+
+JWT_SESSION_KEY = "jwt_session_key"
 
 
 def _get_token(request):
@@ -33,10 +39,28 @@ def _get_logout_url(request):
     return reverse("user_api_logout")
 
 
+def new_jwt_token(user):
+    access_token_expires = timedelta(seconds=settings.SESSION_COOKIE_AGE)
+    return create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+
+
+def jwt_token_for_session(request):
+    token = request.session.get(JWT_SESSION_KEY, None)
+    if not token:
+        token = new_jwt_token(request.user)
+        request.session[JWT_SESSION_KEY] = token
+    return token
+
+
 def user_details(request):
     if request.user.is_authenticated:
         return JsonResponse(
-            {"user": request.user.to_json(), "token": _get_token(request), "logout_url": _get_logout_url(request)}
+            {
+                "user": request.user.to_json(),
+                "token": _get_token(request),
+                "jwt": jwt_token_for_session(request),
+                "logout_url": _get_logout_url(request),
+            }
         )
     return JsonResponse({"user": None})
 
@@ -54,7 +78,7 @@ def login(request):
                 {
                     "success": True,
                     "user": user.to_json(),
-                    # new csrf token will have been created
+                    "jwt": new_jwt_token(request.user),
                     "token": request.META["CSRF_COOKIE"],
                     "logout_url": _get_logout_url(request),
                 }
@@ -65,6 +89,8 @@ def login(request):
 
 @login_required
 def logout(request):
+    if JWT_SESSION_KEY in request.session:
+        del request.session[JWT_SESSION_KEY]
     django_logout(request)
     return JsonResponse({"success": True})
 

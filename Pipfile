@@ -26,7 +26,7 @@ async-timeout = "~=3.0.1"
 
 [dev-packages]
 pytest = "~=6.2"
-pytest-django = "~=4.2"
+pytest-django = "~=4.3"
 pytest-pythonpath = "~=0.7"
 pytest-cov = "~=2.12"
 pytest-env = "~=0.6"
@@ -34,7 +34,6 @@ pytest-mock = "~=3.6"
 black = "~=21.5b1"
 unify = "~=0.5"
 pylint = "~=2.8"
-pylint-django = "~=2.4"
 requests = "~=2.25.1"
 
 [requires]

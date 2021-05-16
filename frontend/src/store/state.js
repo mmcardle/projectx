@@ -45,6 +45,7 @@ function asComponent(Component, store, props) {
 const storeNames = {
   user:  (Component) => (props) => asComponent(Component, useUserStore(), props),
   token:  (Component) => (props) => asComponent(Component, useKeyfromStore('token'), props),
+  jwt:  (Component) => (props) => asComponent(Component, useKeyfromStore('jwt'), props),
   dispatch:  (Component) => (props) => asComponent(Component, useDispatchStore(), props),
   logout_url:  (Component) => (props) => asComponent(Component, useKeyfromStore('logout_url'), props),
 };
