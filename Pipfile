@@ -34,6 +34,7 @@ pytest-mock = "~=3.6"
 black = "~=21.5b1"
 unify = "~=0.5"
 pylint = "~=2.8"
+pylint-django = "~=2.4"
 requests = "~=2.25.1"
 
 [requires]
