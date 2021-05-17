@@ -2,7 +2,7 @@
 from projectx.settings import *
 
 # Override any settings required for tests here
-INSTALLED_APPS.append("test_app.app.TestApp")
+INSTALLED_APPS.append("test_app")
 
 LOGGING = {}
 

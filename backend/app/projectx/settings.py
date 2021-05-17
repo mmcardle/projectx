@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "channels",
     "common",
-    "users.apps.UsersConfig",
+    "users",
 ]
 
 MIDDLEWARE = [
