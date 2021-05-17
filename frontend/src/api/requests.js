@@ -20,6 +20,18 @@ async function getJSON(url, args = {}) {
   return response.data;
 }
 
+async function deleteJSON(url, args = {}) {
+  const request_args = args;
+  request_args.transformResponse = (data) => {
+    console.debug(url, data);
+    // Ensure data is valid json
+    return JSON.parse(data);
+  };
+  const response = await axios.delete(url, request_args);
+  console.debug('DELETE to', url, request_args, ':', response.data);
+  return response.data;
+}
+
 async function postJSON(url, params, args = {}) {
   const request_args = args;
   request_args.transformResponse = (data) => {
@@ -48,8 +60,9 @@ async function getUserData(dispatch) {
     console.debug('Fetched User Data', data);
     const { user } = data;
     if (user) {
+      console.log(data.jwt)
       dispatch({
-        type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token,
+        type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token, jwt: data.jwt
       });
     } else {
       dispatch({type: actions.SET_LOADED});
@@ -78,7 +91,7 @@ async function login(dispatch, email, password) {
   try {
     const token = await fetchToken(user_url);
     const data = await postJSON(login_url, { email, password }, { headers: { 'X-CSRFToken': token } })
-    loadUser(dispatch, data.user, data.logout_url, data.token)
+    loadUser(dispatch, data.user, data.logout_url, data.token, data.jwt)
     return Promise.resolve(data);
   } catch (error) {
     console.log('Could not log in', error);
@@ -186,12 +199,12 @@ async function changeDetails(first_name, last_name) {
   }
 }
 
-async function loadUser(dispatch, user, logout_url, token) {
-  dispatch({type: actions.SET_USER, user, logout_url, token});
+async function loadUser(dispatch, user, logout_url, token, jwt) {
+  dispatch({type: actions.SET_USER, user, logout_url, token, jwt});
 }
 
 export {
   getJSON, postJSON, getUserData, loadUser, fetchToken, login, logout,
   activate, forgotPassword, resetPasswordCheck, resetPasswordComplete,
-  register, changePassword, changeDetails,
+  register, changePassword, changeDetails, deleteJSON,
 };

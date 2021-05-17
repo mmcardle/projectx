@@ -6,6 +6,7 @@ const initialState = {
   loaded: false,
   user: undefined,
   token: undefined,
+  jwt: undefined,
   logout_url: undefined,
   websocket: undefined,
 };
@@ -14,13 +15,14 @@ const Reducer = (state, action) => {
   console.debug(action.type, action);
   switch (action.type) {
     case actions.SET_USER: {
-      const { user, logout_url, token } = action;
+      const { user, logout_url, token, jwt } = action;
       const websocket = create_websocket();
       return {
         ...state,
         user,
         logout_url,
         token,
+        jwt,
         loaded: true,
         websocket,
       };
