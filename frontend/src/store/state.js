@@ -63,4 +63,4 @@ const withNamedStores = (Component, stores) => {
   return storeComponent;
 };
 
-export { Store, withNamedStores };
+export { Store, withNamedStores, asComponent, useKeyfromStore };
