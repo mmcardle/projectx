@@ -24,7 +24,7 @@ WORKDIR /home/user/
 
 ##### Installing base python dependancies
 RUN python3.9 -m pip install -U pip
-RUN python3.9 -m pip install circus pipenv
+RUN python3.9 -m pip install circus pipenv uvicorn
 
 COPY Pipfile /home/user/
 COPY Pipfile.lock /home/user/
