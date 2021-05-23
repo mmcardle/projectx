@@ -6,8 +6,8 @@ from test_app import models
 
 from api.fastapi import RouteBuilder
 
-BASE_PATH = "/choices/"
-BASE_PATH_RELATED = "/questions/"
+CHOICES_PATH = "/choices/"
+QUESTIONS_PATH = "/questions/"
 
 
 @pytest.mark.django_db(transaction=True)
@@ -24,40 +24,74 @@ def get_client(app, router):
 @pytest.mark.django_db(transaction=True)
 def test_related_model_create_list_update_get_and_delete(client, mocker):
 
-    response = client.post(BASE_PATH_RELATED, json={"name": "question1"})
+    # Create a Question
+    response = client.post(QUESTIONS_PATH, json={"name": "question1"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "question1", "choices": []}
 
     question_id = response.json()["uuid"]
 
-    response = client.post(BASE_PATH, json={"name": "name", "question": question_id})
+    # Create a Choice
+    response = client.post(CHOICES_PATH, json={"name": "name", "question": question_id})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "name", "question": question_id}
 
-    response = client.get(f"{BASE_PATH}")
+    choice_id = response.json()["uuid"]
+
+    # Get the Question
+    response = client.get(f"{QUESTIONS_PATH}{question_id}/")
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"uuid": mocker.ANY, "name": "question1", "choices": [{"uuid": choice_id}]}
+
+    # Get the Choice
+    response = client.get(f"{CHOICES_PATH}{choice_id}/")
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"uuid": choice_id, "name": "name", "question": question_id}
+
+    # Get all Choices
+    response = client.get(f"{CHOICES_PATH}")
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"items": [{"uuid": mocker.ANY, "name": "name", "question": question_id}]}
 
-    uuid = response.json()["items"][0]["uuid"]
-
-    response = client.get(f"{BASE_PATH}{uuid}/")
+    # Create a second Choice
+    response = client.post(CHOICES_PATH, json={"name": "name", "question": question_id})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"uuid": uuid, "name": "name", "question": question_id}
+    assert response.json() == {"uuid": mocker.ANY, "name": "name", "question": question_id}
 
-    response = client.post(BASE_PATH_RELATED, json={"name": "question1"})
+    choice2_id = response.json()["uuid"]
+
+    # Get Question, with the two choices
+    response = client.get(f"{QUESTIONS_PATH}{question_id}/")
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {
+        "uuid": mocker.ANY,
+        "name": "question1",
+        "choices": [{"uuid": choice_id}, {"uuid": choice2_id}],
+    }
+
+    # Create a second Question
+    response = client.post(QUESTIONS_PATH, json={"name": "question1"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "question1", "choices": []}
 
     question2_id = response.json()["uuid"]
 
-    response = client.put(f"{BASE_PATH}{uuid}/", json={"name": "name2", "question": question2_id})
+    # Get the second Question
+    response = client.put(f"{CHOICES_PATH}{choice_id}/", json={"name": "name2", "question": question2_id})
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name2", "uuid": uuid, "question": question2_id}
+    assert response.json() == {"name": "name2", "uuid": choice_id, "question": question2_id}
 
-    response = client.delete(f"{BASE_PATH}{uuid}/")
+    # Delete the first Choice
+    response = client.delete(f"{CHOICES_PATH}{choice_id}/")
     assert response.status_code == 200, response.content.decode("utf-8")
-    assert response.json() == {"name": "name2", "uuid": uuid, "question": question2_id}
+    assert response.json() == {"name": "name2", "uuid": choice_id, "question": question2_id}
 
-    response = client.delete(f"{BASE_PATH}{uuid}/")
+    # Ensure choice is missing
+    response = client.delete(f"{CHOICES_PATH}{choice_id}/")
     assert response.status_code == 404, response.content.decode("utf-8")
-    assert response.json() == {"detail": f"Object {uuid} not found."}
+    assert response.json() == {"detail": f"Object {choice_id} not found."}
+
+    # Ensure Question only has a single Choice
+    response = client.get(f"{QUESTIONS_PATH}{question_id}/")
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {"uuid": mocker.ANY, "name": "question1", "choices": [{"uuid": choice2_id}]}
