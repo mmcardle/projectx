@@ -72,9 +72,10 @@ def schema_for_instance(django_model, fields):
                         field_data[field] = [{pk_name: related.pk} for related in getattr(instance, field).all()]
                     else:
                         pk_name = django_field.related_model._meta.pk.name
+                        reverse_query = {django_field.field.name: instance.pk}
                         field_data[field] = [
                             {pk_name: related.pk}
-                            for related in django_field.related_model.objects.filter(pk=instance.pk)
+                            for related in django_field.related_model.objects.filter(**reverse_query)
                         ]
                 else:
                     field_data[field] = getattr(instance, field)

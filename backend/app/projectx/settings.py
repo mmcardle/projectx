@@ -189,6 +189,11 @@ LOGGING = {
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
+        "api": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": False,
+        },
         "users": {
             "handlers": ["console"],
             "level": "DEBUG" if DEBUG else "INFO",
