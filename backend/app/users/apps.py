@@ -109,7 +109,11 @@ class UsersConfig(AppConfig):
             return current_user
 
         @router.post(
-            "/auth/token/", summary="Get Auth token.", tags=["auth"], name="auth-token", response_model=JWTToken
+            "/auth/token/",
+            summary="Create a new authentication token.",
+            tags=["auth"],
+            name="auth-token",
+            response_model=JWTToken,
         )
         def get_auth_token(form_data: OAuth2PasswordRequestForm = Depends()):
             user = authenticate(None, username=form_data.username, password=form_data.password)
@@ -125,7 +129,7 @@ class UsersConfig(AppConfig):
 
         @router.get(
             "/auth/self/",
-            summary="Get Auth token.",
+            summary="Get the current authenticated user.",
             tags=["auth"],
             name="auth-self",
             response_model=UserSchema,
