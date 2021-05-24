@@ -5,7 +5,7 @@ x-environment:
   SECRET_KEY: "DEV_SECRET_KEY"
   JWT_SECRET: "DEV_JWT_SECRET"
   DEBUG: "True"
-  # PYTHONASYNCIODEBUG: "True" # Enable to debug python async issues
+  PYTHONASYNCIODEBUG: "True" # Enable to debug python async issues
   PUBLIC_IP: ${PUBLIC_IP-127.0.0.1}
   DJANGO_SETTINGS_MODULE: "projectx.settings"
 
