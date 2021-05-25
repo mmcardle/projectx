@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-set -e
-
 echo "Applying any migrations"
 /home/user/.venv/bin/python /home/user/backend/app/manage.py migrate
 
