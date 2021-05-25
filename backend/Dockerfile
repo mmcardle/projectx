@@ -29,7 +29,8 @@ RUN python3.9 -m pip install circus pipenv uvicorn
 COPY Pipfile /home/user/
 COPY Pipfile.lock /home/user/
 
-ENV PIPENV_VENV_IN_PROJECT=1
+ENV LANG en_GB.utf8
+ENV PIPENV_VENV_IN_PROJECT 1
 RUN pipenv install
 
 COPY backend/app/ ./backend/app/
