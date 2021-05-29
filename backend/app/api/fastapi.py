@@ -3,13 +3,17 @@ from collections import defaultdict
 from typing import Callable, List, Optional
 from urllib import parse
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
+from django.db.models.fields import NOT_PROVIDED
+from django.db.models.fields.json import JSONField
 from djantic import ModelSchema
 from djantic.fields import ModelSchemaField
 from fastapi import Body, Depends, Header, HTTPException, Path
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
+from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
 
+from common.fields import JSONDefaultField
 from users.models import ApiKey, User
 
 API_KEY_HEADER = Header(..., description="The user's API key.")
@@ -35,6 +39,10 @@ class InvalidFieldsException(RouteBuilderException):
 
 
 class InvalidForeignKeyException(RouteBuilderException):
+    pass
+
+
+class UnSupportedFieldException(RouteBuilderException):
     pass
 
 
@@ -84,14 +92,14 @@ def schema_for_instance(django_model, fields):
     return type(f"{django_model.__name__}", (SingleSchema,), {})
 
 
-def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name
+def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name,too-many-statements
     class NewSchema(ModelSchema):
         class Config:  # pylint: disable=too-few-public-methods
             title = f"{django_model.__name__}"
             model = django_model
             include = fields
 
-        def create_new(self, extra=None):
+        def create_new(self, extra=None):  # pylint: disable=too-many-locals, too-many-branches
             """
             Create a new Django model instance.
             """
@@ -99,6 +107,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             many_to_many_fields = defaultdict(list)
             for field in fields:
                 django_field = django_model._meta.get_field(field)
+
                 if django_field.is_relation:
                     related_model = django_field.related_model
                     if django_field.many_to_many:
@@ -109,12 +118,36 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                     else:
                         field_data[field] = related_model.objects.get(pk=getattr(self, field))
                 else:
-                    field_data[field] = getattr(self, field)
+                    if django_field.choices:
+                        field_data[field] = getattr(self, field).value
+                    else:
+                        value = getattr(self, field)
+                        # A value may be required by the model but not in specified API fields.
+                        # So we try to be helpful here and work out a sensible value to use.
+                        if not value:
+                            value_required = not django_field.null and django_field.blank
+                            if value_required and django_field.default == NOT_PROVIDED:
+                                # A value is required, but no default is set
+                                # Try to create a default - for now just an empty string
+                                value = django_field.to_python("")
+                                logger.warning("Setting %s on %s to %s", field, django_model, value)
+
+                            if isinstance(django_field, JSONField) and not isinstance(django_field, JSONDefaultField):
+                                value = {
+                                    "error": "JSONField not supported with value '%s', use %s.%s"
+                                    % (value, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                                }
+
+                        field_data[field] = value
 
             if extra:
                 field_data.update(extra)
 
-            new_object = django_model.objects.create(**field_data)
+            new_object = django_model(**field_data)
+            logger.debug(field_data)
+            new_object.full_clean()
+            new_object.save()
+            logger.debug(new_object)
 
             for many_to_many_field in many_to_many_fields:
                 ref_field = getattr(new_object, many_to_many_field)
@@ -145,7 +178,10 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                         current_field_value = related_model.objects.get(pk=getattr(self, field))
                         setattr(instance, field, current_field_value)
                 else:
-                    current_field_value = getattr(self, field)
+                    if django_field.choices:
+                        current_field_value = getattr(self, field).value
+                    else:
+                        current_field_value = getattr(self, field)
                     setattr(instance, field, current_field_value)
 
             instance.save()
@@ -158,7 +194,43 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
 
             return SingleSchema.from_model(instance)
 
-    return type(f"New{django_model.__name__}", (NewSchema,), {})
+    class_methods = {}
+
+    for field in fields:
+
+        def create_validation_function(field, django_model):
+
+            django_field = django_model._meta.get_field(field)
+
+            def func(cls, value):  # pylint: disable=unused-argument
+                errors = []
+                for field_validator in django_field.validators:
+                    try:
+                        field_validator(value)
+                    except ValidationError as validation_error:
+                        errors.extend(validation_error.messages)
+                if errors:
+                    error_messages = ",".join(errors)
+                    raise ValueError(error_messages)
+                return value
+
+            return func
+
+        validation_function = create_validation_function(field, django_model)
+        class_methods[f"validate_{field}"] = validator(field, check_fields=False, allow_reuse=True)(validation_function)
+
+    new_type = type(f"New{django_model.__name__}", (NewSchema,), class_methods)
+
+    # Workaround for lack of enum support in djantic
+    for item in new_type.__dict__["__fields__"].values():
+        if "enum.EnumMeta" in str(item.type_.__class__):
+
+            def enum_length(enum):
+                return len(enum.value)
+
+            setattr(item.type_, "__len__", enum_length)
+
+    return new_type
 
 
 def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # pylint: disable=invalid-name
@@ -190,7 +262,7 @@ def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=i
     return type(f"{django_model.__name__}List", (MultipleSchema,), {})
 
 
-class RouteBuilder:  # pylint: disable=too-many-instance-attributes
+class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
     def __init__(  # pylint: disable=too-many-arguments
         self,
         model: models.Model,
@@ -211,6 +283,8 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
             )
 
         self.config = config if config else {}
+
+        self.validate_supported_fields()
 
         model_fields_names = [field.name for field in self.model._meta.get_fields()]
 
@@ -277,6 +351,25 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes
                     continue
             response_fields.append(field.name)
         return response_fields
+
+    def validate_supported_fields(self):
+        supported_json_fields = [JSONDefaultField]
+        model_fields = self.model._meta.get_fields()
+        for django_field in model_fields:
+            django_field_type = type(django_field)
+            if django_field_type == models.JSONField and django_field_type not in supported_json_fields:
+                if django_field.default == NOT_PROVIDED:
+                    raise UnSupportedFieldException(
+                        "Field %s with no default is not supported, try using '%s.%s'"
+                        % (django_field, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                    )
+
+                default = django_field.default()
+                if default in django_field.empty_values:
+                    raise UnSupportedFieldException(
+                        "Field %s with default '%s' is not supported, try using '%s.%s'"
+                        % (django_field, default, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                    )
 
     def validate_field_names(self, user_fields):
         model_fields = self.model._meta.get_fields()
