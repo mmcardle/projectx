@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from users.api import admin_su_logout
+from projectx.users.api import admin_su_logout
 
 urlpatterns = [
     path(
@@ -33,7 +33,7 @@ urlpatterns = [
         "app/",
         include(
             [
-                path("users/", include("users.urls")),
+                path("users/", include("projectx.users.urls")),
             ]
         ),
     ),

@@ -2,7 +2,7 @@
 
 from django.db import migrations
 
-import users.fields
+import projectx.users.fields
 
 
 class Migration(migrations.Migration):
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="user",
             name="email",
-            field=users.fields.LowercaseEmailField(max_length=255, unique=True),
+            field=projectx.users.fields.LowercaseEmailField(max_length=255, unique=True),
         ),
     ]

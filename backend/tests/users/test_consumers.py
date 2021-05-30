@@ -1,4 +1,4 @@
-from users.consumers import UserConsumer
+from projectx.users.consumers import UserConsumer
 
 
 def test_userconsumer():

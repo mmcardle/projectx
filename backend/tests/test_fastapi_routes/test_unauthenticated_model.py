@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from test_app.models import UnauthenticatedModel
 
-from api.fastapi import RouteBuilder
+from projectx.api.fastapi import RouteBuilder
 
 BASE_PATH = "/unauthenticatedmodels/"
 

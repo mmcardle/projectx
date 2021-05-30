@@ -3,10 +3,10 @@ up:
 	docker-compose up
 
 manage:
-	docker-compose exec projectx /home/user/.venv/bin/python /home/user/backend/app/manage.py ${command}
+	docker-compose exec projectx pipenv run ./manage.py ${command}
 
 fast_api:
-	uvicorn --app-dir=backend/app/ api.wsgi:application --reload --port 8001
+	uvicorn --app-dir=backend/ projectx.api.asgi:application --reload --port 8001
 
 build:
 	yarn --cwd frontend install

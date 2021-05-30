@@ -5,7 +5,7 @@ from test_app.models import (
     GoodJSONModel,
 )
 
-from api.fastapi import RouteBuilder, UnSupportedFieldException
+from projectx.api.fastapi import RouteBuilder, UnSupportedFieldException
 
 
 def test_bad_json_field_with_default():
@@ -14,7 +14,7 @@ def test_bad_json_field_with_default():
 
     assert str(exception.value) == (
         "Field test_app.BadJSONModelWithDefault.data with default '{}' "
-        "is not supported, try using 'common.fields.JSONDefaultField'"
+        "is not supported, try using 'projectx.common.fields.JSONDefaultField'"
     )
 
 
@@ -24,7 +24,7 @@ def test_bad_json_field_with_no_default():
 
     assert str(exception.value) == (
         "Field test_app.BadJSONModelWithNoDefault.data with no default "
-        "is not supported, try using 'common.fields.JSONDefaultField'"
+        "is not supported, try using 'projectx.common.fields.JSONDefaultField'"
     )
 
 

@@ -4,14 +4,14 @@ import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from api.wsgi import application
-from users.apps import (
+from projectx.api.asgi import application
+from projectx.users.apps import (
     UsersConfig,
     create_access_token,
     get_current_user_func,
     get_user_authentication,
 )
-from users.models import User
+from projectx.users.models import User
 
 BASE_PATH = "/api/auth/"
 
@@ -19,7 +19,7 @@ client = TestClient(application)
 
 
 def test_app():
-    assert UsersConfig.name == "users"
+    assert UsersConfig.name == "projectx.users"
 
 
 def test_get_user_authentication():

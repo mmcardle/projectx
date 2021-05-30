@@ -7,7 +7,7 @@ import pytest
 from django.core.signing import BadSignature
 from django.db.utils import IntegrityError
 
-from users.models import (
+from projectx.users.models import (
     REDIS_ACCOUNT_ACTIVATION_KEY,
     REDIS_PASSWORD_RESET_KEY,
     ApiKey,
@@ -107,11 +107,11 @@ def test_user_model_activate(mocker):
 
 def test_user_send_reset_password_email(mocker):
 
-    get_redis_connection = mocker.patch("users.models.get_redis_connection")
-    settings = mocker.patch("users.models.settings")
+    get_redis_connection = mocker.patch("projectx.users.models.get_redis_connection")
+    settings = mocker.patch("projectx.users.models.settings")
 
-    send_mail = mocker.patch("users.models.send_mail")
-    signing = mocker.patch("users.models.signing")
+    send_mail = mocker.patch("projectx.users.models.send_mail")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.dumps = mock.Mock(return_value="key")
 
     user = User(username="user", email="user@example.com")
@@ -143,8 +143,8 @@ ProjectX
 
 
 def test_user_send_data_to_user(mocker):
-    AsyncToSync = mocker.patch("users.models.AsyncToSync")
-    get_channel_layer = mocker.patch("users.models.get_channel_layer")
+    AsyncToSync = mocker.patch("projectx.users.models.AsyncToSync")
+    get_channel_layer = mocker.patch("projectx.users.models.get_channel_layer")
     user = User(email="user1@tempurl.com", public_uuid="123456789")
 
     user.send_data_to_user({"data": "message"})
@@ -156,7 +156,7 @@ def test_user_send_data_to_user(mocker):
 
 
 def test_user_delete_reset_key(mocker):
-    get_redis_connection = mocker.patch("users.models.get_redis_connection")
+    get_redis_connection = mocker.patch("projectx.users.models.get_redis_connection")
     User.delete_reset_key("key")
 
     assert get_redis_connection.return_value.mock_calls == [mock.call.hdel(REDIS_PASSWORD_RESET_KEY, "key")]
@@ -166,9 +166,9 @@ def test_user_check_reset_key(mocker):
 
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(return_value={"email": "user@example.com"})
     user = mock.Mock()
     mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
@@ -182,7 +182,7 @@ def test_user_check_reset_key(mocker):
 
 
 def test_user_check_reset_key_bad_signature(mocker):
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(side_effect=BadSignature())
     check_user, error = User.check_reset_key("key")
 
@@ -191,7 +191,7 @@ def test_user_check_reset_key_bad_signature(mocker):
 
 
 def test_user_check_reset_key_doesnot_exist(mocker):
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(return_value={"email": "user@example.com"})
     mocker.patch.object(User, "objects", get=mock.Mock(side_effect=User.DoesNotExist()))
     check_user, error = User.check_reset_key("key")
@@ -204,10 +204,10 @@ def test_user_check_reset_key_doesnot_exist(mocker):
 def test_user_check_reset_key_payload_not_in_redis(mocker):
 
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=None))
+        "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=None))
     )
 
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(return_value={"email": "user@example.com"})
 
     user = mock.Mock()
@@ -225,10 +225,10 @@ def test_user_check_reset_key_wrong_key_in_redis(mocker):
 
     redis_payload = json.dumps({"key": "WRONG_KEY"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
 
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(return_value={"email": "user@example.com"})
 
     user = mock.Mock()
@@ -246,9 +246,9 @@ def test_user_check_activation_key(mocker):
 
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
-        "users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
+        "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
     )
-    signing = mocker.patch("users.models.signing")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.loads = mock.Mock(return_value={"email": "user@example.com"})
     user = mock.Mock()
     mocker.patch.object(User, "objects", mock.Mock(get=lambda email__iexact: user))
@@ -287,11 +287,11 @@ def test_user_reset_email_no_such_user(mocker):
 @pytest.mark.django_db()
 def test_user_send_account_activation_email(mocker):
 
-    get_redis_connection = mocker.patch("users.models.get_redis_connection")
-    settings = mocker.patch("users.models.settings")
+    get_redis_connection = mocker.patch("projectx.users.models.get_redis_connection")
+    settings = mocker.patch("projectx.users.models.settings")
 
-    send_mail = mocker.patch("users.models.send_mail")
-    signing = mocker.patch("users.models.signing")
+    send_mail = mocker.patch("projectx.users.models.send_mail")
+    signing = mocker.patch("projectx.users.models.signing")
     signing.dumps = mock.Mock(return_value="key")
 
     user = User.objects.create(username="user", email="user@example.com")

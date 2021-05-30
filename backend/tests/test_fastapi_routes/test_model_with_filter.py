@@ -3,7 +3,7 @@ from django.db.models import Q
 from fastapi.testclient import TestClient
 from test_app.models import SimpleModel
 
-from api.fastapi import RouteBuilder
+from projectx.api.fastapi import RouteBuilder
 
 BASE_PATH = "/simplemodels/"
 

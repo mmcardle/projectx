@@ -1,4 +1,4 @@
-from users.fields import LowercaseEmailField
+from projectx.users.fields import LowercaseEmailField
 
 
 def test_lowercaseemailfield():

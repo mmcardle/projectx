@@ -4,10 +4,10 @@ import pytest
 from fastapi.testclient import TestClient
 from test_app.models import SimpleJWTModel
 
-from api.fastapi import RouteBuilder
-from api.wsgi import application
-from users.apps import get_user_authentication
-from users.models import User
+from projectx.api.asgi import application
+from projectx.api.fastapi import RouteBuilder
+from projectx.users.apps import get_user_authentication
+from projectx.users.models import User
 
 BASE_PATH = "/simplejwtmodels/"
 JWT_PATH = "/api/auth/token/"

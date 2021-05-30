@@ -33,17 +33,20 @@ ENV LANG en_GB.utf8
 ENV PIPENV_VENV_IN_PROJECT 1
 RUN pipenv install
 
-COPY backend/app/ ./backend/app/
-RUN chown -R user:user /home/user/backend/
+COPY backend/manage.py ./manage.py
+RUN chown user:user /home/user/manage.py
+
+COPY backend/projectx/ ./projectx/
+RUN chown -R user:user /home/user/projectx/
 
 ##### Adding configuration files ######
-COPY backend/config/ /home/user/config/
+COPY backend/config/nginx.conf /home/user/config/
+COPY backend/config/backend-nginx.conf /home/user/config/
+COPY backend/config/general-security-headers.conf /home/user/config/
 RUN rm /etc/nginx/sites-enabled/default /etc/nginx/nginx.conf
 RUN ln -s /home/user/config/nginx.conf /etc/nginx/nginx.conf
 RUN ln -s /home/user/config/backend-nginx.conf /etc/nginx/sites-enabled/backend-nginx.conf
 RUN ln -s /home/user/config/general-security-headers.conf /etc/nginx/snippets/general-security-headers.conf
-
-RUN chmod +x /home/user/config/start.sh
 
 RUN mkdir -p /var/www/
 RUN chown -R user:user /var/www/
@@ -63,7 +66,12 @@ RUN \
   CHANNELS_REDIS_URL="redis://redis:6379/20"\
   CACHE_URL="redis://redis:6379/1"\
   PUBLIC_IP="127.0.0.1"\
-  /home/user/.venv/bin/python /home/user/backend/app/manage.py collectstatic
+  pipenv run python manage.py collectstatic
+
+# Adding Entry Point
+COPY backend/config/start.sh /home/user/config/
+RUN chmod +x /home/user/config/start.sh
+RUN chown user:user /home/user/config/start.sh
 
 USER user
 

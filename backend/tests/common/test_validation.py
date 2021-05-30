@@ -4,7 +4,7 @@ import json
 import pytest
 from marshmallow import Schema, fields
 
-from common import validation
+from projectx.common import validation
 
 
 class DummySchema(Schema):
@@ -26,7 +26,7 @@ def test_create_payload_decorator_ok(mocker):
 
 def test_create_payload_decorator_bad_data(mocker):
 
-    JsonResponse = mocker.patch("common.validation.JsonResponse")
+    JsonResponse = mocker.patch("projectx.common.validation.JsonResponse")
 
     func = mocker.Mock(__name__="name")
     decorator = validation.create_payload_decorator(func, DummySchema)

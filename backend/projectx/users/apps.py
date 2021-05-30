@@ -10,7 +10,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
-from api.routing import router
+from projectx.api.routing import router
 
 JWT_SECRET = settings.JWT_SECRET
 ALGORITHM = "HS256"
@@ -96,7 +96,7 @@ def get_user_authentication():
 
 
 class UsersConfig(AppConfig):
-    name = "users"
+    name = "projectx.users"
 
     def ready(self):
         UserSchema = get_user_schema()

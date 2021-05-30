@@ -1,6 +1,6 @@
 from django.db import models
 
-EMPTY_VALUES = (None, "", [], ())
+EMPTY_VALUES = (None, "")
 
 
 class JSONDefaultField(models.JSONField):

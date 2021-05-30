@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext as _
 from marshmallow import Schema, ValidationError, fields, post_load, validates
 
-from users.models import User
+from projectx.users.models import User
 
 logger = logging.getLogger(__name__)
 

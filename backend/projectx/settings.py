@@ -44,8 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "channels",
-    "common",
-    "users",
+    "projectx.users",
 ]
 
 MIDDLEWARE = [
@@ -106,10 +105,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     # Custom validators
-    {"NAME": "users.validation.NumberValidator", "OPTIONS": {"minimum": 1}},
-    {"NAME": "users.validation.UppercaseValidator", "OPTIONS": {"minimum": 1}},
-    {"NAME": "users.validation.LowercaseValidator", "OPTIONS": {"minimum": 1}},
-    {"NAME": "users.validation.SymbolValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "projectx.users.validation.NumberValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "projectx.users.validation.UppercaseValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "projectx.users.validation.LowercaseValidator", "OPTIONS": {"minimum": 1}},
+    {"NAME": "projectx.users.validation.SymbolValidator", "OPTIONS": {"minimum": 1}},
 ]
 
 # Internationalization

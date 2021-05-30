@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from common.fields import JSONDefaultField
-from common.models import UUIDModel
+from projectx.common.fields import JSONDefaultField
+from projectx.common.models import UUIDModel
 
 
 class SimpleModel(models.Model):
