@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from test_app.models import SimpleIDModel, SimpleUUIDModel
 
-from api.fastapi import RouteBuilder
+from projectx.api.fastapi import RouteBuilder
 
 
 @pytest.mark.django_db(transaction=True)

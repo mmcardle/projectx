@@ -2,9 +2,9 @@ import pytest
 from django.core.exceptions import ValidationError as DjangoValidationError
 from marshmallow.exceptions import ValidationError
 
-from common.validation import SchemaError, load_data_from_schema
-from users import validation
-from users.models import User
+from projectx.common.validation import SchemaError, load_data_from_schema
+from projectx.users import validation
+from projectx.users.models import User
 
 
 def test_numbervalidator():
@@ -257,7 +257,9 @@ def test_change_details_schema_bad_data():
 def test_activateschema_valid_key(mocker):
 
     user = User.objects.create(username="user")
-    check_activation_key = mocker.patch("users.validation.User.check_activation_key", return_value=(user, None))
+    check_activation_key = mocker.patch(
+        "projectx.users.validation.User.check_activation_key", return_value=(user, None)
+    )
 
     schema = validation.ActivateSchema()
     result = schema.load({"activate_key": "activate_key"})
@@ -272,7 +274,7 @@ def test_activateschema_bad_key(mocker):
 
     User.objects.create(username="user")
     check_activation_key = mocker.patch(
-        "users.validation.User.check_activation_key", side_effect=[(None, None), (None, None)]
+        "projectx.users.validation.User.check_activation_key", side_effect=[(None, None), (None, None)]
     )
 
     schema = validation.ActivateSchema()
@@ -288,9 +290,9 @@ def test_activateschema_expired_key(mocker):
 
     user = User.objects.create(username="user", email="user@example.com")
     check_activation_key = mocker.patch(
-        "users.validation.User.check_activation_key", side_effect=[(None, None), (user, None)]
+        "projectx.users.validation.User.check_activation_key", side_effect=[(None, None), (user, None)]
     )
-    send_account_activation_email = mocker.patch("users.validation.User.send_account_activation_email")
+    send_account_activation_email = mocker.patch("projectx.users.validation.User.send_account_activation_email")
 
     schema = validation.ActivateSchema()
     with pytest.raises(ValidationError) as exception:

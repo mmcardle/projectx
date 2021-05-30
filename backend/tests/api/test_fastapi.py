@@ -3,13 +3,13 @@ from fastapi import APIRouter
 from fastapi.testclient import TestClient
 from test_app import models
 
-from api.fastapi import (
+from projectx.api.asgi import application
+from projectx.api.fastapi import (
     InvalidAuthenticationException,
     InvalidFieldsException,
     InvalidIdentifierException,
     RouteBuilder,
 )
-from api.wsgi import application
 
 client = TestClient(application)
 

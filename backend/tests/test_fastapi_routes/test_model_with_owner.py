@@ -4,8 +4,8 @@ import pytest
 from fastapi.testclient import TestClient
 from test_app.models import SimpleModelWithOwner
 
-from api.fastapi import RouteBuilder, check_api_key
-from users.models import ApiKey, User
+from projectx.api.fastapi import RouteBuilder, check_api_key
+from projectx.users.models import ApiKey, User
 
 BASE_PATH = "/simplemodelwithowners/"
 

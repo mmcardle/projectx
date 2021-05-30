@@ -17,7 +17,7 @@ sys.path.append("app/")
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projectx.settings")
 django.setup()
 
-from api.routing import router  # pylint: disable=wrong-import-position
+from projectx.api.routing import router  # pylint: disable=wrong-import-position
 
 application = FastAPI(
     title="ProjectX",

@@ -4,4 +4,4 @@ target-version = ['py38']
 
 [tool.isort]
 profile = "black"
-src_paths = ["backend/app", "backend/tests"]
+src_paths = ["backend/", "backend/tests"]

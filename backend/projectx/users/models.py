@@ -14,9 +14,9 @@ from django.core.signing import BadSignature
 from django.db import models
 from django_redis import get_redis_connection
 
-from common.models import IndexedTimeStampedModel
-from users import emails
-from users.fields import LowercaseEmailField
+from projectx.common.models import IndexedTimeStampedModel
+from projectx.users import emails
+from projectx.users.fields import LowercaseEmailField
 
 logger = logging.getLogger(__name__)
 

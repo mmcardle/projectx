@@ -15,8 +15,8 @@ from django.views.decorators.http import require_http_methods
 from django_su.views import su_logout
 from ratelimit.decorators import ratelimit
 
-from users import decorators, models
-from users.apps import create_access_token
+from projectx.users import decorators, models
+from projectx.users.apps import create_access_token
 
 logger = logging.getLogger(__name__)
 

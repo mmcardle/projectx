@@ -278,5 +278,12 @@ jobs:
         # Ignore the failure of a step and avoid terminating the job.
         continue-on-error: true
 
+      - run: chmod +x backend/config/start.sh  # Fix for "/bin/sh: 1: /home/user/config/start.sh: Permission denied"
       - run: yarn --cwd tests install
       - run: yarn --cwd tests ci
+      
+      - name: Docker Compose Check
+        # If previous ci command fails, run 'docker-compose up' to check for errors
+        if: ${{ failure() }}
+        timeout-minutes: 1
+        run: docker-compose up

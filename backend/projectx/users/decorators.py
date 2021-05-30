@@ -1,5 +1,5 @@
-from common.validation import create_payload_decorator
-from users import validation
+from projectx.common.validation import create_payload_decorator
+from projectx.users import validation
 
 
 def activate_payload(func):

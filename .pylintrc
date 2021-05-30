@@ -6,4 +6,4 @@ disable=
     missing-module-docstring,
     duplicate-code
 max-line-length=120
-init-hook=sys.path.extend(["backend/app/", "backend/testing_apps/"])
+init-hook=sys.path.extend(["backend/", "backend/testing_apps/"])

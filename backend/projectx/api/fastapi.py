@@ -13,8 +13,8 @@ from djantic.fields import ModelSchemaField
 from fastapi import Body, Depends, Header, HTTPException, Path
 from pydantic import BaseModel, validator  # pylint: disable=no-name-in-module
 
-from common.fields import JSONDefaultField
-from users.models import ApiKey, User
+from projectx.common.fields import JSONDefaultField
+from projectx.users.models import ApiKey, User
 
 API_KEY_HEADER = Header(..., description="The user's API key.")
 

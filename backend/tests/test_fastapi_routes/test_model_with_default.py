@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from test_app.models import SimpleModelWithDefaultFields
 
-from api.fastapi import RouteBuilder
+from projectx.api.fastapi import RouteBuilder
 
 
 @pytest.mark.django_db(transaction=True)
@@ -93,7 +93,7 @@ def test_model_with_default_create_list_get_with_unsupported_json_field(client_a
         "request_field_with_default": "request_field_with_default",
         "request_field_with_no_default": "request_field_with_no_default",
         "json_field_with_default": {
-            "error": "JSONField not supported with value '{}', use common.fields.JSONDefaultField"
+            "error": "JSONField not supported with value '{}', use projectx.common.fields.JSONDefaultField"
         },
     }
 
@@ -109,7 +109,7 @@ def test_model_with_default_create_list_get_with_unsupported_json_field(client_a
                 "request_field_with_default": "request_field_with_default",
                 "request_field_with_no_default": "request_field_with_no_default",
                 "json_field_with_default": {
-                    "error": "JSONField not supported with value '{}', use common.fields.JSONDefaultField"
+                    "error": "JSONField not supported with value '{}', use projectx.common.fields.JSONDefaultField"
                 },
             }
         ]
@@ -127,6 +127,6 @@ def test_model_with_default_create_list_get_with_unsupported_json_field(client_a
         "request_field_with_default": "request_field_with_default",
         "request_field_with_no_default": "request_field_with_no_default",
         "json_field_with_default": {
-            "error": "JSONField not supported with value '{}', use common.fields.JSONDefaultField"
+            "error": "JSONField not supported with value '{}', use projectx.common.fields.JSONDefaultField"
         },
     }

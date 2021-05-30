@@ -1,7 +1,7 @@
 [run]
 omit =
-    backend/app/manage.py
-    backend/app/**/migrations/**
+    backend/manage.py
+    backend/**/migrations/**
 
 [report]
 exclude_lines =

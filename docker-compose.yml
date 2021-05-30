@@ -28,7 +28,8 @@ services:
       - redis
       - postgres
     volumes:
-      - ./backend/:/home/user/backend/
+      - ./backend/projectx/:/home/user/projectx/
+      - ./backend/config/:/home/user/config/
 
   #frontend:
   #  hostname: frontend

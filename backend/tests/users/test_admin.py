@@ -1,12 +1,12 @@
 from unittest import mock
 
-from users.admin import ProjectXUserAdmin, send_activation_email
-from users.models import User
+from projectx.users.admin import ProjectXUserAdmin, send_activation_email
+from projectx.users.models import User
 
 
 def test_send_activation_email(mocker):
 
-    messages = mocker.patch("users.admin.messages")
+    messages = mocker.patch("projectx.users.admin.messages")
     request = mock.Mock()
     user1 = mocker.Mock()
     user2 = mocker.Mock()
