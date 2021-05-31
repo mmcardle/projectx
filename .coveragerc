@@ -1,9 +1,8 @@
 [run]
+include =
+    backend/projectx/
 omit =
     backend/manage.py
+    backend/tests/*
+    backend/testing_apps/*
     backend/**/migrations/**
-
-[report]
-exclude_lines =
-    if __name__ == .__main__.:
-    pragma: no cover
