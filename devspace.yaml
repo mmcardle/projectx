@@ -18,6 +18,8 @@ deployments:
       - env:
         - name: SECRET_KEY
           value: DEV_SECRET_KEY
+        - name: JWT_SECRET
+          value: DEV_JWT_SECRET
         - name: PUBLIC_IP
           value: projectx.blueskyops.com
         - name: DJANGO_SETTINGS_MODULE
@@ -31,6 +33,7 @@ deployments:
         image: mmc4rdle/projectx-backend
       ingress:
         rules:
+        #- host: 127.0.0.1
         - host: projectx.blueskyops.kubedev.sh
         - host: projectx.blueskyops.com
         tls: true
@@ -72,15 +75,18 @@ dev:
   - url: http://127.0.0.1:8000
   sync:
   - imageName: app
-    localSubPath: ./
-    containerPath: /home/user/
+    localSubPath: ./backend/projectx/
+    containerPath: /home/user/projectx/
     excludePaths:
     - .git/
     onUpload:
       restartContainer: true
 commands:
 - name: manage
-  command: devspace enter -c projectx --image app /home/user/.venv/bin/python /home/user/manage.py
+  command: devspace enter -c projectx --image app pipenv run ./manage.py
+  description: ""
+- name: restart
+  command: devspace enter -c projectx --image app circusctl restart
   description: ""
 - name: ingresslogs
   command: kubectl logs -n ingress-nginx svc/ingress-nginx-controller

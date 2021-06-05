@@ -98,6 +98,7 @@ class SimpleModelWithChoices(models.Model):
     class ChoiceType(models.TextChoices):
         CHOICE1 = "CHOICE1"
         CHOICE2 = "CHOICE2"
+        CHOICE3 = "Choice3"
 
     choice = models.CharField("Type", max_length=30, choices=ChoiceType.choices)
 

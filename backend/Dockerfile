@@ -40,6 +40,8 @@ COPY backend/projectx/ ./projectx/
 RUN chown -R user:user /home/user/projectx/
 
 ##### Adding configuration files ######
+COPY backend/config/uwsgi.ini /home/user/config/
+COPY backend/config/circus.ini /home/user/config/
 COPY backend/config/nginx.conf /home/user/config/
 COPY backend/config/backend-nginx.conf /home/user/config/
 COPY backend/config/general-security-headers.conf /home/user/config/
