@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from enum import Enum
 from typing import Callable, List, Optional
 from urllib import parse
 
@@ -58,10 +59,12 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
 
 def __fix_enums(new_type):
     # Workaround for enum in djantic
-    enum_fields = []
     for item in new_type.__dict__["__fields__"].values():
         if "enum.EnumMeta" in str(item.type_.__class__):
-            enum_fields.append(item)
+            enum_values = [(i.value, i.value) for i in item.type_]
+
+            new_enum_type = Enum(f"{new_type.__name__}_{item.name}_Enum", enum_values, module=__name__)
+            setattr(item, "type_", new_enum_type)
 
             def enum_length(enum):
                 return len(enum.value)
@@ -205,7 +208,10 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                         current_field_value = related_model.objects.get(pk=getattr(self, field))
                         setattr(instance, field, current_field_value)
                 else:
-                    current_field_value = getattr(self, field)
+                    if django_field.choices:
+                        current_field_value = getattr(self, field).value
+                    else:
+                        current_field_value = getattr(self, field)
                     setattr(instance, field, current_field_value)
 
             instance.save()
