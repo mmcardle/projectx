@@ -37,3 +37,7 @@ def test_model_with_choices_create_list_update_get(client_and_routebuilder, mock
     response = client.put(f"{base_path}{identifier}/", json={"choice": "CHOICE2"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {model_identifier: identifier, "choice": "CHOICE2"}
+
+    response = client.put(f"{base_path}{identifier}/", json={"choice": "Choice3"})
+    assert response.status_code == 200, response.content.decode("utf-8")
+    assert response.json() == {model_identifier: identifier, "choice": "Choice3"}

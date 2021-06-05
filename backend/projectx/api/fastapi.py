@@ -56,6 +56,21 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
     raise HTTPException(status_code=400, detail="X-API-Key header invalid.")
 
 
+def __fix_enums(new_type):
+    # Workaround for enum in djantic
+    enum_fields = []
+    for item in new_type.__dict__["__fields__"].values():
+        if "enum.EnumMeta" in str(item.type_.__class__):
+            enum_fields.append(item)
+
+            def enum_length(enum):
+                return len(enum.value)
+
+            setattr(item.type_, "__len__", enum_length)
+
+    return new_type
+
+
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
@@ -86,10 +101,22 @@ def schema_for_instance(django_model, fields):
                             for related in django_field.related_model.objects.filter(**reverse_query)
                         ]
                 else:
-                    field_data[field] = getattr(instance, field)
+                    value = getattr(instance, field)
+                    if django_field.choices:
+                        # Using split as value can be a str or an enumtype
+                        choice_value = str(value).split(".")[-1]
+                        # Iterate over choices to find the correct choice_id for the field
+                        for (choice_id, choice_label) in django_field.choices:  # pragma: no cover
+                            if choice_value in (choice_label, choice_id):
+                                value = choice_id
+                                break
+                    field_data[field] = value
+
             return cls(**field_data)
 
-    return type(f"{django_model.__name__}", (SingleSchema,), {})
+    new_type = type(f"{django_model.__name__}", (SingleSchema,), {})
+
+    return __fix_enums(new_type)
 
 
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name,too-many-statements
@@ -178,10 +205,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                         current_field_value = related_model.objects.get(pk=getattr(self, field))
                         setattr(instance, field, current_field_value)
                 else:
-                    if django_field.choices:
-                        current_field_value = getattr(self, field).value
-                    else:
-                        current_field_value = getattr(self, field)
+                    current_field_value = getattr(self, field)
                     setattr(instance, field, current_field_value)
 
             instance.save()
@@ -221,16 +245,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
 
     new_type = type(f"New{django_model.__name__}", (NewSchema,), class_methods)
 
-    # Workaround for lack of enum support in djantic
-    for item in new_type.__dict__["__fields__"].values():
-        if "enum.EnumMeta" in str(item.type_.__class__):
-
-            def enum_length(enum):
-                return len(enum.value)
-
-            setattr(item.type_, "__len__", enum_length)
-
-    return new_type
+    return __fix_enums(new_type)
 
 
 def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # pylint: disable=invalid-name
@@ -242,7 +257,9 @@ def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # p
 
         __annotations__ = optional_fields
 
-    return type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
+    new_type = type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
+
+    return __fix_enums(new_type)
 
 
 def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
