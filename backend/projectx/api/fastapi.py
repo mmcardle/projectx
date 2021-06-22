@@ -107,7 +107,7 @@ def schema_for_instance(django_model, fields):
                     value = getattr(instance, field)
                     if django_field.choices:
                         # Using split as value can be a str or an enumtype
-                        choice_value = str(value).split(".")[-1]
+                        choice_value = str(value).split(".", maxsplit=1)[-1]
                         # Iterate over choices to find the correct choice_id for the field
                         for (choice_id, choice_label) in django_field.choices:  # pragma: no cover
                             if choice_value in (choice_label, choice_id):
