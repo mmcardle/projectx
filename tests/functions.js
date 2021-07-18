@@ -1,5 +1,5 @@
 
-function login (browser, email, password) {
+const login = (browser, email, password) => {
 
   browser.url(browser.launchUrl);
 
@@ -8,8 +8,11 @@ function login (browser, email, password) {
   browser.setValue("input[id=loginEmail]", email);
   browser.setValue("input[id=loginPassword]", password);
   browser.click('button[type=submit]');
+  browser.waitForElementVisible('.navbar', 5000);
 }
 
+const reset = () => {}
+
 module.exports = {
-  login,
+  login, reset
 }

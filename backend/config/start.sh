@@ -1,7 +1,10 @@
 #!/usr/bin/bash
 
+echo "Wait for Database"
+/home/user/.venv/bin/python /home/user/manage.py check_db_connection
+
 echo "Applying any migrations"
-pipenv run /manage.py migrate
+/home/user/.venv/bin/python /home/user/manage.py migrate
 
 if [ -z "${DEBUG}" ]
 then

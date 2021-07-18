@@ -43,6 +43,7 @@ function asComponent(Component, store, props) {
 }
 
 const storeNames = {
+  open_api:  (Component) => (props) => asComponent(Component, useKeyfromStore('open_api'), props),
   user:  (Component) => (props) => asComponent(Component, useUserStore(), props),
   token:  (Component) => (props) => asComponent(Component, useKeyfromStore('token'), props),
   jwt:  (Component) => (props) => asComponent(Component, useKeyfromStore('jwt'), props),

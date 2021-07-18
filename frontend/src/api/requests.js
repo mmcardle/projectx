@@ -5,7 +5,7 @@ import actions from '../store/actions';
 import {
   user_url, login_url, activate_url, forgot_password_url,
   register_url, reset_password_check_url, reset_password_complete_url,
-  change_password_url, change_details_url,
+  change_password_url, change_details_url, open_api_url,
 } from './urls';
 
 async function getJSON(url, args = {}) {
@@ -44,6 +44,18 @@ async function postJSON(url, params, args = {}) {
   return response.data;
 }
 
+async function patchJSON(url, params, args = {}) {
+  const request_args = args;
+  request_args.transformResponse = (data) => {
+    console.debug(url, data);
+    // Ensure data is valid json
+    return JSON.parse(data);
+  };
+  const response = await axios.patch(url, params, request_args);
+  console.debug('PATCH to', url, request_args, ':', response.data);
+  return response.data;
+}
+
 async function fetchToken() {
   try {
     const data = await getJSON(login_url);
@@ -56,19 +68,20 @@ async function fetchToken() {
 
 async function getUserData(dispatch) {
   try {
-    const data = await getJSON(user_url);
-    console.debug('Fetched User Data', data);
-    const { user } = data;
+    const open_api_data = await getJSON(open_api_url);
+    dispatch({type: actions.SET_OPENAPI, open_api_data});
+    const user_data = await getJSON(user_url);
+    console.debug('Fetched User Data', user_data);
+    const { user } = user_data;
     if (user) {
-      console.log(data.jwt)
       dispatch({
-        type: actions.SET_USER, user, logout_url: data.logout_url, token: data.token, jwt: data.jwt
+        type: actions.SET_USER, user, logout_url: user_data.logout_url, token: user_data.token, jwt: user_data.jwt
       });
     } else {
       dispatch({type: actions.SET_LOADED});
       return Promise.resolve();
     }
-    return Promise.resolve(data);
+    return Promise.resolve(user_data);
   } catch (error) {
     dispatch({type: actions.SET_LOADED});
     return Promise.resolve(error);
@@ -204,7 +217,7 @@ async function loadUser(dispatch, user, logout_url, token, jwt) {
 }
 
 export {
-  getJSON, postJSON, getUserData, loadUser, fetchToken, login, logout,
+  getJSON, postJSON, patchJSON, getUserData, loadUser, fetchToken, login, logout,
   activate, forgotPassword, resetPasswordCheck, resetPasswordComplete,
   register, changePassword, changeDetails, deleteJSON,
 };

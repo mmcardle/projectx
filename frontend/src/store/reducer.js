@@ -9,11 +9,18 @@ const initialState = {
   jwt: undefined,
   logout_url: undefined,
   websocket: undefined,
+  open_api: undefined,
 };
 
 const Reducer = (state, action) => {
   console.debug(action.type, action);
   switch (action.type) {
+    case actions.SET_OPENAPI: {
+      return {
+        ...state,
+        open_api: action.open_api_data,
+      };
+    }
     case actions.SET_USER: {
       const { user, logout_url, token, jwt } = action;
       const websocket = create_websocket();
@@ -42,6 +49,7 @@ const Reducer = (state, action) => {
       };
     }
     default:
+      console.debug('BAD ACTION', action.type, action);
       return state;
   }
 };
