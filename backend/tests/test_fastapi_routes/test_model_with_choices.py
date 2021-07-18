@@ -1,4 +1,5 @@
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from test_app.models import SimpleModelWithChoices
 
@@ -11,6 +12,19 @@ def get_client(app, router):
     route_builder = RouteBuilder(SimpleModelWithChoices)
     route_builder.add_all_routes(router)
     app.include_router(router)
+
+    application = FastAPI(
+        title="ProjectX",
+        description="ProjectX Demo",
+        version="0.0.1",
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/v1/openapi.json",
+    )
+
+    application.include_router(router, prefix="/api")
+
+    application.openapi()
     return TestClient(app), route_builder
 
 
