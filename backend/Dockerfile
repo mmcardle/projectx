@@ -24,14 +24,15 @@ WORKDIR /home/user/
 
 ##### Installing base python dependancies
 RUN python3.9 -m pip install -U pip
-RUN python3.9 -m pip install circus pipenv uvicorn
+RUN python3.9 -m pip install circus poetry uvicorn
 
-COPY Pipfile /home/user/
-COPY Pipfile.lock /home/user/
+COPY pyproject.toml /home/user/
+COPY poetry.toml /home/user/
+COPY poetry.lock /home/user/
 
 ENV LANG en_GB.utf8
-ENV PIPENV_VENV_IN_PROJECT 1
-RUN pipenv install
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+RUN poetry install --no-dev
 
 COPY backend/manage.py ./manage.py
 RUN chown user:user /home/user/manage.py
@@ -68,7 +69,7 @@ RUN \
   CHANNELS_REDIS_URL="redis://redis:6379/20"\
   CACHE_URL="redis://redis:6379/1"\
   PUBLIC_IP="127.0.0.1"\
-  pipenv run python manage.py collectstatic
+  poetry run python manage.py collectstatic
 
 # Adding Entry Point
 COPY backend/config/start.sh /home/user/config/
