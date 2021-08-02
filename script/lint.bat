@@ -7,7 +7,7 @@ isort --check-only --diff backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
 unify --check-only --recursive --quote \" backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
-pipenv update --outdated
+poetry show --outdated
 if %errorlevel% EQU 1 exit /b %errorlevel%
 yarn --cwd frontend lint
 if %errorlevel% EQU 1 exit /b %errorlevel%

@@ -5,8 +5,9 @@
 !/backend/
 /backend/Dockerfile
 
-!Pipfile
-!Pipfile.lock
+!pyproject.toml
+!poetry.toml
+!poetry.lock
 
 !/frontend/build/
 

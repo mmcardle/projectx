@@ -83,7 +83,7 @@ dev:
       restartContainer: true
 commands:
 - name: manage
-  command: devspace enter -c projectx --image app pipenv run ./manage.py
+  command: devspace enter -c projectx --image app poetry run ./manage.py
   description: ""
 - name: restart
   command: devspace enter -c projectx --image app circusctl restart
