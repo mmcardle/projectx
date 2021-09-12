@@ -10,7 +10,7 @@ from projectx.consumers import UserWebSocketConsumer
 @pytest.fixture(name="websocket_consumer")
 def create_websocket_consumer():
     websocket_con = UserWebSocketConsumer()
-    websocket_con.scope = dict()
+    websocket_con.scope = {}
     websocket_con.channel_layer = mock.Mock()
     websocket_con.channel_name = "channel_name"
     websocket_con.base_send = mock.Mock()

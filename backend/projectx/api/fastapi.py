@@ -66,11 +66,6 @@ def __fix_enums(new_type):
             new_enum_type = Enum(f"{new_type.__name__}_{item.name}_Enum", enum_values, module=__name__)
             setattr(item, "type_", new_enum_type)
 
-            def enum_length(enum):
-                return len(enum.value)
-
-            setattr(item.type_, "__len__", enum_length)
-
     return new_type
 
 
@@ -80,6 +75,7 @@ def schema_for_instance(django_model, fields):
             title = f"New{django_model.__name__}"
             model = django_model
             include = fields
+            use_enum_values = True
 
         @classmethod
         def from_model(cls, instance: django_model):
@@ -104,16 +100,7 @@ def schema_for_instance(django_model, fields):
                             for related in django_field.related_model.objects.filter(**reverse_query)
                         ]
                 else:
-                    value = getattr(instance, field)
-                    if django_field.choices:
-                        # Using split as value can be a str or an enumtype
-                        choice_value = str(value).split(".", maxsplit=1)[-1]
-                        # Iterate over choices to find the correct choice_id for the field
-                        for (choice_id, choice_label) in django_field.choices:  # pragma: no cover
-                            if choice_value in (choice_label, choice_id):
-                                value = choice_id
-                                break
-                    field_data[field] = value
+                    field_data[field] = getattr(instance, field)
 
             return cls(**field_data)
 
@@ -128,6 +115,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
             title = f"{django_model.__name__}"
             model = django_model
             include = fields
+            use_enum_values = True
 
         def create_new(self, extra=None):  # pylint: disable=too-many-locals, too-many-branches
             """
@@ -148,27 +136,24 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                     else:
                         field_data[field] = related_model.objects.get(pk=getattr(self, field))
                 else:
-                    if django_field.choices:
-                        field_data[field] = getattr(self, field).value
-                    else:
-                        value = getattr(self, field)
-                        # A value may be required by the model but not in specified API fields.
-                        # So we try to be helpful here and work out a sensible value to use.
-                        if not value:
-                            value_required = not django_field.null and django_field.blank
-                            if value_required and django_field.default == NOT_PROVIDED:
-                                # A value is required, but no default is set
-                                # Try to create a default - for now just an empty string
-                                value = django_field.to_python("")
-                                logger.warning("Setting %s on %s to %s", field, django_model, value)
+                    value = getattr(self, field)
+                    # A value may be required by the model but not in specified API fields.
+                    # So we try to be helpful here and work out a sensible value to use.
+                    if not value:
+                        value_required = not django_field.null and django_field.blank
+                        if value_required and django_field.default == NOT_PROVIDED:
+                            # A value is required, but no default is set
+                            # Try to create a default - for now just an empty string
+                            value = django_field.to_python("")
+                            logger.warning("Setting %s on %s to %s", field, django_model, value)
 
-                            if isinstance(django_field, JSONField) and not isinstance(django_field, JSONDefaultField):
-                                value = {
-                                    "error": "JSONField not supported with value '%s', use %s.%s"
-                                    % (value, JSONDefaultField.__module__, JSONDefaultField.__name__)
-                                }
+                        if isinstance(django_field, JSONField) and not isinstance(django_field, JSONDefaultField):
+                            value = {
+                                "error": "JSONField not supported with value '%s', use %s.%s"
+                                % (value, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                            }
 
-                        field_data[field] = value
+                    field_data[field] = value
 
             if extra:
                 field_data.update(extra)
@@ -208,10 +193,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                         current_field_value = related_model.objects.get(pk=getattr(self, field))
                         setattr(instance, field, current_field_value)
                 else:
-                    if django_field.choices:
-                        current_field_value = getattr(self, field).value
-                    else:
-                        current_field_value = getattr(self, field)
+                    current_field_value = getattr(self, field)
                     setattr(instance, field, current_field_value)
 
             instance.save()
@@ -260,6 +242,7 @@ def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # p
             title = f"{django_model.__name__}"
             model = django_model
             include = ["name", "config"]
+            use_enum_values = True
 
         __annotations__ = optional_fields
 

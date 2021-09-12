@@ -1,11 +1,11 @@
 @echo off
-black --check backend/
+poetry run python -mblack --check backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
-pylint backend/
+poetry run python -m pylint backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
-isort --check-only --diff backend/
+poetry run python -misort --check-only --diff backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
-unify --check-only --recursive --quote \" backend/
+poetry run python -munify --check-only --recursive --quote \" backend/
 if %errorlevel% EQU 1 exit /b %errorlevel%
 poetry show --outdated
 if %errorlevel% EQU 1 exit /b %errorlevel%
