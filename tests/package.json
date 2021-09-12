@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "chromedriver": "^91.0.1",
+    "chromedriver": "^93.0.1",
     "cross-env": "^7.0.2",
-    "geckodriver": "^2.0.0",
+    "geckodriver": "^2.0.4",
     "nightwatch": "^1.6.4",
     "wait-on": "^5.2.0"
   },

@@ -264,11 +264,19 @@ jobs:
         continue-on-error: true
 
       - run: chmod +x backend/config/start.sh  # Fix for "/bin/sh: 1: /home/user/config/start.sh: Permission denied"
+      - run: mkdir tests/screens/
       - run: yarn --cwd tests install
       - run: yarn --cwd tests ci
       
       - name: Docker Compose Check
-        # If previous ci command fails, run 'docker-compose up' to check for errors
+        # If any previous command fails, run 'docker-compose up' to check for errors
         if: ${{ failure() }}
         timeout-minutes: 1
         run: docker-compose up
+
+      - name: Save error screenshots
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v1
+        with:
+          name: ci-tests-screenshots
+          path: tests/screens/

@@ -12,6 +12,7 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
   python3-venv \
   python3-pip \
   python3-setuptools \
+  python-is-python3 \
   libssl-dev \
   gcc \
   nginx \
@@ -24,7 +25,7 @@ WORKDIR /home/user/
 
 ##### Installing base python dependancies
 RUN python3.9 -m pip install -U pip
-RUN python3.9 -m pip install circus poetry uvicorn
+RUN python3.9 -m pip install circus poetry
 
 COPY pyproject.toml /home/user/
 COPY poetry.toml /home/user/

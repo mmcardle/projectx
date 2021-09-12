@@ -17,7 +17,7 @@ module.exports = {
   custom_assertions_path: '',
 
   // See https://nightwatchjs.org/guide/#external-globals
-  globals_path : '',
+  globals_path : 'globals',
 
   webdriver: {},
 
@@ -27,7 +27,7 @@ module.exports = {
       launch_url: 'http://127.0.0.1:8000',
 
       screenshots: {
-        enabled: false,
+        enabled: true,
         path: 'screens',
         on_failure: true
       },
@@ -217,3 +217,4 @@ function loadServices() {
     console.log("Firefox:", Services.geckodriver.version, Services.geckodriver.path);
   } catch (err) {}
 }
+
