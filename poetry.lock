@@ -336,15 +336,11 @@ django = ">=1.11"
 
 [[package]]
 name = "djantic"
-version = "0.3.5"
+version = "0.4.0"
 description = "Pydantic model support for Django ORM"
 category = "main"
 optional = false
 python-versions = ">=3.7"
-
-[package.dependencies]
-Django = ">=3,<4"
-pydantic = ">=1.8.2,<2.0.0"
 
 [[package]]
 name = "ecdsa"
@@ -1081,7 +1077,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "3e9322ffee2ac97f2e0c412118d18b31fcaede7f6ada26df2d9cc5c6f597ac70"
+content-hash = "6a6d34105d2758244201f9fd04b947f38fc1e4c88cc760afa206cbf96789c64e"
 
 [metadata.files]
 aioredis = [
@@ -1297,7 +1293,8 @@ django-su = [
     {file = "django_su-0.9.0-py2.py3-none-any.whl", hash = "sha256:e51fec387e12c30c0e81abe2ccfa0a1927be2340cea329b7667478156f50b542"},
 ]
 djantic = [
-    {file = "djantic-0.3.5.tar.gz", hash = "sha256:84ebda2b80fdbafab4ac538948431edf433dc382545d3c86a0f8656027354a72"},
+    {file = "djantic-0.4.0-py3-none-any.whl", hash = "sha256:8e41c1c2725988e8f93174f241edcaee5e6cfd33f4ef1d1dd4575957c2fe4ea1"},
+    {file = "djantic-0.4.0.tar.gz", hash = "sha256:d445a5038f038e184c495c5975f6720c5d532106d1f4aad5923cafc0f150057f"},
 ]
 ecdsa = [
     {file = "ecdsa-0.17.0-py2.py3-none-any.whl", hash = "sha256:5cf31d5b33743abe0dfc28999036c849a69d548f994b535e527ee3cb7f3ef676"},
