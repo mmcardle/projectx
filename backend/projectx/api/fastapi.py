@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-from enum import Enum
 from typing import Callable, List, Optional
 from urllib import parse
 
@@ -57,18 +56,6 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
     raise HTTPException(status_code=400, detail="X-API-Key header invalid.")
 
 
-def __fix_enums(new_type):
-    # Workaround for enum in djantic
-    for item in new_type.__dict__["__fields__"].values():
-        if "enum.EnumMeta" in str(item.type_.__class__):
-            enum_values = [(i.value, i.value) for i in item.type_]
-
-            new_enum_type = Enum(f"{new_type.__name__}_{item.name}_Enum", enum_values, module=__name__)
-            setattr(item, "type_", new_enum_type)
-
-    return new_type
-
-
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
@@ -104,9 +91,7 @@ def schema_for_instance(django_model, fields):
 
             return cls(**field_data)
 
-    new_type = type(f"{django_model.__name__}", (SingleSchema,), {})
-
-    return __fix_enums(new_type)
+    return type(f"{django_model.__name__}", (SingleSchema,), {})
 
 
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name,too-many-statements
@@ -231,9 +216,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
         validation_function = create_validation_function(field, django_model)
         class_methods[f"validate_{field}"] = validator(field, check_fields=False, allow_reuse=True)(validation_function)
 
-    new_type = type(f"New{django_model.__name__}", (NewSchema,), class_methods)
-
-    return __fix_enums(new_type)
+    return type(f"New{django_model.__name__}", (NewSchema,), class_methods)
 
 
 def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # pylint: disable=invalid-name
@@ -246,9 +229,7 @@ def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # p
 
         __annotations__ = optional_fields
 
-    new_type = type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
-
-    return __fix_enums(new_type)
+    return type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
 
 
 def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
@@ -319,7 +300,9 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
         self.multiple_instance_schema = schema_for_multiple_models(model, self.instance_schema)
 
         optional_fields = {
-            field_name: Optional[ModelSchemaField(self.model._meta.get_field(field_name))[0]]
+            field_name: Optional[
+                ModelSchemaField(self.model._meta.get_field(field_name), self.model.__class__.__name__)[0]
+            ]
             for field_name in fields_for_new
         }
 

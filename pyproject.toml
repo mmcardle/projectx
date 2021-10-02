@@ -20,7 +20,7 @@ django-environ = "^0.4.5"
 django-su = "~=0.9"
 Twisted = {extras = ["http2", "tls"], version = "^21.7.0"}
 uWSGI = {version = "~=2.0", platform = "linux"}
-djantic = "^0.3.4"
+djantic = "0.4.0"
 fastapi = "^0.68.0"
 python-jose = "^3.3.0"
 psycopg2-binary = "^2.9.1"
