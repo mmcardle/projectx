@@ -117,15 +117,12 @@ def test_user_send_reset_password_email(mocker):
     user = User(username="user", email="user@example.com")
     request = mocker.Mock()
     user.send_reset_password_email(request)
-    expected_message = (
-        """
+    expected_message = f"""
 Please click on the link below to reset your email within 24 hours ...
-%s
+{request.build_absolute_uri.return_value}
 Regards
 ProjectX
 """
-        % request.build_absolute_uri.return_value
-    )
 
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
@@ -297,15 +294,12 @@ def test_user_send_account_activation_email(mocker):
     user = User.objects.create(username="user", email="user@example.com")
     request = mock.Mock()
     user.send_account_activation_email(request)
-    expected_message = (
-        """
+    expected_message = f"""
 Please click on the link below to activate your account within 24 hours ...
-%s
+{request.build_absolute_uri.return_value}
 Regards
 ProjectX
 """
-        % request.build_absolute_uri.return_value
-    )
     assert send_mail.call_args[0][1] == expected_message
     assert send_mail.mock_calls == [
         mock.call(

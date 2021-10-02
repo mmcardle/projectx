@@ -18,6 +18,8 @@ from projectx.users.models import ApiKey, User
 
 API_KEY_HEADER = Header(..., description="The user's API key.")
 
+json_field_str = f"{JSONDefaultField.__module__}.{JSONDefaultField.__name__}"
+
 
 logger = logging.getLogger(__name__)
 
@@ -133,10 +135,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
                             logger.warning("Setting %s on %s to %s", field, django_model, value)
 
                         if isinstance(django_field, JSONField) and not isinstance(django_field, JSONDefaultField):
-                            value = {
-                                "error": "JSONField not supported with value '%s', use %s.%s"
-                                % (value, JSONDefaultField.__module__, JSONDefaultField.__name__)
-                            }
+                            value = {"error": f"JSONField not supported with value '{value}', use {json_field_str}"}
 
                     field_data[field] = value
 
@@ -349,15 +348,13 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
             if django_field_type == models.JSONField and django_field_type not in supported_json_fields:
                 if django_field.default == NOT_PROVIDED:
                     raise UnSupportedFieldException(
-                        "Field %s with no default is not supported, try using '%s.%s'"
-                        % (django_field, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                        f"Field {django_field} with no default is not supported, try using '{json_field_str}'"
                     )
 
                 default = django_field.default()
                 if default in django_field.empty_values:
                     raise UnSupportedFieldException(
-                        "Field %s with default '%s' is not supported, try using '%s.%s'"
-                        % (django_field, default, JSONDefaultField.__module__, JSONDefaultField.__name__)
+                        f"Field {django_field} with default '{default}' is not supported, try using '{json_field_str}'"
                     )
 
     def validate_field_names(self, user_fields):

@@ -42,7 +42,7 @@ def load_data_from_schema(schema, data):
         validated_data = schema.load(data=data)
     except ValidationError as validation_error:
         schema_name = schema.__class__.__name__
-        error = "Error validating %s: %s" % (schema_name, validation_error.messages)
+        error = f"Error validating {schema_name}: {validation_error.messages}"
         raise SchemaError(error, validation_error.messages) from validation_error
     return validated_data
 

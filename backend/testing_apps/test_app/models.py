@@ -118,7 +118,7 @@ class SimpleModelWithDefaultFields(models.Model):
     json_field_with_default = models.JSONField(default=lambda: dict({"k": "v"}))
 
     def __str__(self):
-        return "SimpleModelWithDefaultFields %s" % self.id
+        return f"SimpleModelWithDefaultFields {self.id}"
 
 
 class SimpleModelWithOwner(models.Model):
