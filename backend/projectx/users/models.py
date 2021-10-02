@@ -65,7 +65,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
         return self.get_full_name()
 
     def __str__(self):
-        return "%s" % self.display_name()
+        return self.display_name()
 
     @property
     def public_id(self):
@@ -75,10 +75,8 @@ class User(AbstractUser, IndexedTimeStampedModel):
         return "admin" if self.is_staff else "user"
 
     def unique_name(self):
-        return "%s_%s" % (
-            self.email.replace("@", "_").replace(".", "_"),
-            self.public_id[0:8],
-        )
+        email_safe = self.email.replace("@", "_").replace(".", "_")
+        return f"{email_safe}_{self.public_id[0:8]}"
 
     def to_json(self):
         data = {
@@ -116,13 +114,13 @@ class User(AbstractUser, IndexedTimeStampedModel):
         payload = json.dumps({"key": key}).encode("utf-8")
         redis_connection.hset(REDIS_PASSWORD_RESET_KEY, self.email, payload)
 
-        url = request.build_absolute_uri("/password_reset/%s" % key)
+        url = request.build_absolute_uri(f"/password_reset/{key}")
 
         message = emails.RESET_PASSWORD.format(
-            title="ProjectX Password Reset", expiration="%s hours" % MAX_PASSWORD_RESET_HOURS, url=url
+            title="ProjectX Password Reset", expiration=f"{MAX_PASSWORD_RESET_HOURS} hours", url=url
         )
 
-        subject = "Password Reset for %s" % self.email
+        subject = f"Password Reset for {self.email}"
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
@@ -181,15 +179,15 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
         key = signing.dumps({"email": self.email}, salt=ACCOUNT_ACTIVATION_SALT)
 
-        url = request.build_absolute_uri("/activate/%s" % key)
+        url = request.build_absolute_uri(f"/activate/{key}")
 
         redis_connection = get_redis_connection()
         payload = json.dumps({"key": key}).encode("utf-8")
         redis_connection.hset(REDIS_ACCOUNT_ACTIVATION_KEY, self.email, payload)
 
-        message = emails.ACCOUNT_ACTIVATION.format(expiration="%s hours" % MAX_ACTIVATION_HOURS, url=url)
+        message = emails.ACCOUNT_ACTIVATION.format(expiration=f"{MAX_ACTIVATION_HOURS} hours", url=url)
 
-        subject = "Account Activation for %s" % self.email
+        subject = f"Account Activation for {self.email}"
 
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
 
@@ -227,4 +225,4 @@ class ApiKey(IndexedTimeStampedModel):
         return secrets.token_hex(cls.KEY_LENGTH)[0 : cls.KEY_LENGTH]
 
     def __str__(self):
-        return "AuthKey for %s" % self.user
+        return f"AuthKey for {self.user}"

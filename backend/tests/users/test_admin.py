@@ -15,8 +15,8 @@ def test_send_activation_email(mocker):
     send_activation_email(None, request, queryset)
 
     assert messages.mock_calls == [
-        mock.call.info(request, "%s Activation Email Sent." % user1),
-        mock.call.info(request, "%s Activation Email Sent." % user2),
+        mock.call.info(request, f"{user1} Activation Email Sent."),
+        mock.call.info(request, f"{user2} Activation Email Sent."),
     ]
     assert user1.mock_calls == [mocker.call.send_account_activation_email(request)]
     assert user2.mock_calls == [mocker.call.send_account_activation_email(request)]
