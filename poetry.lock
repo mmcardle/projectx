@@ -1079,7 +1079,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "6a6d34105d2758244201f9fd04b947f38fc1e4c88cc760afa206cbf96789c64e"
+content-hash = "a80f21339ca2b501ca0fc4b690c8107d06f760048a4c1ba901b1f6ffad8cd097"
 
 [metadata.files]
 aioredis = [
