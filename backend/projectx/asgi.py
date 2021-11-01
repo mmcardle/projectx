@@ -1,3 +1,4 @@
+# pylint: disable=wrong-import-position
 import os
 
 from django.apps import apps
@@ -7,7 +8,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projectx.settings")
 apps.populate(settings.INSTALLED_APPS)
 
 from fastapi import FastAPI
-from fastapi.middleware.wsgi import WSGIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from projectx.api.routing import router
