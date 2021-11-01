@@ -18,7 +18,7 @@ class Command(BaseCommand):
                 connection.ensure_connection()
                 db_conn = True
             except OperationalError:
-                self.stdout.write(f"Database unavailable, waiting ${sleep_seconds}s...")
+                self.stdout.write(f"Database unavailable, waiting {sleep_seconds}s...")
                 count += 1
                 time.sleep(1)
 

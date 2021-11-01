@@ -13,7 +13,7 @@
     "test:ci_chrome": "nightwatch --headless -e chrome",
     "test:ci_firefox": "nightwatch --headless -e firefox",
     "test:setup": "docker-compose exec -T projectx /home/user/.venv/bin/python /home/user/manage.py ensure_test_user --email test@tempurl.com --password pass",
-    "pretest:ci": "wait-on --timeout 30000 http://localhost:8000 && yarn test:setup",
+    "pretest:ci": "wait-on --timeout 30000 http://127.0.0.1:8000 && yarn test:setup",
     "test:ci": "yarn test:ci_chrome && yarn test:ci_firefox",
     "build:frontend": "yarn --cwd ../frontend install && yarn --cwd ../frontend bic",
     "build:backend": "docker-compose build projectx",

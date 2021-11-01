@@ -63,7 +63,7 @@ ROOT_URLCONF = "projectx.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
+        "DIRS": ["templates", "/home/user/frontend/"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -134,7 +134,7 @@ STATIC_URL = "/site_media/static/"
 STATIC_ROOT = Path("/") / "var" / "www" / "site_media" / "static"
 
 # Django Channels
-ASGI_APPLICATION = "projectx.asgi.application"
+ASGI_APPLICATION = "projectx.channels.application"
 
 CHANNELS_REDIS_URL = env.url("CHANNELS_REDIS_URL")
 CHANNEL_LAYERS = {

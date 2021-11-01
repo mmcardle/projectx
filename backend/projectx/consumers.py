@@ -58,3 +58,5 @@ class UserWebSocketConsumer(BaseWebSocketConsumer):
 
         self.joined_channels = [user_channel_name]
         logger.info("New User Connection %s joined %s (%s)", self.user, self.joined_channels, self.channel_name)
+
+        self.user_message({"data": json.dumps({"connected": True})})
