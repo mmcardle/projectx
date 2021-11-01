@@ -139,7 +139,7 @@ function Example() {
         <h2 className="mt-5">Cards</h2>
         <CardDeck>
           <Card>
-            <Card.Img variant="top" src="logo.svg" className="w-50 mx-auto mt-2" />
+            <Card.Img variant="top" src="/static/img/logo.svg" className="w-50 mx-auto mt-2" />
             <Card.Body>
               <Card.Title>Card title</Card.Title>
               <Card.Text>
@@ -152,7 +152,7 @@ function Example() {
             </Card.Footer>
           </Card>
           <Card>
-            <Card.Img variant="top" src="logo.svg" className="w-50 mx-auto mt-2" />
+            <Card.Img variant="top" src="/static/img/logo.svg" className="w-50 mx-auto mt-2" />
             <Card.Body>
               <Card.Title>Card title</Card.Title>
               <Card.Text>
@@ -165,7 +165,7 @@ function Example() {
             </Card.Footer>
           </Card>
           <Card>
-            <Card.Img variant="top" src="logo.svg" className="w-50 mx-auto mt-2" />
+            <Card.Img variant="top" src="/static/img/logo.svg" className="w-50 mx-auto mt-2" />
             <Card.Body>
               <Card.Title>Card title</Card.Title>
               <Card.Text>

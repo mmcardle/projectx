@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic.base import TemplateView
 
 from projectx.users.api import admin_su_logout
 
@@ -37,4 +38,11 @@ urlpatterns = [
             ]
         ),
     ),
+    # Catch all requests and send to front end app
+    path("index.html", TemplateView.as_view(template_name="index.html")),
+    path("settings", TemplateView.as_view(template_name="index.html")),
+    path("login", TemplateView.as_view(template_name="index.html")),
+    path("forgot_password", TemplateView.as_view(template_name="index.html")),
+    path("password_reset/<token>", TemplateView.as_view(template_name="index.html")),
+    path("activate/<token>", TemplateView.as_view(template_name="index.html")),
 ]
