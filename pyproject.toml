@@ -15,7 +15,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-Django = "^3.2.5"
+Django = "^3.2.9"
 django-environ = "^0.4.5"
 django-su = "~=0.9"
 Twisted = {extras = ["http2", "tls"], version = "^21.7.0"}

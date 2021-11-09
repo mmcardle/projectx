@@ -162,10 +162,10 @@ else:
     vars().update(EMAIL_CONFIG)
 
 handlers = {}
-if DEBUG:
+if DEBUG:  # pragma: no cover
     handlers["stream_handler"] = {"class": "logging.StreamHandler", "formatter": "simple"}
 
-if log_file := env.str("LOG_FILE"):
+if log_file := env.str("LOG_FILE"):  # pragma: no cover
     handlers["file_handler"] = {"class": "logging.FileHandler", "formatter": "simple", "filename": log_file}
 
 handler_names = list(handlers.keys())
