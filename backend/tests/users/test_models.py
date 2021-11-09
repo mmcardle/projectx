@@ -32,12 +32,26 @@ def test_usermanager():
 
     assert user.email == "none@tempurl.com"
     assert user.username == "none@tempurl.com"
+    assert not user.anonymous
 
     assert superuser.email == "super@tempurl.com"
     assert superuser.is_superuser
+    assert not superuser.anonymous
 
     assert user_with_username.email == "another@tempurl.com"
     assert user_with_username.username == "username"
+    assert not user_with_username.anonymous
+
+
+@pytest.mark.django_db()
+def test_usermanager_create_anonymous_user(mocker):
+
+    mocker.patch("projectx.users.models.uuid.uuid4", return_value="USER_UUID")
+
+    anonymous_user = User.objects.create_anonymous_user()
+    assert anonymous_user.email == "USER_UUID@example.com"
+    assert anonymous_user.username == "USER_UUID@example.com"
+    assert anonymous_user.anonymous
 
 
 @pytest.mark.django_db()
@@ -68,12 +82,14 @@ def test_user_model_email_exists_case_insensitive():
     assert User.email_exists("NONE@tempurl.com")
 
 
-def test_user_model():
+@pytest.mark.parametrize("anonymous", [True, False])
+def test_user_model(anonymous):
     user = User(
         public_uuid="bf113177-a583-41d9-8ad4-695114f4e30c",
         email="none@tempurl.com",
         first_name="First",
         last_name="Last",
+        anonymous=anonymous,
     )
     assert user.to_json() == {
         "display_name": "First Last",
@@ -84,11 +100,13 @@ def test_user_model():
         "role": "user",
         "last_login_timestamp": None,
         "last_login_timestamp_iso": None,
+        "anonymous": anonymous,
     }
     assert str(user) == "First Last"
     assert user.unique_name() == "none_tempurl_com_bf113177"
     assert user.last_login_timestamp() is None
     assert user.last_login_timestamp_iso() is None
+    assert user.anonymous == anonymous
 
 
 def test_user_model_with_last_login():

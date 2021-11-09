@@ -1,2 +1,2 @@
 #!C:/Program\ Files/Git/usr/bin/sh.exe
-exec script/lint.bat
+exec script/lint.ps1

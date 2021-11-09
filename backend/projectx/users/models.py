@@ -50,11 +50,24 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    def create_anonymous_user(self):
+        anonymous_uuid = str(uuid.uuid4())
+        return self.create_user(
+            email=f"{anonymous_uuid}@example.com",
+            password=None,
+            anonymous=True,
+        )
+
 
 class User(AbstractUser, IndexedTimeStampedModel):
 
     email = LowercaseEmailField(max_length=255, unique=True)
     public_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    anonymous = models.BooleanField(
+        "anonymous status",
+        default=False,
+        help_text="Whether the user is anonymous.",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -88,6 +101,7 @@ class User(AbstractUser, IndexedTimeStampedModel):
             "email": self.email,
             "last_login_timestamp": self.last_login_timestamp(),
             "last_login_timestamp_iso": self.last_login_timestamp_iso(),
+            "anonymous": self.anonymous,
         }
 
         return data
