@@ -87,6 +87,22 @@ def login(request):
     return JsonResponse({"token": _get_token(request)})
 
 
+@ratelimit(key="user_or_ip", rate="1/m", method=ratelimit.UNSAFE, block=True)
+@require_http_methods(["POST"])
+def anonymous(request):
+    user = models.User.objects.create_anonymous_user()
+    django_login(request, user)
+    return JsonResponse(
+        {
+            "success": True,
+            "user": user.to_json(),
+            "jwt": new_jwt_token(request.user),
+            "token": request.META["CSRF_COOKIE"],
+            "logout_url": _get_logout_url(request),
+        }
+    )
+
+
 @login_required
 def logout(request):
     if JWT_SESSION_KEY in request.session:

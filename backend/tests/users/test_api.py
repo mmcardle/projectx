@@ -219,6 +219,40 @@ def test_login_POST_bad_auth_with_no_user(mocker):
     assert django_login.mock_calls == []
 
 
+def test_anonymous_POST(mocker):
+
+    JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
+    create_anonymous_user = mocker.patch("projectx.users.models.User.objects.create_anonymous_user")
+    django_login = mocker.patch("projectx.users.api.django_login")
+    mocker.patch("projectx.users.api.new_jwt_token", return_value="jwt")
+
+    body = json.dumps(dict(email="email@none.com", password="password"))
+    user = mock.Mock(is_authenticated=False)
+    request = make_request(
+        method="POST",
+        user=user,
+        body=body,
+        META={"CSRF_COOKIE": "token"},
+    )
+    api.anonymous(request)
+
+    assert create_anonymous_user.call_args_list == [
+        mock.call(),
+    ]
+    assert JsonResponse.call_args_list[0:1] == [
+        mock.call(
+            {
+                "success": True,
+                "user": create_anonymous_user().to_json(),
+                "jwt": "jwt",
+                "token": mock.ANY,
+                "logout_url": "/app/users/logout/",
+            }
+        )
+    ]
+    assert django_login.mock_calls == [mock.call(request, create_anonymous_user())]
+
+
 def test_logout(mocker):
 
     django_logout = mocker.patch("projectx.users.api.django_logout")

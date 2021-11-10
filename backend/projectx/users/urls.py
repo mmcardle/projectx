@@ -7,6 +7,7 @@ urlpatterns = (
     path("register/", api.register, name="user_api_register"),
     path("activate/", api.activate, name="user_api_activate"),
     path("login/", api.login, name="user_api_login"),
+    path("anonymous/", api.anonymous, name="user_api_anonymous"),
     path("logout/", api.logout, name="user_api_logout"),
     path("change_details/", api.change_details, name="user_api_change_details"),
     path("change_password/", api.change_password, name="user_api_change_password"),

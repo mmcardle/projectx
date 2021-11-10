@@ -22,6 +22,8 @@ env = environ.Env(
     DATABASE_URL=(str, "psql://postgres:mysecretpassword@localhost:5432/postgres"),
     CACHE_URL=(str, "redis://@localhost:6379/0"),
     CHANNELS_REDIS_URL=(str, "redis://localhost:6379/1"),
+    TEMPLATE_DIR=(str, "/home/user/frontend/"),
+    LOG_FILE=(str, None),
 )
 
 SECRET_KEY = env.str("SECRET_KEY")
@@ -63,7 +65,7 @@ ROOT_URLCONF = "projectx.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates", "/home/user/frontend/"],
+        "DIRS": [env.str("TEMPLATE_DIR")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -149,12 +151,24 @@ CHANNEL_LAYERS = {
 }
 
 # Email setup
-DEFAULT_FROM_EMAIL = "noreply@projectx.com"
+DEFAULT_FROM_EMAIL = "noreply@example.com"
 if DEBUG:  # pragma: no cover
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    # Choose a production email backend
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    DEFAULT_FROM_EMAIL = "projectx@example.com"
+    SERVER_EMAIL = "projectx@example.com"
+    EMAIL_USE_SSL = True
+    EMAIL_CONFIG = env.email("EMAIL_URL", default="smtp://mail_user:mail_user_password@127.0.0.1:456")
+    vars().update(EMAIL_CONFIG)
+
+handlers = {}
+if DEBUG:  # pragma: no cover
+    handlers["stream_handler"] = {"class": "logging.StreamHandler", "formatter": "simple"}
+
+if log_file := env.str("LOG_FILE"):  # pragma: no cover
+    handlers["file_handler"] = {"class": "logging.FileHandler", "formatter": "simple", "filename": log_file}
+
+handler_names = list(handlers.keys())
 
 # Logging setup
 LOGGING = {
@@ -163,44 +177,42 @@ LOGGING = {
     "formatters": {
         "simple": {"format": "%(levelname)s %(name)s:%(lineno)s %(message)s"},
     },
-    "handlers": {
-        "console": {"class": "logging.StreamHandler", "formatter": "simple"},
-    },
+    "handlers": handlers,
     "loggers": {
         "": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "INFO",
         },
         "django.request": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "ERROR",
         },
         "asyncio": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "WARNING",  # Reduce asyncio INFO spam
         },
         "projectx": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "common": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "api": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "users": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "DEBUG" if DEBUG else "INFO",
             "propagate": False,
         },
         "daphne": {
-            "handlers": ["console"],
+            "handlers": handler_names,
             "level": "INFO",
             "propagate": False,
         },
