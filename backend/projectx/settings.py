@@ -151,12 +151,12 @@ CHANNEL_LAYERS = {
 }
 
 # Email setup
-DEFAULT_FROM_EMAIL = "noreply@projectx.com"
+DEFAULT_FROM_EMAIL = "noreply@example.com"
 if DEBUG:  # pragma: no cover
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 else:
-    DEFAULT_FROM_EMAIL = "db3@blueskyops.com"
-    SERVER_EMAIL = "db3@blueskyops.com"
+    DEFAULT_FROM_EMAIL = "projectx@example.com"
+    SERVER_EMAIL = "projectx@example.com"
     EMAIL_USE_SSL = True
     EMAIL_CONFIG = env.email("EMAIL_URL", default="smtp://mail_user:mail_user_password@127.0.0.1:456")
     vars().update(EMAIL_CONFIG)
