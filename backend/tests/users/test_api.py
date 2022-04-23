@@ -276,7 +276,7 @@ def test_logout_deletes_jwt(mocker):
     api.logout(request)
     assert JsonResponse.mock_calls == [mock.call({"success": True})]
     assert django_logout.mock_calls == [mock.call(request)]
-    assert session == {}
+    assert not session
 
 
 def test_register(mocker):
