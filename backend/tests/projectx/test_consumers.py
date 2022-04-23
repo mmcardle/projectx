@@ -32,8 +32,8 @@ def test_web_socket_consumer_is_anonymous(mocker):
     websocket_consumer.connect()
 
     assert websocket_consumer.close.mock_calls == [mock.call()]
-    assert websocket_consumer.accept.mock_calls == []
-    assert websocket_consumer.joined_channels == []
+    assert not websocket_consumer.accept.mock_calls
+    assert not websocket_consumer.joined_channels
 
 
 def test_web_socket_consumer(mocker):
@@ -50,7 +50,7 @@ def test_web_socket_consumer(mocker):
 
     websocket_consumer.connect()
 
-    assert websocket_consumer.close.mock_calls == []
+    assert not websocket_consumer.close.mock_calls
     assert websocket_consumer.accept.mock_calls == [mock.call()]
     assert websocket_consumer.joined_channels == ["user1"]
 

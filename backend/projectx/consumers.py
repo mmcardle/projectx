@@ -42,7 +42,7 @@ class BaseWebSocketConsumer(JsonWebsocketConsumer):
         logger.debug("Disconnect %s %s from channels %s", self.user, self.channel_name, self.joined_channels)
 
 
-class UserWebSocketConsumer(BaseWebSocketConsumer):
+class UserWebSocketConsumer(BaseWebSocketConsumer):  # pylint: disable=too-many-instance-attributes
     def connect(self):
         self.user = self.scope["user"]
         self.joined_channels = []

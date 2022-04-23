@@ -98,6 +98,7 @@ jobs:
       - run: cat poetry.lock
       - run: poetry install
       - run: poetry show -t
+      - run: poetry show -o
 
   python-unittests:
     needs: python-setup
