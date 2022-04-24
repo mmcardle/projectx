@@ -1,6 +1,0 @@
-[run]
-omit =
-    backend/manage.py
-    backend/tests/*
-    backend/testing_apps/*
-    backend/**/migrations/**

@@ -1,18 +1,3 @@
-[tool.black]
-line-length = 120
-target-version = ['py38']
-
-[tool.isort]
-profile = "black"
-src_paths = ["backend/", "backend/tests"]
-
-[tool.poetry]
-name = "projectx"
-version = "0.1.0"
-description = "Projectx"
-authors = []
-license = "MIT"
-
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = "^4.0.4"
@@ -27,15 +12,15 @@ psycopg2-binary = "^2.9"
 django-model-utils = "^4.1"
 channels = "^3.0"
 asgiref = "^3.5"
-channels-redis = "^3.3"
+channels-redis = "^3.4.0"
 django-redis = "^5.0"
 python-multipart = "^0.0"
 marshmallow = "^3.13"
 django-ratelimit = "^3.0"
 pydantic = "^1.8"
-async-timeout = "^3.0"
+async-timeout = "^4.0.2"
 uvicorn = {version = "^0.17", extras = ["standard"]}
-"backports.zoneinfo" = "^0.2.1"
+redis = "^4.2.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1"
@@ -55,3 +40,51 @@ safety = "^1.10.3"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+src_paths = ["backend/", "backend/tests"]
+
+[tool.poetry]
+name = "projectx"
+version = "0.1.0"
+description = "Projectx"
+authors = []
+license = "MIT"
+
+[tool.coverage.run]
+omit = ["backend/manage.py", "backend/tests/*", "backend/testing_apps/*", "backend/**/migrations/**"]
+
+# pyproject.toml
+[tool.pytest.ini_options]
+minversion = "7.0"
+env=[
+  "D:PROJECTX_TEST_HOST=127.0.0.1",
+  "D:PROJECTX_DB_HOST=127.0.0.1",
+  "D:PROJECTX_REDIS_HOST=127.0.0.1",
+  "SECRET_KEY=TEST_SECRET_KEY",
+  "JWT_SECRET=TEST_JWT_SECRET",
+  "PUBLIC_IP=@{PROJECTX_TEST_HOST}",
+  "DATABASE_URL=psql://postgres:mysecretpassword@{PROJECTX_DB_HOST}:5432/postgres",
+  "CACHE_URL=redis://@{PROJECTX_REDIS_HOST}:6379/0",
+  "CHANNELS_REDIS_URL=redis://@{PROJECTX_REDIS_HOST}:6379/1",
+]
+DJANGO_SETTINGS_MODULE = "tests.test_settings"
+pythonpath = ["backend", "backend/testing_apps"]
+testpaths = ["backend/tests/"]
+addopts = "--reuse-db --create-db --nomigrations -v -ra --cov=backend/ --cov-report=html --cov-branch --cov-report xml:coverage.xml"
+
+[tool.pylint.MASTER]
+load-plugins = "pylint_django"
+django-settings-module = "projectx.settings"
+disable = [
+    "missing-docstring",
+    "missing-module-docstring",
+    "duplicate-code",
+]
+max-line-length = 120
+init-hook = "sys.path.extend(['backend/', 'backend/testing_apps/'])"
