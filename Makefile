@@ -3,7 +3,7 @@ up:
 	docker-compose up
 
 manage:
-	docker-compose exec projectx poetry run ./manage.py ${command}
+	docker-compose exec projectx poetry run python ./manage.py ${command}
 
 fast_api:
 	uvicorn --app-dir=backend/ projectx.api.asgi:application --reload --port 8001

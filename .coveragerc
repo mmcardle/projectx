@@ -1,6 +1,4 @@
 [run]
-include =
-    backend/projectx/
 omit =
     backend/manage.py
     backend/tests/*
