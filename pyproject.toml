@@ -18,7 +18,7 @@ python = "^3.9"
 Django = "^3.2"
 django-environ = "^0.8"
 django-su = "~=0.9"
-Twisted = {extras = ["http2", "tls"], version = "^21.7"}
+Twisted = {extras = ["http2", "tls"], version = "^22.1"}
 uWSGI = {version = "~=2.0", platform = "linux"}
 djantic = "^0.4"
 fastapi = "^0.70"
@@ -50,6 +50,7 @@ pylint = "^2.9"
 pylint-django = "^2.4"
 requests = "^2.26"
 isort = "^5.9"
+safety = "^1.10.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
