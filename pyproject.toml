@@ -17,16 +17,16 @@ license = "MIT"
 python = "^3.9"
 Django = "^3.2"
 django-environ = "^0.8"
-django-su = "~=0.9"
+django-su = "^1.0"
 Twisted = {extras = ["http2", "tls"], version = "^22.1"}
 uWSGI = {version = "~=2.0", platform = "linux"}
-djantic = "^0.4"
-fastapi = "^0.70"
+djantic = "^0.7"
+fastapi = "^0.75"
 python-jose = "^3.3"
 psycopg2-binary = "^2.9"
 django-model-utils = "^4.1"
 channels = "^3.0"
-asgiref = "^3.3,<3.4"  # Issues with asgiref 3.4 (https://github.com/django/asgiref/issues/278)
+asgiref = "^3.5"
 channels-redis = "^3.3"
 django-redis = "^5.0"
 python-multipart = "^0.0"
@@ -34,7 +34,7 @@ marshmallow = "^3.13"
 django-ratelimit = "^3.0"
 pydantic = "^1.8"
 async-timeout = "^3.0"
-uvicorn = {version = "^0.14", extras = ["standard"]}
+uvicorn = {version = "^0.17", extras = ["standard"]}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"
