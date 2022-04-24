@@ -21,7 +21,7 @@ django-su = "~=0.9"
 Twisted = {extras = ["http2", "tls"], version = "^22.1"}
 uWSGI = {version = "~=2.0", platform = "linux"}
 djantic = "^0.4"
-fastapi = "^0.70"
+fastapi = "^0.75"
 python-jose = "^3.3"
 psycopg2-binary = "^2.9"
 django-model-utils = "^4.1"
