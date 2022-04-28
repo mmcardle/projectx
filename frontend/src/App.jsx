@@ -7,7 +7,6 @@ import Authed from './pages/Authed';
 
 import { getUserData } from './api/requests';
 import { withNamedStores } from './store/state';
-
 import './theme_1618955931948.css' // https://themestr.app/
 import './App.css';
 

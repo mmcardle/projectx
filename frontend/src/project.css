@@ -1,3 +1,13 @@
 /*
 Add any project overides for style here
 */
+
+.pre {
+    background: transparent;
+}
+
+.code-tag pre {
+    font-size: 12.25px !important;
+    line-height: 18px !important;
+    background: transparent !important;
+}

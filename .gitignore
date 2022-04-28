@@ -129,3 +129,4 @@ dmypy.json
 
 tests/node_modules/
 tests/tests_output/
+tests/screens/

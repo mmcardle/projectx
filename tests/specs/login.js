@@ -20,9 +20,11 @@ module.exports = {
 
     browser.waitForElementVisible('#login_form', 5000)
 
-    // TODO - Setup User
-    // login(browser, PROJECT_EMAIL, PROJECT_PASSWORD)
-    // browser.waitForElementVisible('#root', 5000)
+    login(browser, PROJECT_EMAIL, PROJECT_PASSWORD)
+
+    browser.waitForElementVisible('#root', 5000)
+
+    browser.assert.visible('.navbar');
     
     browser.end()
   },

@@ -9,7 +9,8 @@
 !poetry.toml
 !poetry.lock
 
-!/frontend/build/
+!/frontend/
+!/frontend/dist/
 
 # Ignore devspace.yaml file to prevent image rebuilding after config changes
 devspace.yaml

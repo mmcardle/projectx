@@ -60,7 +60,7 @@ RUN chown -R user:user /var/cache/nginx /var/log/nginx /var/lib/nginx /etc/nginx
 RUN touch /var/run/nginx.pid
 RUN chown -R user:user /var/run/nginx.pid
 
-COPY frontend/build/ /home/user/frontend/
+COPY frontend/dist/ /home/user/frontend/
 
 RUN \
   SECRET_KEY="secret"\
