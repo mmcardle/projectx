@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: frontend-build-folder
-          path: frontend/build/
+          path: frontend/dist/
 
   frontend-lint:
     needs: frontend-setup
@@ -238,7 +238,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: frontend-build-folder
-          path: frontend/build/
+          path: frontend/dist/
       - run: docker-compose pull
       - uses: satackey/action-docker-layer-caching@v0.0.11
         # Ignore the failure of a step and avoid terminating the job.
