@@ -1,6 +1,6 @@
 [tool.poetry.dependencies]
 python = "^3.9"
-Django = "^4.0.4"
+Django = "^4.0.7"
 django-environ = "^0.8"
 django-su = "^1.0"
 Twisted = {extras = ["http2", "tls"], version = "^22.1"}
