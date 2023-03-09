@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest
-from ratelimit.exceptions import Ratelimited
+from django_ratelimit.exceptions import Ratelimited
 
 from projectx.users import api
 

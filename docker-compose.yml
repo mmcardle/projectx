@@ -31,26 +31,9 @@ services:
       - ./backend/projectx/:/home/user/projectx/
       - ./backend/config/:/home/user/config/
 
-  #frontend:
-  #  hostname: frontend
-  #  tty: true
-  #  build:
-  #    context: .
-  #    dockerfile: frontend/Dockerfile
-  #  ports:
-  #    - "3001:3000"
-  #  depends_on:
-  #    - projectx
-  #  environment:
-  #    PROJECTX_HOST: "projectx:8000"
-  #    CHOKIDAR_USEPOLLING: "true"
-  #    HOST: "0.0.0.0"
-  #  volumes:
-  #    - ./frontend/src/:/frontend/src/
-
   postgres:
     hostname: postgres
-    image: postgres:14.2
+    image: postgres:15.2
     ports:
       - "5432:5432"
     environment:
@@ -59,6 +42,6 @@ services:
       POSTGRES_DB: postgres
 
   redis:
-    image: redis:5.0.5
+    image: redis:7.0.9
     ports:
         - "6379:6379"

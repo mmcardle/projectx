@@ -1,35 +1,35 @@
 [tool.poetry.dependencies]
-python = "^3.9"
-Django = "^4.0.7"
-django-environ = "^0.8"
+python = "^3.11"
+Django = "^4.1"
+django-environ = "^0.10"
 django-su = "^1.0"
-Twisted = {extras = ["http2", "tls"], version = "^22.1"}
-uWSGI = {version = "~=2.0", platform = "linux"}
-djantic = "^0.7"
-fastapi = "^0.75"
-python-jose = "^3.3"
-psycopg2-binary = "^2.9"
-django-model-utils = "^4.1"
-channels = "^3.0"
-asgiref = "^3.5"
-channels-redis = "^3.4.0"
+django-ratelimit = "^4.0"
 django-redis = "^5.0"
+django-model-utils = "^4.1"
+channels = "^4.0"
+channels-redis = "^4.0"
+async-timeout = "^4.0"
+djantic = "^0.7"
+fastapi = "^0.93"
+httpx = "^0.23.3"
+python-jose = "^3.3"
+asgiref = "^3.5"
+Twisted = {extras = ["http2", "tls"], version = "^22.10"}
+uWSGI = {version = "~=2.0", platform = "linux"}
+psycopg2-binary = "^2.9"
 python-multipart = "^0.0"
 marshmallow = "^3.13"
-django-ratelimit = "^3.0"
 pydantic = "^1.8"
-async-timeout = "^4.0.2"
-uvicorn = {version = "^0.17", extras = ["standard"]}
-redis = "^4.2.2"
+uvicorn = {version = "^0.20", extras = ["standard"]}
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.1"
-wheel = "^0.36"
-pytest-django = "^4.5"
-pytest-cov = "^3.0"
-pytest-env = "^0.6"
+pytest = "^7.2"
+wheel = "^0.38"
+pytest-django = "^4.4"
+pytest-cov = "^4.0"
+pytest-env = "^0.8"
 pytest-mock = "^3.6"
-black = "^22.3"
+black = "^23.1"
 unify = "^0.5"
 pylint = "^2.9"
 pylint-django = "^2.4"
@@ -40,14 +40,6 @@ safety = "^1.10.3"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.black]
-line-length = 120
-target-version = ['py38']
-
-[tool.isort]
-profile = "black"
-src_paths = ["backend/", "backend/tests"]
 
 [tool.poetry]
 name = "projectx"
@@ -88,3 +80,11 @@ disable = [
 ]
 max-line-length = 120
 init-hook = "sys.path.extend(['backend/', 'backend/testing_apps/'])"
+
+[tool.black]
+line-length = 120
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+src_paths = ["backend/", "backend/tests"]
