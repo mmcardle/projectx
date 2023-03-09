@@ -2,7 +2,7 @@
 
 Django and React Boilerplate Project
 
-Python 3.8, 3.9
+Python 3.11
 
 # Services
 
