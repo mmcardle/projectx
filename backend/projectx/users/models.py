@@ -60,7 +60,6 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser, IndexedTimeStampedModel):
-
     email = LowercaseEmailField(max_length=255, unique=True)
     public_uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     anonymous = models.BooleanField(
@@ -121,7 +120,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
         self.save()
 
     def send_reset_password_email(self, request):
-
         key = signing.dumps({"email": self.email}, salt=PASSWORD_RESET_SALT)
 
         redis_connection = get_redis_connection()
@@ -149,7 +147,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
 
     @classmethod
     def reset_email(cls, email, request):
-
         user_exists = cls.objects.filter(email__iexact=email).exists()
 
         if user_exists:
@@ -190,7 +187,6 @@ class User(AbstractUser, IndexedTimeStampedModel):
             return None, "Bad Signature"
 
     def send_account_activation_email(self, request):
-
         key = signing.dumps({"email": self.email}, salt=ACCOUNT_ACTIVATION_SALT)
 
         url = request.build_absolute_uri(f"/activate/{key}")

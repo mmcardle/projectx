@@ -17,7 +17,6 @@ def send_activation_email(_, request, queryset):
 
 
 class ProjectXUserAdmin(UserAdmin):
-
     actions = [send_activation_email]
 
     readonly_fields = ("public_uuid", "modified", "created")

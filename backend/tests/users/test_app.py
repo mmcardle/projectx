@@ -82,7 +82,6 @@ def user_fixture():
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_auth_and_get(user, mocker):
-
     response = client.post(
         f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},
@@ -111,7 +110,6 @@ def test_testapp_auth_and_get(user, mocker):
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_auth__with_bad_password(user):
-
     response = client.post(
         f"{BASE_PATH}token/",
         data={"username": user.username, "password": "bad_password"},
@@ -124,7 +122,6 @@ def test_testapp_auth__with_bad_password(user):
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_auth_with_inactive_user(user, mocker):
-
     response = client.post(
         f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},
@@ -152,7 +149,6 @@ def test_testapp_auth_with_inactive_user(user, mocker):
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_auth_with_deleted_user(user, mocker):
-
     response = client.post(
         f"{BASE_PATH}token/",
         data={"username": user.username, "password": "password"},

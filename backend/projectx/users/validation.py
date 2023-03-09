@@ -1,4 +1,3 @@
-# pylint: disable=no-self-use
 import logging
 import re
 
@@ -61,7 +60,6 @@ class LowercaseValidator:
 
 
 class SymbolValidator:
-
     symbols = r"()[]{}|\`~!@#$%^&*_-+=;:'\",<>./?"
 
     def __init__(self, minimum=0):
@@ -170,11 +168,9 @@ class ChangeDetailsSchema(Schema):
 
 
 class ActivateSchema(Schema):
-
     activate_key = fields.Str(required=True)
 
     def check_activate_key(self, activate_key):
-
         user, _ = User.check_activation_key(activate_key)
         if user is None:
             # User has failed activation check

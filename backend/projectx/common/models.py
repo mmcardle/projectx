@@ -14,7 +14,6 @@ class IndexedTimeStampedModel(models.Model):
 
 
 class UUIDModel(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
 
     class Meta:

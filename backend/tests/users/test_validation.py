@@ -255,7 +255,6 @@ def test_change_details_schema_bad_data():
 
 @pytest.mark.django_db(transaction=True)
 def test_activateschema_valid_key(mocker):
-
     user = User.objects.create(username="user")
     check_activation_key = mocker.patch(
         "projectx.users.validation.User.check_activation_key", return_value=(user, None)
@@ -271,7 +270,6 @@ def test_activateschema_valid_key(mocker):
 
 @pytest.mark.django_db(transaction=True)
 def test_activateschema_bad_key(mocker):
-
     User.objects.create(username="user")
     check_activation_key = mocker.patch(
         "projectx.users.validation.User.check_activation_key", side_effect=[(None, None), (None, None)]
@@ -287,7 +285,6 @@ def test_activateschema_bad_key(mocker):
 
 @pytest.mark.django_db(transaction=True)
 def test_activateschema_expired_key(mocker):
-
     user = User.objects.create(username="user", email="user@example.com")
     check_activation_key = mocker.patch(
         "projectx.users.validation.User.check_activation_key", side_effect=[(None, None), (user, None)]

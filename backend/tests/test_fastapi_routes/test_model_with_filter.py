@@ -36,7 +36,6 @@ def create_simple_model_2():
 
 @pytest.mark.django_db(transaction=True)
 def test_filtering_with_list(client, simple_model1, simple_model2):
-
     assert simple_model2
 
     response = client.get(BASE_PATH)
@@ -46,7 +45,6 @@ def test_filtering_with_list(client, simple_model1, simple_model2):
 
 @pytest.mark.django_db(transaction=True)
 def test_filtering_with_get(client, simple_model1, simple_model2):
-
     response = client.get(f"{BASE_PATH}{simple_model1.pk}/")
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"name": "XXX - Should appear in response"}
@@ -58,7 +56,6 @@ def test_filtering_with_get(client, simple_model1, simple_model2):
 
 @pytest.mark.django_db(transaction=True)
 def test_filtering_with_patch(client, simple_model1, simple_model2):
-
     response = client.patch(f"{BASE_PATH}{simple_model1.pk}/", json={"name": "new_name - Should appear in response"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"name": "new_name - Should appear in response"}
@@ -70,7 +67,6 @@ def test_filtering_with_patch(client, simple_model1, simple_model2):
 
 @pytest.mark.django_db(transaction=True)
 def test_filtering_with_put(client, simple_model1, simple_model2):
-
     response = client.put(f"{BASE_PATH}{simple_model1.pk}/", json={"name": "new_name - Should appear in response"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"name": "new_name - Should appear in response"}
@@ -82,7 +78,6 @@ def test_filtering_with_put(client, simple_model1, simple_model2):
 
 @pytest.mark.django_db(transaction=True)
 def test_filtering_with_delete(client, simple_model1, simple_model2):
-
     response = client.delete(f"{BASE_PATH}{simple_model1.pk}/")
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"name": "XXX - Should appear in response"}

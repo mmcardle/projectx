@@ -6,7 +6,6 @@ from projectx.common.management.commands.check_db_connection import (
 
 
 def test_check_db_connection(mocker):
-
     connection = mocker.patch("projectx.common.management.commands.check_db_connection.connection")
 
     CheckDbConnection().handle()
@@ -17,7 +16,6 @@ def test_check_db_connection(mocker):
 
 
 def test_check_db_connection_operational_error(mocker):
-
     mocker.patch("projectx.common.management.commands.check_db_connection.time")
 
     connection = mocker.patch(

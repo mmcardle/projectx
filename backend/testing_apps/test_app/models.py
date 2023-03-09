@@ -10,7 +10,6 @@ from projectx.common.models import UUIDModel
 
 
 class SimpleModel(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
     last_updated = models.DateTimeField(auto_now=True, editable=False)
@@ -22,7 +21,6 @@ class SimpleModel(models.Model):
 
 
 class SimpleModelWithArray(models.Model):
-
     name = models.CharField(max_length=50)
     an_array = ArrayField(models.CharField(max_length=10), blank=True, null=True)
 
@@ -31,7 +29,6 @@ class SimpleModelWithArray(models.Model):
 
 
 class SimpleJWTModel(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
 
@@ -40,7 +37,6 @@ class SimpleJWTModel(models.Model):
 
 
 class UnauthenticatedModel(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
 
@@ -49,7 +45,6 @@ class UnauthenticatedModel(models.Model):
 
 
 class SimpleIDModel(models.Model):
-
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -57,7 +52,6 @@ class SimpleIDModel(models.Model):
 
 
 class SimpleUUIDModel(UUIDModel):
-
     name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -65,7 +59,6 @@ class SimpleUUIDModel(UUIDModel):
 
 
 class BadJSONModelWithDefault(models.Model):
-
     data = models.JSONField(default=dict)
 
     def __str__(self):
@@ -73,7 +66,6 @@ class BadJSONModelWithDefault(models.Model):
 
 
 class BadJSONModelWithNoDefault(models.Model):
-
     data = models.JSONField()
 
     def __str__(self):
@@ -81,7 +73,6 @@ class BadJSONModelWithNoDefault(models.Model):
 
 
 class GoodJSONModel(models.Model):
-
     data = models.JSONField(default=lambda: {"key": "value"})
 
     def __str__(self):
@@ -97,7 +88,6 @@ def validate_not_greater_than_1(value):
 
 
 class ModelWithValidation(models.Model):
-
     number = models.IntegerField(default=1, validators=[validate_not_greater_than_1])
 
     def __str__(self):
@@ -117,7 +107,6 @@ class SimpleModelWithChoices(models.Model):
 
 
 class SimpleModelWithDefaultFields(models.Model):
-
     hidden_field_with_default = models.CharField("Default", max_length=30, default="Default")
     request_field_with_default = models.CharField("Default", max_length=30, default="Default")
     request_field_with_no_default = models.CharField("Default", max_length=30)
@@ -132,7 +121,6 @@ class SimpleModelWithDefaultFields(models.Model):
 
 
 class SimpleModelWithOwner(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=50)
     owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
@@ -142,7 +130,6 @@ class SimpleModelWithOwner(models.Model):
 
 
 class Question(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
 
@@ -151,7 +138,6 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="choices")
@@ -161,7 +147,6 @@ class Choice(models.Model):
 
 
 class Topping(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
 
@@ -170,7 +155,6 @@ class Topping(models.Model):
 
 
 class Pizza(models.Model):
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     name = models.CharField(max_length=50)
     toppings = models.ManyToManyField(Topping)

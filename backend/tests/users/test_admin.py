@@ -5,7 +5,6 @@ from projectx.users.models import User
 
 
 def test_send_activation_email(mocker):
-
     messages = mocker.patch("projectx.users.admin.messages")
     request = mock.Mock()
     user1 = mocker.Mock()
@@ -23,7 +22,6 @@ def test_send_activation_email(mocker):
 
 
 def test_admin():
-
     admin = ProjectXUserAdmin(User, mock.Mock())
 
     assert admin.readonly_fields == ("public_uuid", "modified", "created")

@@ -23,7 +23,6 @@ def get_client(app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_create_and_patch(client, mocker):
-
     response = client.post(
         BASE_PATH,
         json={"name": "name"},

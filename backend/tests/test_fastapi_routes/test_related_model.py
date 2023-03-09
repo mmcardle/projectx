@@ -23,7 +23,6 @@ def get_client(app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_related_model_create_list_update_get_and_delete(client, mocker):
-
     # Create a Question
     response = client.post(QUESTIONS_PATH, json={"name": "question1"})
     assert response.status_code == 200, response.content.decode("utf-8")

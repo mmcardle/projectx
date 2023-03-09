@@ -25,7 +25,6 @@ class JWTToken(BaseModel):  # pylint: disable=too-few-public-methods
 
 
 def schema_for_django_user(fields):
-
     UserModel = get_user_model()  # pylint: disable=invalid-name
 
     class DjangoUserSchema(ModelSchema):  # pylint: disable=too-few-public-methods

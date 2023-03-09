@@ -23,7 +23,6 @@ def get_client(app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_automatic_fields_create_list_update_get_and_delete(client, mocker):
-
     response = client.post(BASE_PATH, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {
