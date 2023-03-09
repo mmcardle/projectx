@@ -1,12 +1,12 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV PYTHONUNBUFFERED 1
 
 ##### We require some dev packages to install python requirements
 RUN apt-get -y update && apt-get install --no-install-recommends -y \
-  python3.9 \
-  python3.9-dev \
+  python3.11 \
+  python3.11-dev \
   python3 \
   python3-dev \
   python3-venv \
@@ -14,6 +14,7 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
   python3-setuptools \
   python-is-python3 \
   libssl-dev \
+  libffi-dev \
   gcc \
   nginx \
   build-essential \
@@ -24,8 +25,8 @@ RUN groupadd user && useradd --create-home --home-dir /home/user -g user user
 WORKDIR /home/user/
 
 ##### Installing base python dependancies
-RUN python3.9 -m pip install -U pip
-RUN python3.9 -m pip install circus poetry
+RUN python3.11 -m pip install -U pip
+RUN python3.11 -m pip install circus poetry
 
 COPY pyproject.toml /home/user/
 COPY poetry.toml /home/user/
