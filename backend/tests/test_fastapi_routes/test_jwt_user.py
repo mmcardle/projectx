@@ -41,7 +41,6 @@ def jwt_user_fixture():
 
 @pytest.mark.django_db(transaction=True)
 def test_modelwithjwt_create_list_update_get_and_delete(client, jwt_user, mocker):
-
     response = client.post(
         JWT_PATH,
         data={"username": jwt_user.username, "password": JWT_USER_PASSWORD},

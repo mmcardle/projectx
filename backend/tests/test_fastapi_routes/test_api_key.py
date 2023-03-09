@@ -39,7 +39,6 @@ def test_bad_api_key(client):
 
 @pytest.mark.django_db(transaction=True)
 def test_api_key_create_list_update_get_and_delete(client, api_key_user, mocker):
-
     response = client.post(
         BASE_PATH,
         headers={"X-API-Key": api_key_user.key},

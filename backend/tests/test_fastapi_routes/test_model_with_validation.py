@@ -16,7 +16,6 @@ def get_client(app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_model_with_validation(client_and_routebuilder):
-
     client, route_builder = client_and_routebuilder
 
     response = client.get(route_builder.path_for_list_and_post)

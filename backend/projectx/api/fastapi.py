@@ -1,6 +1,5 @@
 import logging
 from collections import defaultdict
-from enum import Enum
 from typing import Callable, List, Optional
 from urllib import parse
 
@@ -63,17 +62,6 @@ def check_api_key(x_api_key: str = API_KEY_HEADER) -> User:
     raise HTTPException(status_code=400, detail="X-API-Key header invalid.")
 
 
-def make_enums_unique(new_type):
-    for item in new_type.__dict__["__fields__"].values():
-        if "enum.EnumMeta" in str(item.type_.__class__):
-            enum_values = [(i.value, i.value) for i in item.type_]
-
-            new_enum_type = Enum(f"{new_type.__name__}_{item.name}_Enum", enum_values, module=__name__)
-            setattr(item, "type_", new_enum_type)
-
-    return new_type
-
-
 def schema_for_instance(django_model, fields):
     class SingleSchema(ModelSchema):  # pylint: disable=too-few-public-methods
         class Config:  # pylint: disable=too-few-public-methods
@@ -109,7 +97,7 @@ def schema_for_instance(django_model, fields):
 
             return cls(**field_data)
 
-    return make_enums_unique(type(f"{django_model.__name__}", (SingleSchema,), {}))
+    return type(f"{django_model.__name__}", (SingleSchema,), {})
 
 
 def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disable=invalid-name,too-many-statements
@@ -211,7 +199,6 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
     for field in fields:
 
         def create_validation_function(field, django_model):
-
             django_field = django_model._meta.get_field(field)
 
             def func(cls, value):  # pylint: disable=unused-argument
@@ -231,7 +218,7 @@ def schema_for_new_instance(django_model, SingleSchema, fields):  # pylint: disa
         validation_function = create_validation_function(field, django_model)
         class_methods[f"validate_{field}"] = validator(field, check_fields=False, allow_reuse=True)(validation_function)
 
-    return make_enums_unique(type(f"New{django_model.__name__}", (NewSchema,), class_methods))
+    return type(f"New{django_model.__name__}", (NewSchema,), class_methods)
 
 
 def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # pylint: disable=invalid-name
@@ -244,7 +231,7 @@ def schema_for_updating_instance(django_model, NewSchema, optional_fields):  # p
 
         __annotations__ = optional_fields
 
-    return make_enums_unique(type(f"Partial{django_model.__name__}", (UpdatingSchema,), {}))
+    return type(f"Partial{django_model.__name__}", (UpdatingSchema,), {})
 
 
 def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=invalid-name
@@ -261,7 +248,7 @@ def schema_for_multiple_models(django_model, SingleSchema):  # pylint: disable=i
             """
             return cls(items=[SingleSchema.from_model(i) for i in qs])
 
-    return make_enums_unique(type(f"{django_model.__name__}List", (MultipleSchema,), {}))
+    return type(f"{django_model.__name__}List", (MultipleSchema,), {})
 
 
 class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-public-methods
@@ -482,7 +469,6 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
             instance: self.model = Depends(self.get_function),
             user: User = Depends(self.authentication),
         ) -> self.instance_schema:
-
             if self.query_filter:
                 self.check_query_filter(instance, user)
 
@@ -523,7 +509,6 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
             api_instance: self.updating_schema = Body(...),
             user: User = Depends(self.authentication),
         ) -> self.instance_schema:
-
             if self.query_filter:
                 self.check_query_filter(instance, user)
 
@@ -548,7 +533,6 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
             api_instance: self.new_instance_schema = Body(...),
             user: User = Depends(self.authentication),
         ) -> self.instance_schema:
-
             if self.query_filter:
                 self.check_query_filter(instance, user)
 
@@ -570,7 +554,6 @@ class RouteBuilder:  # pylint: disable=too-many-instance-attributes,too-many-pub
         def _delete(
             instance: self.model = Depends(self.get_function), user: User = Depends(self.authentication)
         ) -> self.instance_schema:
-
             if self.query_filter:
                 self.check_query_filter(instance, user)
 

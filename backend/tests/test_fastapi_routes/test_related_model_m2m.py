@@ -35,7 +35,6 @@ def create_topping2():
 
 @pytest.mark.django_db(transaction=True)
 def test_related_model_with_m2m_create_list_update_get_and_delete(client, topping, topping2, mocker):
-
     response = client.post(BASE_PATH, json={"name": "name", "toppings": [{"uuid": str(topping.pk)}]})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "name", "toppings": [{"uuid": str(topping.pk)}]}

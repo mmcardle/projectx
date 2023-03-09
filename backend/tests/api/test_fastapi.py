@@ -35,7 +35,6 @@ def test_route_builder_adds_routes():
 
 @pytest.mark.django_db(transaction=True)
 def test_route_builder_get_identifier_function():
-
     simple_model = models.SimpleModel.objects.create(name="SimpleModel")
 
     route_builder = RouteBuilder(models.SimpleModel)

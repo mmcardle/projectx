@@ -73,7 +73,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: ['3.9']
+        python-version: ['3.11']
     
     name: python ${{ matrix.python-version }} setup
     
@@ -138,7 +138,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9']
+        python-version: ['3.11']
     
     name: python ${{ matrix.python-version }} unittest
     
@@ -170,7 +170,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9']
+        python-version: ['3.11']
         poetry-command:
           - poetry check
 
@@ -200,7 +200,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ['3.9']
+        python-version: ['3.11']
         lint-command:
           - poetry run python -m black --check backend/
           - poetry run python -m isort --check-only --diff backend/

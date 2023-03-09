@@ -25,7 +25,6 @@ def get_client(request, app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_model_with_id_create_list_update_get_and_delete(client_and_routebuilder, mocker):
-
     client, route_builder = client_and_routebuilder
     model_identifier, base_path = route_builder.model_identifier, route_builder.path_for_list_and_post
 

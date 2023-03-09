@@ -25,7 +25,6 @@ def test_create_payload_decorator_ok(mocker):
 
 
 def test_create_payload_decorator_bad_data(mocker):
-
     JsonResponse = mocker.patch("projectx.common.validation.JsonResponse")
 
     func = mocker.Mock(__name__="name")

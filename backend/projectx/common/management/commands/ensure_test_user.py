@@ -3,6 +3,10 @@ from django.core.management.base import BaseCommand
 from projectx.users.models import User
 
 
+class UserException(Exception):
+    ...
+
+
 class Command(BaseCommand):
     help = "Create a user"
 
@@ -23,9 +27,9 @@ class Command(BaseCommand):
         email = options.get("email")
 
         if not email:
-            raise Exception("Email is required")
+            raise UserException("Email is required")
         if not password:
-            raise Exception("Password is required")
+            raise UserException("Password is required")
 
         try:
             user = User.objects.get(email=email)

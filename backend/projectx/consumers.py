@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseWebSocketConsumer(JsonWebsocketConsumer):
-
     user = None
     joined_channels = []
 

@@ -36,7 +36,6 @@ def api_key_user_fixture():
 
 @pytest.mark.django_db(transaction=True)
 def test_model_with_owner_create_list_update_patch_get_and_delete(client, api_key_user, mocker):
-
     response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "name"}
@@ -70,7 +69,6 @@ def test_model_with_owner_create_list_update_patch_get_and_delete(client, api_ke
 
 @pytest.mark.django_db(transaction=True)
 def test_testapp_testmodelwithowner_other_user_cannot_access(client, api_key_user, mocker):
-
     response = client.post(BASE_PATH, headers={"X-API-Key": api_key_user.key}, json={"name": "name"})
     assert response.status_code == 200, response.content.decode("utf-8")
     assert response.json() == {"uuid": mocker.ANY, "name": "name"}

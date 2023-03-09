@@ -16,7 +16,6 @@ def get_client(app, router):
 
 @pytest.mark.django_db(transaction=True)
 def test_model_with_default_create_list_get(client_and_routebuilder, mocker):
-
     client, route_builder = client_and_routebuilder
     model_identifier, base_path = route_builder.model_identifier, route_builder.path_for_list_and_post
 
@@ -72,7 +71,6 @@ def test_model_with_default_create_list_get(client_and_routebuilder, mocker):
 
 @pytest.mark.django_db(transaction=True)
 def test_model_with_default_create_list_get_with_unsupported_json_field(client_and_routebuilder, mocker):
-
     client, route_builder = client_and_routebuilder
     model_identifier, base_path = route_builder.model_identifier, route_builder.path_for_list_and_post
 

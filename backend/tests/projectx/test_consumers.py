@@ -19,11 +19,10 @@ def create_websocket_consumer():
 
 
 def test_web_socket_consumer_is_anonymous(mocker):
-
     mocker.patch("projectx.consumers.AsyncToSync")
     user = mock.Mock(is_anonymous=True)
     websocket_consumer = UserWebSocketConsumer()
-    websocket_consumer.scope = dict(user=user)
+    websocket_consumer.scope = {"user": user}
     websocket_consumer.channel_name = "channel_name"
     websocket_consumer.base_send = mock.Mock()
     websocket_consumer.close = mock.Mock()
@@ -37,11 +36,10 @@ def test_web_socket_consumer_is_anonymous(mocker):
 
 
 def test_web_socket_consumer(mocker):
-
     AsyncToSync = mocker.patch("projectx.consumers.AsyncToSync")
     user = mock.Mock(is_anonymous=False, is_staff=False, unique_name=lambda: "user1")
     websocket_consumer = UserWebSocketConsumer()
-    websocket_consumer.scope = dict(user=user)
+    websocket_consumer.scope = {"user": user}
     websocket_consumer.channel_name = "channel_name"
     websocket_consumer.base_send = mock.Mock()
     websocket_consumer.channel_layer = mock.Mock()

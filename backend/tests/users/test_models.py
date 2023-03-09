@@ -25,7 +25,6 @@ def test_apikey():
 
 @pytest.mark.django_db()
 def test_usermanager():
-
     user = User.objects.create_user("none@tempurl.com", password="pass")
     superuser = User.objects.create_superuser(email="super@tempurl.com", password="pass")
     user_with_username = User.objects.create_user("another@tempurl.com", password="pass", username="username")
@@ -45,7 +44,6 @@ def test_usermanager():
 
 @pytest.mark.django_db()
 def test_usermanager_create_anonymous_user(mocker):
-
     mocker.patch("projectx.users.models.uuid.uuid4", return_value="USER_UUID")
 
     anonymous_user = User.objects.create_anonymous_user()
@@ -124,7 +122,6 @@ def test_user_model_activate(mocker):
 
 
 def test_user_send_reset_password_email(mocker):
-
     get_redis_connection = mocker.patch("projectx.users.models.get_redis_connection")
     settings = mocker.patch("projectx.users.models.settings")
 
@@ -178,7 +175,6 @@ def test_user_delete_reset_key(mocker):
 
 
 def test_user_check_reset_key(mocker):
-
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
         "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
@@ -217,7 +213,6 @@ def test_user_check_reset_key_doesnot_exist(mocker):
 
 
 def test_user_check_reset_key_payload_not_in_redis(mocker):
-
     get_redis_connection = mocker.patch(
         "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=None))
     )
@@ -237,7 +232,6 @@ def test_user_check_reset_key_payload_not_in_redis(mocker):
 
 
 def test_user_check_reset_key_wrong_key_in_redis(mocker):
-
     redis_payload = json.dumps({"key": "WRONG_KEY"})
     get_redis_connection = mocker.patch(
         "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
@@ -258,7 +252,6 @@ def test_user_check_reset_key_wrong_key_in_redis(mocker):
 
 
 def test_user_check_activation_key(mocker):
-
     redis_payload = json.dumps({"key": "key"})
     get_redis_connection = mocker.patch(
         "projectx.users.models.get_redis_connection", return_value=mock.Mock(hget=mock.Mock(return_value=redis_payload))
@@ -278,7 +271,6 @@ def test_user_check_activation_key(mocker):
 
 @pytest.mark.django_db()
 def test_user_reset_email(mocker):
-
     email = "none@tempurl.com"
     User.objects.create(username="user1", email=email)
     send_reset_password_email = mocker.patch.object(User, "send_reset_password_email")
@@ -291,7 +283,6 @@ def test_user_reset_email(mocker):
 
 @pytest.mark.django_db()
 def test_user_reset_email_no_such_user(mocker):
-
     send_reset_password_email = mocker.patch.object(User, "send_reset_password_email")
 
     User.reset_email("ANOTHER@tempurl.com", mocker.Mock())
@@ -301,7 +292,6 @@ def test_user_reset_email_no_such_user(mocker):
 
 @pytest.mark.django_db()
 def test_user_send_account_activation_email(mocker):
-
     get_redis_connection = mocker.patch("projectx.users.models.get_redis_connection")
     settings = mocker.patch("projectx.users.models.settings")
 

@@ -12,8 +12,8 @@ from django.http import JsonResponse
 from django.template import engines
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
+from django_ratelimit.decorators import ratelimit
 from django_su.views import su_logout
-from ratelimit.decorators import ratelimit
 
 from projectx.users import decorators, models
 from projectx.users.apps import create_access_token
@@ -114,7 +114,6 @@ def logout(request):
 @require_http_methods(["POST"])
 @decorators.register_payload
 def register(request):
-
     email = request.validated_data.get("email")
     existing_user = models.User.email_exists(email)
 
@@ -132,7 +131,6 @@ def register(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.reset_password_payload
 def reset_password(request):
-
     email = request.validated_data["email"]
     if models.User.email_exists(email):
         models.User.reset_email(email, request)
@@ -147,7 +145,6 @@ def reset_password(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.reset_password_complete_payload
 def reset_password_complete(request):
-
     reset_data = request.validated_data
     key = reset_data.get("reset_key")
 
@@ -169,7 +166,6 @@ def reset_password_complete(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.change_password_payload
 def change_password(request):
-
     current_password = request.validated_data["current_password"]
     user = authenticate(username=request.user.email, password=current_password)
     if user is not None:
@@ -190,7 +186,6 @@ def change_password(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.change_details_payload
 def change_details(request):
-
     change_details_data = request.validated_data
 
     user = request.user
@@ -205,7 +200,6 @@ def change_details(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.reset_password_check_payload
 def reset_password_check(request):
-
     key = request.validated_data.get("reset_key")
 
     user, error = models.User.check_reset_key(key)
@@ -219,7 +213,6 @@ def reset_password_check(request):
 @ratelimit(key="user_or_ip", rate="5/m", method=ratelimit.UNSAFE, block=True)
 @decorators.activate_payload
 def activate(request):
-
     user = request.validated_data["user"]
     user.activate()
 
@@ -227,7 +220,6 @@ def activate(request):
 
 
 def admin_su_logout(request):
-
     su_response = su_logout(request)
 
     if su_response.status_code > 400:

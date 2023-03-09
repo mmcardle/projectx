@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest
-from ratelimit.exceptions import Ratelimited
+from django_ratelimit.exceptions import Ratelimited
 
 from projectx.users import api
 
@@ -33,7 +33,6 @@ def test_new_jwt_token(mocker):
 
 
 def test_jwt_token_for_session_creates_new_jwt_token(mocker):
-
     new_jwt_token = mocker.patch("projectx.users.api.new_jwt_token")
 
     session = {}
@@ -48,7 +47,6 @@ def test_jwt_token_for_session_creates_new_jwt_token(mocker):
 
 
 def test_jwt_token_for_session_keeps_existing_jwt_token(mocker):
-
     new_jwt_token = mocker.patch("projectx.users.api.new_jwt_token")
 
     session = {api.JWT_SESSION_KEY: "Existing"}
@@ -77,7 +75,6 @@ def test_get_logout_url_su_request():
 
 
 def test_user_details_authenticated(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     mocker.patch("projectx.users.api._get_token", return_value="token")
     mocker.patch("projectx.users.api.jwt_token_for_session", return_value="jwt")
@@ -92,7 +89,6 @@ def test_user_details_authenticated(mocker):
 
 
 def test_user_details_unauthenticated(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
     user = mock.Mock(is_authenticated=False)
@@ -103,7 +99,6 @@ def test_user_details_unauthenticated(mocker):
 
 
 def test_login_GET(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     mocker.patch("projectx.users.api._get_token", return_value="token")
 
@@ -114,7 +109,6 @@ def test_login_GET(mocker):
 
 
 def test_login_POST_rate_limited(settings, mocker):
-
     settings.CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -143,7 +137,6 @@ def test_login_POST_rate_limited(settings, mocker):
 
 
 def test_login_GET_no_csrf(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
     user = mock.Mock(is_authenticated=False)
@@ -153,13 +146,12 @@ def test_login_GET_no_csrf(mocker):
 
 
 def test_login_POST(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     authenticate = mocker.patch("projectx.users.api.authenticate")
     django_login = mocker.patch("projectx.users.api.django_login")
     mocker.patch("projectx.users.api.new_jwt_token", return_value="jwt")
 
-    body = json.dumps(dict(email="email@none.com", password="password"))
+    body = json.dumps({"email": "email@none.com", "password": "password"})
     user = mock.Mock(is_authenticated=False)
     request = make_request(
         method="POST",
@@ -187,7 +179,6 @@ def test_login_POST(mocker):
 
 
 def test_login_POST_bad_auth_with_no_user(mocker):
-
     UserModel = get_user_model()
 
     mocker.patch.object(UserModel._default_manager, "get_by_natural_key", mock.Mock(side_effect=UserModel.DoesNotExist))
@@ -198,7 +189,7 @@ def test_login_POST_bad_auth_with_no_user(mocker):
     authenticate.return_value = None
     django_login = mocker.patch("projectx.users.api.django_login")
 
-    body = json.dumps(dict(email="email@none.com", password="password"))
+    body = json.dumps({"email": "email@none.com", "password": "password"})
     user = mock.Mock(is_authenticated=False)
     request = make_request(
         method="POST",
@@ -220,13 +211,12 @@ def test_login_POST_bad_auth_with_no_user(mocker):
 
 
 def test_anonymous_POST(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     create_anonymous_user = mocker.patch("projectx.users.models.User.objects.create_anonymous_user")
     django_login = mocker.patch("projectx.users.api.django_login")
     mocker.patch("projectx.users.api.new_jwt_token", return_value="jwt")
 
-    body = json.dumps(dict(email="email@none.com", password="password"))
+    body = json.dumps({"email": "email@none.com", "password": "password"})
     user = mock.Mock(is_authenticated=False)
     request = make_request(
         method="POST",
@@ -254,7 +244,6 @@ def test_anonymous_POST(mocker):
 
 
 def test_logout(mocker):
-
     django_logout = mocker.patch("projectx.users.api.django_logout")
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
@@ -266,7 +255,6 @@ def test_logout(mocker):
 
 
 def test_logout_deletes_jwt(mocker):
-
     django_logout = mocker.patch("projectx.users.api.django_logout")
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
@@ -280,7 +268,6 @@ def test_logout_deletes_jwt(mocker):
 
 
 def test_register(mocker):
-
     User = mocker.patch(
         "projectx.users.api.models.User",
         email_exists=mocker.Mock(return_value=False),
@@ -307,7 +294,6 @@ def test_register(mocker):
 
 
 def test_register_email_exists(mocker):
-
     User = mocker.patch(
         "projectx.users.api.models.User",
         email_exists=mocker.Mock(return_value=True),
@@ -333,7 +319,6 @@ def test_register_email_exists(mocker):
 
 
 def test_reset_password(mocker):
-
     User = mocker.patch(
         "projectx.users.api.models.User",
         email_exists=mocker.Mock(return_value=True),
@@ -352,7 +337,6 @@ def test_reset_password(mocker):
 
 
 def test_reset_password_no_such_email(mocker):
-
     User = mocker.patch(
         "projectx.users.api.models.User",
         email_exists=mocker.Mock(return_value=False),
@@ -370,7 +354,6 @@ def test_reset_password_no_such_email(mocker):
 
 
 def test_reset_password_check(mocker):
-
     user = mock.Mock()
     User = mocker.patch("projectx.users.api.models.User", check_reset_key=mock.Mock(return_value=(user, None)))
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
@@ -386,7 +369,6 @@ def test_reset_password_check(mocker):
 
 
 def test_reset_password_check_user_is_None(mocker):
-
     User = mocker.patch("projectx.users.api.models.User", check_reset_key=mock.Mock(return_value=(None, "error")))
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
@@ -401,7 +383,6 @@ def test_reset_password_check_user_is_None(mocker):
 
 
 def test_reset_password_complete(mocker):
-
     user = mock.Mock()
     User = mock.Mock(check_reset_key=lambda key: (user, None))
     user_models = mocker.patch("projectx.users.api.models")
@@ -423,7 +404,6 @@ def test_reset_password_complete(mocker):
 
 
 def test_reset_password_complete_no_user(mocker):
-
     User = mock.Mock(check_reset_key=lambda key: (None, "error"))
     user_models = mocker.patch("projectx.users.api.models")
     user_models.User = User
@@ -437,7 +417,6 @@ def test_reset_password_complete_no_user(mocker):
 
 
 def test_change_password(mocker):
-
     authenticate = mocker.patch("projectx.users.api.authenticate")
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     update_session_auth_hash = mocker.patch("projectx.users.api.update_session_auth_hash")
@@ -463,7 +442,6 @@ def test_change_password(mocker):
 
 
 def test_change_password_bad_authentication(mocker):
-
     mocker.patch("projectx.users.api.authenticate", return_value=None)
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
 
@@ -485,7 +463,6 @@ def test_change_password_bad_authentication(mocker):
 
 
 def test_change_details(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     user = mock.Mock()
 
@@ -507,7 +484,6 @@ def test_change_details(mocker):
 
 
 def test_activate_api(mocker):
-
     user = mock.Mock()
     data = {"user": user}
     mocker.patch("projectx.common.validation.load_data_from_schema", return_value=data)
@@ -522,7 +498,6 @@ def test_activate_api(mocker):
 
 
 def test_admin_su_logout_good_request(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     mocker.patch("projectx.users.api.su_logout", return_value=mock.Mock(url="/redirect_url", status_code=200))
     api.admin_su_logout(make_request())
@@ -531,7 +506,6 @@ def test_admin_su_logout_good_request(mocker):
 
 
 def test_admin_su_logout_bad_request(mocker):
-
     JsonResponse = mocker.patch("projectx.users.api.JsonResponse")
     mocker.patch("projectx.users.api.su_logout", return_value=mock.Mock(content="content", status_code=403))
     api.admin_su_logout(make_request())
