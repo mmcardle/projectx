@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "chromedriver": "^100.0",
+    "chromedriver": "^110.0.0",
     "cross-env": "^7.0",
     "geckodriver": "^3.0",
     "nightwatch": "^1.6",
